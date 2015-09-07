@@ -1,0 +1,104 @@
+A brief description of individual scripts/programs of the package.
+
+
+##########################################################################################
+blt2scf.py
+
+Convert RadioAstron's blt-file to scf-file(s).
+
+##########################################################################################
+classes.py
+
+Definitions of classes used in pyp.
+
+##########################################################################################
+ftpnme.py
+
+A script that helps choosing suitable source while preparing ftp fringe test experiments.
+
+##########################################################################################
+ftptest.py
+
+Sets up stuff for and during ftp fringe test experiments.
+
+##########################################################################################
+ftptest_report.py
+
+Generates draft of the output html file with an ftp fringe test report.
+
+##########################################################################################
+gnssnearby.py
+
+Finds GNSS (GPS and GLONASS) satellites near-by sources from each scan in a vex-file.
+
+##########################################################################################
+handy.py
+
+Runs the pyp software for calculation VLBI delay and Doppler predictions manually. Contains a number of examples.
+
+##########################################################################################
+inp.py
+
+Generates inp.cfg file. Note that inp.cfg could be edited manually.
+
+##########################################################################################
+pointings.py
+
+Produces telescope spacecraft pointings in various formats/flavours. Useful for observations planning.
+
+##########################################################################################
+raeph.py
+
+Outputs names of raw RadioAstron OD files suitable for an experiment in question. See radioastron-sfxc.txt for more details.
+
+##########################################################################################
+ramp1w_esa2pyp.py
+
+Convert ESA deep space s/c 1-way ramp table to pyp format.
+
+##########################################################################################
+raod.py
+
+Creates and maintains a mirror of RadioAstron OD data FTP-server ftp://radik:Zap069_qq@webinet.asc.rssi.ru/radioastron/oddata/reconstr/
+
+##########################################################################################
+scf2bsp.py
+
+Convert scf-file to a pseudo *ascii* bsp-file for creating a SPICE-kernel. T. Bocanegra Bahamon has a program to convert these into a real binary bsp-file.
+
+##########################################################################################
+scradec.py
+
+Calculate RA/Dec of a spacecraft given a vex-file with the schedule
+
+##########################################################################################
+sfxcdel.py
+
+Parse binary delay files in SFXC format and dump them to ascii files.
+
+##########################################################################################
+split-scf.py
+
+Splits the input scf-file (if necessary) on a daily basis, and places the output in ./sc_eph/raw_radioastron/
+
+##########################################################################################
+tecs.py
+
+Command-line utility to calculate TEC values for scintillation observations. Feeds on tables produced by S. Pogrebenko and G. Molera Calves.
+
+##########################################################################################
+vex.py
+
+VEX parser by M. Kettenis.
+
+##########################################################################################
+vintflib.f and vintlib.py
+
+Libraries with most of the computational routines and subroutines used in VLBI delay (far-field, orbiting antenna, near-field) and Doppler predictions calculation.
+
+##########################################################################################
+vispy.py
+
+Produces SFXC-compatible .del-files containing VLBI delay predictions.
+
+##########################################################################################

@@ -1,0 +1,91 @@
+Generating SFXC .del-files for RadioAstron with PYPRIDE software package.
+
+
+1) A python script raod.py is used to create and maintain a local mirror of RadioAstron OD data FTP-server ftp://radik:Zap069_qq@webinet.asc.rssi.ru/radioastron/oddata/reconstr/:
+
+raod.py [-h] [-o OUT]
+
+OUT sets a local folder containing raw OD data. Defaults to /jop75_0/duev/radioastron_oddata. The script also maintains a database containing raw OD filenames and time boundaries within each file. 
+
+On jop75 the script is run as a cron job daily at noon.
+
+
+2) KIAM usually provides more than one ephemeris for a given date, or several raw files could have overlapping time boundaries. Thus some manual 'picking' must be done. A python script raeph.py outputs names of raw OD files suitable for an experiment in question:
+
+usage: raeph.py [-h] [-s SCF] [-u USER] [-p PWD] vexfile
+
+Create raw RA eph files for use with PYP.
+
+positional arguments:
+  vexfile               input vex-file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s SCF, --scf SCF     RA OD database folder. could be accessed over ssh.if
+                        so, must provide -u and -p parameters (jops would
+                        do).defaults to jop75:/jop75_0/duev/radioastron_oddata
+  -u USER, --user USER  ssh username
+  -p PWD, --pwd PWD     ssh password
+
+Usually, the latest file(s) is what is wanted.
+
+
+3) RadioAstron ephemerides that are used in PYP must be split on a daily basis, have names of a form RA%YY%MM%DDj.scf, and be placed in ./sc_eph/raw_radioastron/. 
+If there are more than 1 file that need to be used (from output of step 2), it is recommended to stick them into one file with an arbitrary name without paying attention to the header, but paying attention to a possible overlapping.
+A script split-scf.py splits the input scf-file (if necessary) on a daily basis, and places the output in <path_to_pypride_installation>/sc_eph/raw_radioastron/:
+
+usage: split-scf.py [-h] [-o OUT] [-u USER] [-p PWD] scf
+
+Split scf-file to multiple files if it goes overnight.
+
+positional arguments:
+  scf                   input scf-file.could be accessed over ssh.provide -u
+                        and -p parameters if there's no key.defaults to
+                        jop75:/jop75_0/duev/radioastron_oddata
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUT, --out OUT     output folder. defaults to
+                        <pypride_path>/sc_eph/raw_radioastron
+  -u USER, --user USER  ssh username
+  -p PWD, --pwd PWD     ssh password
+
+<path_to_pypride_installation> is searched for automatically. In case of a fail - to find out what <path_to_pypride_installation> is, open python interpreter and type:
+
+>>> import pypride, os
+>>> print os.path.dirname(pypride.__file__)
+
+4) Delay-files are generated using a script vispy.py:
+
+usage: vispy.py [-h] [-p] [-t] [-s STATIONS] [-ts SECONDS] [-nid]
+                       [-ipc] [-dpc] [-i]
+                       vexfile cfgfile
+
+Computation of VLBI delays.
+
+positional arguments:
+  vexfile               input vex-file
+  cfgfile               input config-file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p, --parallel        run computation in parallel mode
+  -t, --showTiming      display timing info
+  -s STATIONS, --stations STATIONS
+                        2-letter station code(s) to process. defaults to 'all'
+  -ts SECONDS, --timeStep SECONDS
+                        time step [sec] for delay calculation. defaults to 10
+                        sec. the output is smoothed down to 1 sec.
+  -nid, --noIonDelay    do not include ionospheric delay
+  -ipc, --ionPhaseCor   compute ionospheric phase correction
+  -dpc, --dopplerPhaseCor
+                        compute Doppler phase correction for spacecraft
+  -i, --info            display info about the vex-file
+
+Usually, one would want to use something like the following:
+
+python vispy.py -p exp.vex inp.cfg
+
+-p option tells the software to use all the available cores/threads on the machine.
+The file inp.cfg usually should not be touched if simple SFXC-style delay computation is desired.
+The output folder is set in inp.cfg and defaults to ./_out/exp, where exp is the experiment code.
