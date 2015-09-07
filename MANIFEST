@@ -6,6 +6,7 @@ bin/blt2scf.py
 bin/ftptest.py
 bin/ftptest_report.py
 bin/gnssnearby.py
+bin/ra2vex.py
 bin/raeph.py
 bin/ramp1w_esa2pyp.py
 bin/raod.py

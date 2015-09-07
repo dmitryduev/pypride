@@ -42,7 +42,8 @@ class vispy(object):
         # load input sittings:
         try:
             self.inp = inp_set(inp_file)
-        except:
+        except Exception, err:
+            print str(err)
             raise Exception('Could not load input settings file.')
         
         # path to vex-file
@@ -58,7 +59,8 @@ class vispy(object):
         try:
             with open(vex_file, 'r') as f:
                 self.f_lines = f.readlines()
-        except:
+        except Exception, err:
+            print str(err)
             raise Exception('Failed to read the vex-file')
 
         
