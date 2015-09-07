@@ -1,0 +1,9 @@
+# Ramp table for ESA's Venus Express spacecraft
+#
+# column 1: ramp interval start time t_start, UTC
+# column 2: ramp interval stop time t_stop, UTC
+# column 3: uplink frequency at t_start, Hz
+# column 4: uplink frequency UTC derivative, Hz/s 
+# column 5: uplink station name
+#
+2012-12-05 00:00:00.000000  2012-12-06 00:00:00.000000  7.1659798630000000e+09   0.0000000000000000e+00  NWNORCIA
