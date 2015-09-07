@@ -11967,7 +11967,7 @@ def vint_s(ob):
 #    tic = _time()
     for ti, tstamp in enumerate(ob.tstamps):
 #        tic = _time()
-        print tstamp
+#        print tstamp
         ''' obs freq if not Doppler '''
         if not inp['doppler_calc']:
 #            print ob.freqs
