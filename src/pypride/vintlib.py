@@ -11907,11 +11907,10 @@ def vint_s(ob):
     # update eop file, if it's out of date, namely, older than (n) days:
 #    eop_update(inp['cat_eop'], 3)
     
-    # if RA was observing, add Pu or Gb to the station list, it'll be used for
+    # if RA was observing, add Pu or Gt to the station list, it'll be used for
     # calculating formatter time offset for the RA downlink stream
-    # TODO: get this out of vint_s
-    if 'RA' in ob.sta:
-        ob.sta.append('PUSHCHIN')
+#    if 'RA' in ob.sta:
+#        ob.sta.append('PUSHCHIN')
     # now do read everything:
     sou, sta, eops = load_cats(inp, ob.source, ob.sou_type, \
                                ob.sta, ob.tstamps[0], ob.sou_radec)

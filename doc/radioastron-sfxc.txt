@@ -1,7 +1,25 @@
 Generating SFXC .del-files for RadioAstron with PYPRIDE software package.
 
+1) Make sure that the station 'RA' is in the vex-file. If it is not there, a python script ra2vex.py could be used to add all the necessary information to the vex-file:
 
-1) A python script raod.py is used to create and maintain a local mirror of RadioAstron OD data FTP-server ftp://radik:Zap069_qq@webinet.asc.rssi.ru/radioastron/oddata/reconstr/:
+usage: ra2vex.py [-h] [-o OUTPATH] vexfile
+
+Add RadioAstron-specific entries to a vex-file.
+Note that it's kind of fake, so check it!
+
+positional arguments:
+  vexfile               input vex-file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPATH, --outpath OUTPATH
+                        output path, defaults to the path to vex-file
+                        
+You would want to check the added info, just in case. 
+
+Note, that a 'raw' RadioAstron vex-file usually contains information about the tracking station used in the session. As of 2015/09/07, it could be either 'Pu' (PUSHCHIN) or 'Gt' (GBTS or NRAO140). If such data are absent in the vex-file, the software will assume the TS station to be Pushchino. This information is necessary in order to correctly compute the delays for RadioAstron [for details, see Duev et al. 2015, A&A 573, A99, http://www.aanda.org/articles/aa/pdf/2015/01/aa24940-14.pdf]
+
+2) A python script raod.py is used to create and maintain a local mirror of RadioAstron OD data FTP-server ftp://radik:Zap069_qq@webinet.asc.rssi.ru/radioastron/oddata/reconstr/:
 
 raod.py [-h] [-o OUT]
 
@@ -10,7 +28,7 @@ OUT sets a local folder containing raw OD data. Defaults to /jop75_0/duev/radioa
 On jop75 the script is run as a cron job daily at noon.
 
 
-2) KIAM usually provides more than one ephemeris for a given date, or several raw files could have overlapping time boundaries. Thus some manual 'picking' must be done. A python script raeph.py outputs names of raw OD files suitable for an experiment in question:
+3) KIAM usually provides more than one ephemeris for a given date, or several raw files could have overlapping time boundaries. Thus some manual 'picking' must be done. A python script raeph.py outputs names of raw OD files suitable for an experiment in question:
 
 usage: raeph.py [-h] [-s SCF] [-u USER] [-p PWD] vexfile
 
@@ -30,7 +48,7 @@ optional arguments:
 Usually, the latest file(s) is what is wanted.
 
 
-3) RadioAstron ephemerides that are used in PYP must be split on a daily basis, have names of a form RA%YY%MM%DDj.scf, and be placed in ./sc_eph/raw_radioastron/. 
+4) RadioAstron ephemerides that are used in PYP must be split on a daily basis, have names of a form RA%YY%MM%DDj.scf, and be placed in ./sc_eph/raw_radioastron/. 
 If there are more than 1 file that need to be used (from output of step 2), it is recommended to stick them into one file with an arbitrary name without paying attention to the header, but paying attention to a possible overlapping.
 A script split-scf.py splits the input scf-file (if necessary) on a daily basis, and places the output in <path_to_pypride_installation>/sc_eph/raw_radioastron/:
 
@@ -55,7 +73,7 @@ optional arguments:
 >>> import pypride, os
 >>> print os.path.dirname(pypride.__file__)
 
-4) Delay-files are generated using a script vispy.py:
+5) Delay-files are generated using a script vispy.py:
 
 usage: vispy.py [-h] [-p] [-t] [-s STATIONS] [-ts SECONDS] [-nid]
                        [-ipc] [-dpc] [-i]
@@ -82,10 +100,10 @@ optional arguments:
                         compute Doppler phase correction for spacecraft
   -i, --info            display info about the vex-file
 
-Usually, one would want to use something like the following:
+Usually, one would want to say something like the following:
 
-python vispy.py -p exp.vex inp.cfg
+vispy.py -p exp.vex inp.cfg
 
 -p option tells the software to use all the available cores/threads on the machine.
-The file inp.cfg usually should not be touched if simple SFXC-style delay computation is desired.
-The output folder is set in inp.cfg and defaults to ./_out/exp, where exp is the experiment code.
+The file inp.cfg (usually) should not be touched if only something as simple as SFXC-style delay computation is desired.
+The output folder is set in inp.cfg and defaults to <path_to_pypride>/_out/exp, where exp is the experiment code.

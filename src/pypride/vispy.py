@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb  4 20:05:45 2015
@@ -152,7 +153,18 @@ class vispy(object):
         inp_swchs['sc_rhophitheta'] = True
         # turn off forced eph recalculation - it's done one when run self.updates()
         inp_swchs['sc_eph_force_update'] = False
-    
+        
+        # RadioAstron-Ground session? Get tracking station then:
+        # [could be 'Pu' or 'Gt']:
+        if 'Ra' in self.stations.keys():
+            if 'Pu' in self.stations.keys():
+                sta_ra_ts = self.stations['Pu']
+            elif 'Gt' in self.stations.keys():
+                sta_ra_ts = self.stations['Gt']
+            else:
+                print 'could not guess RadioAstron tracking station. set to Pu.'
+                sta_ra_ts = 'PUSHCHIN'
+        
         # obs-objects for delay calculation:
         for staSh, sta in self.stations.iteritems():
             # check whether this station is actually wanted:
@@ -170,8 +182,17 @@ class vispy(object):
                     else:
                         obs_type = 'C' # calibrator observations
                     # append
-                    obsz.append( obs([self.inp.phase_center, sta], sou, obs_type, \
-                                     self.exp_name, sou_radec, inp=inp_swchs) )
+                    if staSh != 'Ra':
+                        obsz.append( obs([self.inp.phase_center, sta], \
+                                         sou, obs_type, \
+                                         self.exp_name, sou_radec, inp=inp_swchs) )
+                    else:
+                        # if RA was observing, add Pu or Gt to the station list, 
+                        # it'll be used for calculating formatter time offset for 
+                        # the RA downlink stream
+                        obsz.append( obs([self.inp.phase_center, sta, sta_ra_ts], \
+                                         sou, obs_type, \
+                                         self.exp_name, sou_radec, inp=inp_swchs) )
                                  
         # set input switches for Doppler correction
         if delays and dopplerPhaseCor:
@@ -964,7 +985,7 @@ def smoothie(ob):
 #%%
 def main():
     # create parser
-    parser = argparse.ArgumentParser(prog='python vispy.py', \
+    parser = argparse.ArgumentParser(prog='vispy.py', \
                 formatter_class=argparse.RawDescriptionHelpFormatter,\
                 description='Computation of VLBI delays.')
     # optional arguments

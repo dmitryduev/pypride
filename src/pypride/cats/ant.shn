@@ -22,6 +22,7 @@ EVPATORI   ev
 FD-VLBA    fd
 FORTLEZA   fz
 GBT-VLBA   gb
+GBTS       gt
 GEOCENTR   gc
 HARTRAO    hh
 HART15M    ht
@@ -31,6 +32,7 @@ HOBART12   hb
 HOBART26   ho
 JODRELL1   jb
 JODRELL2   jb
+KALYAZIN   kl
 KASHIM11   k1
 KATH12M    ke
 KP-VLBA    kp

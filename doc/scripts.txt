@@ -47,6 +47,11 @@ pointings.py
 Produces telescope spacecraft pointings in various formats/flavours. Useful for observations planning.
 
 ##########################################################################################
+ra2vex.py
+
+Add RadioAstron-specific entries to a vex-file.
+
+##########################################################################################
 raeph.py
 
 Outputs names of raw RadioAstron OD files suitable for an experiment in question. See radioastron-sfxc.txt for more details.

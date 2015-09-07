@@ -78,6 +78,7 @@ $$
     FTD 7900          -29.51           28.23           23.46    as FORTORDS
     GEOCENTR            0.0             0.0             0.0     intuition
     GBT-VLBA          -13.37           -2.09            2.52    2005d_3.vel
+    GBTS              -13.37           -2.09            2.52    as GBT-VLBA
     GGAO7108          -14.22           -0.21            0.11    2005d_3.vel
     GIFU11            -10.53           -2.26          -12.87    as GIFU 
     GIFU3             -10.53           -2.26          -12.87    2005d_3.vel
@@ -103,6 +104,7 @@ $$
     JODRELL2          -11.69           17.05            9.30    NNR-NUVEL1A
     JPL MV1           -31.06           18.32            8.81    2005d_3.vel
     KAINAN            -20.20           -8.26          -12.64    2005d_3.vel
+    KALYAZIN            0.00            0.00            0.00    ga035a.vex
     KANOZAN            -0.10            6.10          -11.10    2005d_3.vel
     KARLBURG            6.40           23.70          -10.40    2005d_3.vel
     KASHIM11           -0.30            5.20          -11.80    as KASHIM34 
