@@ -167,6 +167,9 @@ class vispy(object):
                 print 'could not guess RadioAstron tracking station. set to Pu.'
                 sta_ra_ts = 'PUSHCHIN'
         
+        # known (deep space) spacecraft:
+        spacecraft = ['vex', 'mex', 'rosetta', 'her', 'gaia', 'ce3']
+        
         # obs-objects for delay calculation:
         for staSh, sta in self.stations.iteritems():
             # check whether this station is actually wanted:
@@ -177,9 +180,7 @@ class vispy(object):
                         obs_type = 'R' # radioastron observations
                     elif sou.lower()[0:2]=='pr' or sou.lower()[0:2]=='pg':
                         obs_type = 'G' # gnss observations
-                    elif sou.lower()=='vex' or sou.lower()=='mex' or \
-                         sou.lower()=='her' or sou.lower()=='gaia' or \
-                         sou.lower()=='ce3':
+                    elif sou.lower() in spacecraft:
                         obs_type = 'S' # vex/mex/herschel/gaia/ce3 observations
                     else:
                         obs_type = 'C' # calibrator observations
@@ -210,10 +211,8 @@ class vispy(object):
                     obs_type = 'R' # radioastron observations
                 elif sou.lower()[0:2]=='pr' or sou.lower()[0:2]=='pg':
                     obs_type = 'G' # gnss observations
-                elif sou.lower()=='vex' or sou.lower()=='mex' or \
-                     sou.lower()=='her' or sou.lower()=='gaia' or \
-                     sou.lower()=='ce3':
-                    obs_type = 'S' # vex/mex/herschel/gaia/ce3 observations
+                elif sou.lower() in spacecraft:
+                    obs_type = 'S' # vex/mex/rosetta/herschel/gaia/ce3 observations
                 else:
                     obs_type = 'C' # calibrator observations
                     continue # no correction applies
@@ -414,8 +413,8 @@ class vispy(object):
                              beg+datetime.timedelta(days=d), load=False)
         
         # spacecraft ephs, if they were observed:
-        sou = ['VEX', 'MEX', 'HER', 'RA', 'GAIA', 'CE3']
-        soutyp = ['S', 'S', 'S', 'R', 'S', 'S']
+        sou = ['VEX', 'MEX', 'HER', 'ROSETTA', 'RA', 'GAIA', 'CE3']
+        soutyp = ['S', 'S', 'S', 'S', 'R', 'S', 'S']
         # gnss
         # make a list with GLONASS/GPS satellite names (with a margin, up to 40)
         for gg in range(1,41):

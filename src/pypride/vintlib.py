@@ -88,7 +88,7 @@ if not os.path.isdir(os.path.join(abs_path, 'meteo')):
     os.makedirs(os.path.join(abs_path, 'meteo'))
 if not os.path.isdir(os.path.join(abs_path, 'sc_eph')):
     os.makedirs(os.path.join(abs_path, 'sc_eph'))
-for sc_name in ('mex', 'vex', 'radioastron', 'gnss', 'gaia'):
+for sc_name in ('mex', 'vex', 'rosetta', 'radioastron', 'gnss', 'gaia'):
     pth = os.path.join(abs_path, 'sc_eph','raw_'+sc_name)
     if not os.path.isdir(pth):
         os.makedirs(pth)
@@ -629,14 +629,14 @@ def freqConst(cat_file='cats/sc.freq', sc=None):
 '''
 def getESAraweph(source, orb_path='.', replaceDE=True):
     ''' 
-    Download raw ephemeride files for VEX and MEX
+    Download raw ephemeride files for VEX, MEX, and ROSETTA
     '''
     if internet_on():
-        eph_url = 'http://tasc.esa.int/data/' + source.upper()
+        eph_url = 'http://tasc.esa.int/data/' + source[0:3].upper()
         response = urllib2.urlopen(eph_url)
         html = response.read()
         html = html.split('\n')
-        p = re.compile('(?<=HREF=")(V|M)ORB_\d.*gz(?=">)', flags=re.IGNORECASE)
+        p = re.compile('(?<=HREF=")(V|M|R)ORB_\d.*gz(?=">)', flags=re.IGNORECASE)
         orbFiles = []
         # get list of orb files
         for line in html:
@@ -915,6 +915,8 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
             # add barycentric r/v of cbody at CT:
             if source.lower()=='vex':
                 cbodyState = pleph(jd, 2, 12, jpl_eph)
+            elif source.lower() in ('her', 'rosetta'):
+                cbodyState = pleph(jd, 4, 12, jpl_eph)
             elif source.lower()=='mex':
                 cbodyState = pleph(jd, 4, 12, jpl_eph)
             else:
@@ -13009,6 +13011,8 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp, \
         if sou_type=='S' and (source.lower()!='gaia' and source.lower()!='ce3'):        
             if source.lower()=='mex': paddLeft=50
             if source.lower()=='vex': paddLeft=30
+            if source.lower()=='her': paddLeft=10
+            if source.lower()=='rosetta': paddLeft=90
         else:
             paddLeft = 1 # much more than enough for GNSS/RA/Gaia
     else:
