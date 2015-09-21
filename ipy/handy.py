@@ -104,16 +104,16 @@ inp = inp_set('inp.cfg')
 #ob = obs(['GEOCENTR', 'ONSALA60'], 'MEX', 'S', inp=inp_swchs) # freq in Hz!!
 #ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
 
-#t_start = datetime(2013,12,28,23,59,30)
-#t_stop  = datetime(2013,12,29,0,1,00)
-#t_step = 1 # seconds
+t_start = datetime(2013,12,28,23,59,30)
+t_stop  = datetime(2013,12,29,0,1,00)
+t_step = 1 # seconds
 #t_start = datetime(2013,12,28,21,30,00)
 #t_stop  = datetime(2013,12,28,22,30,00)
 #t_step = 10 # seconds
-#inp_swchs = inp.get_section('all') #default input switches (all False)
-#inp_swchs['delay_calc'] = True
-#ob = obs(['GEOCENTR', 'TIANMA65'], 'MEX', 'S', inp=inp_swchs) # freq in Hz!!
-#ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
+inp_swchs = inp.get_section('all') #default input switches (all False)
+inp_swchs['delay_calc'] = True
+ob = obs(['GEOCENTR', 'TIANMA65'], 'MEX', 'S', inp=inp_swchs) # freq in Hz!!
+ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
 
 #t_start = datetime(2013,12,28,18,20,0)
 #t_stop  = datetime(2013,12,29,18,30,0)
@@ -139,13 +139,13 @@ inp = inp_set('inp.cfg')
 
 #t_start = datetime(2013,12,29,11,30,0)
 #t_stop  = datetime(2013,12,29,19,5,0)
-t_start = datetime(2013,12,29,8,20,0)
-t_stop  = datetime(2013,12,29,18,30,0)
-t_step = 1 # seconds
-inp_swchs = inp.get_section('all')
-inp_swchs['delay_calc'] = True
-ob = obs(['GEOCENTR','MK-VLBA'],'MEX','S', inp=inp_swchs) # freq in Hz!!
-ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
+#t_start = datetime(2013,12,29,8,20,0)
+#t_stop  = datetime(2013,12,29,18,30,0)
+#t_step = 1 # seconds
+#inp_swchs = inp.get_section('all')
+#inp_swchs['delay_calc'] = True
+#ob = obs(['GEOCENTR','MK-VLBA'],'MEX','S', inp=inp_swchs) # freq in Hz!!
+#ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
 
 #t_start = datetime(2013,12,1,2,0,0)
 #t_stop  = datetime(2013,12,1,3,0,0)
