@@ -17104,7 +17104,8 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 # 
 #==============================================================================
 '''
-def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg):
+def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
+              output=False):
     '''
     Compute pointings on spacecraft for a list of stations
     
@@ -17113,8 +17114,14 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg):
     t_step - time step in seconds
     
     cfg - input config file location
+
+    output - produce a txt-damp or not
     
     output path is set in cfg['out_path']
+    
+    Function outputs an array of datetime objects with obs epochs,
+    RA/Decs for J2000 and date in radians and Az/El in degrees
+
     '''
     
     ''' load input sittings: '''
@@ -17259,87 +17266,88 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg):
     
     #%% 
     ''' save to files '''
-    
-    # gc is the first station, so skip it
-    stations_short = shname(stations, inp['shnames_cat'], \
-                                        inp['shnames_cat_igs'])
-    
-    date_string = date_t_start.strftime("%y%m%d")
-    
-    for jj, stash in enumerate(stations_short):
-        print 'Outputting {:s}'.format(stash)
-        # save AzEls to human-readable text-files
-        with open(inp['out_path']+'/azel.'+source.lower()+'.'+\
-                  date_string+'.'+stash.lower(),'w') as f:
-            for ii, tstamp in enumerate(ob.tstamps):
-                line = str(tstamp)+ '  '
-                az = azels[ii,jj,0]
-                el = azels[ii,jj,1]
-                azel = np.hstack((az, el))
-                azel_str = \
-                   'az = {:010.6f}  el = {:10.6f}\n'\
-                   .format(*azel) # '{:06.2f} {:6.2f}\n'\
-                line += azel_str
-                f.write(line)
-        # save AzEls to human-readable text-files in GreenBank format
-        if stash.lower()=='gb':
-            with open(inp['out_path']+'/azel.gbt.'+source.lower()+'.'+\
+    if output:
+        stations_short = shname(stations, inp['shnames_cat'], \
+                                            inp['shnames_cat_igs'])
+        
+        date_string = date_t_start.strftime("%y%m%d")
+        
+        for jj, stash in enumerate(stations_short):
+            print 'Outputting {:s}'.format(stash)
+            # save AzEls to human-readable text-files
+            with open(inp['out_path']+'/azel.'+source.lower()+'.'+\
                       date_string+'.'+stash.lower(),'w') as f:
-                f.write('# {:s} tracking table (angles in degrees)\n'.\
-                        format(source.upper()))
-                f.write('format=ephemeris\n')
-                f.write('name={:s}\n'.format(source.upper()))
-                f.write('coordmode=azel\n')
-                f.write('head=date    utc        az          el\n')
                 for ii, tstamp in enumerate(ob.tstamps):
-                    line = tstamp.strftime('%Y-%m-%d %H:%M:%S')+ '   '
+                    line = str(tstamp)+ '  '
                     az = azels[ii,jj,0]
                     el = azels[ii,jj,1]
                     azel = np.hstack((az, el))
-                    azel_str = '{:10.6f}  {:10.6f}\n'.format(*azel)
+                    azel_str = \
+                       'az = {:010.6f}  el = {:10.6f}\n'\
+                       .format(*azel) # '{:06.2f} {:6.2f}\n'\
                     line += azel_str
                     f.write(line)
-        # save pointingsJ2000 (J2000 RA/Decs) to human-readable text-files
-        with open(inp['out_path']+'/pointing.J2000.'+source.lower()+'.'+\
-                  date_string+'.'+stash.lower(),'w') as f:
-            for ii, tstamp in enumerate(ob.tstamps):
-                line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
-                ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
-                dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
-                radec = np.hstack((ra.hms, dec.dms))
-                radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
-                radec_str = \
-          'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"\n'\
-                   .format(*radec)
-                line += radec_str
-                f.write(line)
-        # save pointingsJ2000 to Giuseppe-friendly text-files
-        fout = os.path.join(inp['out_path'], ''.join((source.lower(), '_', \
-                                       stash.lower(), '_', date_string, '.txt')) )
-        with open(fout, 'w') as f:
-            for ii, tstamp in enumerate(ob.tstamps):
-                line = ''.join((' source=\'', tstamp.strftime("%H%M%S"), '\' \t '))
-                ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
-                dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
-                radec = np.hstack((ra.hms, dec.dms))
-                radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
-                radec_str = 'ra={:02.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[0:3]) 
-                radec_str += 'dec={:+.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[3:])
-                radec_str +=  'equinox=\'j2000\' /\n'
-                line += radec_str
-                f.write(line)
-        # save pointingsDate (apparent RA/Decs) to human-readable text-files
-        with open(inp['out_path']+'/pointing.apparent.'+source.lower()+'.'+\
-                  date_string+'.'+stash.lower(),'w') as f:
-            for ii, tstamp in enumerate(ob.tstamps):
-                line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
-                ra = Angle(pointingsDate[ii,jj,0], unit=units.rad)
-                dec = Angle(pointingsDate[ii,jj,1], unit=units.rad)
-                radec = np.hstack((ra.hms, dec.dms))
-    
-                radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
-                radec_str = \
-          'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"\n'\
-                   .format(*radec)
-                line += radec_str
-                f.write(line)
+            # save AzEls to human-readable text-files in GreenBank format
+            if stash.lower()=='gb':
+                with open(inp['out_path']+'/azel.gbt.'+source.lower()+'.'+\
+                          date_string+'.'+stash.lower(),'w') as f:
+                    f.write('# {:s} tracking table (angles in degrees)\n'.\
+                            format(source.upper()))
+                    f.write('format=ephemeris\n')
+                    f.write('name={:s}\n'.format(source.upper()))
+                    f.write('coordmode=azel\n')
+                    f.write('head=date    utc        az          el\n')
+                    for ii, tstamp in enumerate(ob.tstamps):
+                        line = tstamp.strftime('%Y-%m-%d %H:%M:%S')+ '   '
+                        az = azels[ii,jj,0]
+                        el = azels[ii,jj,1]
+                        azel = np.hstack((az, el))
+                        azel_str = '{:10.6f}  {:10.6f}\n'.format(*azel)
+                        line += azel_str
+                        f.write(line)
+            # save pointingsJ2000 (J2000 RA/Decs) to human-readable text-files
+            with open(inp['out_path']+'/pointing.J2000.'+source.lower()+'.'+\
+                      date_string+'.'+stash.lower(),'w') as f:
+                for ii, tstamp in enumerate(ob.tstamps):
+                    line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
+                    ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
+                    dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
+                    radec = np.hstack((ra.hms, dec.dms))
+                    radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
+                    radec_str = \
+              'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"\n'\
+                       .format(*radec)
+                    line += radec_str
+                    f.write(line)
+            # save pointingsJ2000 to Giuseppe-friendly text-files
+            fout = os.path.join(inp['out_path'], ''.join((source.lower(), '_', \
+                                           stash.lower(), '_', date_string, '.txt')) )
+            with open(fout, 'w') as f:
+                for ii, tstamp in enumerate(ob.tstamps):
+                    line = ''.join((' source=\'', tstamp.strftime("%H%M%S"), '\' \t '))
+                    ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
+                    dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
+                    radec = np.hstack((ra.hms, dec.dms))
+                    radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
+                    radec_str = 'ra={:02.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[0:3]) 
+                    radec_str += 'dec={:+.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[3:])
+                    radec_str +=  'equinox=\'j2000\' /\n'
+                    line += radec_str
+                    f.write(line)
+            # save pointingsDate (apparent RA/Decs) to human-readable text-files
+            with open(inp['out_path']+'/pointing.apparent.'+source.lower()+'.'+\
+                      date_string+'.'+stash.lower(),'w') as f:
+                for ii, tstamp in enumerate(ob.tstamps):
+                    line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
+                    ra = Angle(pointingsDate[ii,jj,0], unit=units.rad)
+                    dec = Angle(pointingsDate[ii,jj,1], unit=units.rad)
+                    radec = np.hstack((ra.hms, dec.dms))
+        
+                    radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
+                    radec_str = \
+              'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"\n'\
+                       .format(*radec)
+                    line += radec_str
+                    f.write(line)
+                    
+    return ob.tstamps, pointingsJ2000, pointingsDate, azels
