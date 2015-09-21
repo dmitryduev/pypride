@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-A library containing a handful of usefull functions.
+A library containing a handful of useful functions.
 
 Created on Wed Oct  2 16:23:02 2013
 
@@ -12292,29 +12292,29 @@ def vint_s(ob):
                                   const.L_C, const.C, const.AE)
             
             ## Near-field Fukushima:
-#            if ob.sou_type!='C' and inp['nf_model']=='Fukushima':
-            dtau = delay_nf_fukushima(JD, CT, dd, \
-                                state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
-                                const, sta[0], sta[1])
-            dtau_ = dtau
-            print 'dtau_ = {:.18f}'.format(dtau)
+            if ob.sou_type!='C' and inp['nf_model']=='Fukushima':
+                dtau = delay_nf_fukushima(JD, CT, dd, \
+                                    state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
+                                    const, sta[0], sta[1])
+#            dtau_ = dtau
+#            print 'dtau_ = {:.18f}'.format(dtau)
 
             # Near-field Moyer/Duev aka LTea42:
-#            if ob.sou_type!='C' and inp['nf_model']=='Moyer':
-            dtau = delay_moyer(JD, CT*86400.0, dd*86400.0, sta[0].r_GCRS, \
-                              sta[1].r_GCRS, sta[1].v_GCRS, sta[1].a_GCRS,\
-                              state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
-                              const.GM, const.TDB_TCB, \
-                              const.L_C, const.C, inp)
-            print 'dtau__ = {:.18f}'.format(dtau)
-            dtau__ = dtau
-            dtau = delay_nf_moyer(JD, CT, dd, \
-                                  state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
-                                  const, sta[0], sta[1], inp, UTC)
-            print 'dtau = {:.18f}'.format(dtau)
-            print tstamp, dtau_ - dtau, dtau_ - dtau__
+            if ob.sou_type!='C' and inp['nf_model']=='Moyer':
+#                dtau = delay_moyer(JD, CT*86400.0, dd*86400.0, sta[0].r_GCRS, \
+#                                  sta[1].r_GCRS, sta[1].v_GCRS, sta[1].a_GCRS,\
+#                                  state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
+#                                  const.GM, const.TDB_TCB, \
+#                                  const.L_C, const.C, inp)
+#                print 'dtau__ = {:.18f}'.format(dtau)
+#                dtau__ = dtau
+                dtau = delay_nf_moyer(JD, CT, dd, \
+                                      state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
+                                      const, sta[0], sta[1], inp, UTC)
+                print 'dtau = {:.18f}'.format(dtau)
+                print tstamp, dtau_ - dtau, dtau_ - dtau__
 #            print dtau_, dtau
-            raw_input()
+#            raw_input()
             
             ''' stack delays due to all effects together: '''
             # RadioAstron far-field:
