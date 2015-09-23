@@ -116,8 +116,16 @@ if __name__ == '__main__':
     
     # load input scf-file:
     scf_raw = load_scf(f_lines)
-    t_raw = np.array([datetime.datetime(*map(int, entry[:6]), \
-            microsecond=int(np.round((entry[5]-np.fix(entry[5]))*1e6,6))) \
+    
+    # check for bad entries:
+    xx = [float(entry[5]) for entry in scf_raw]
+    for i,x in enumerate(xx):
+        if x>=60.0:
+            print 'Bad entry \'{:f}\' on line {:d}'.format(x,i)
+
+    t_raw = np.array([datetime.datetime(*map(int, entry[:5]), \
+                      second=int(np.floor(float(entry[5]))), \
+                      microsecond=int(np.round((entry[5]-np.fix(entry[5]))*1e6,6))) \
                                                          for entry in scf_raw])
     
     # check for *missed* overlaps:

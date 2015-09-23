@@ -3,7 +3,7 @@
 """
 Created on Wed Feb  4 20:05:45 2015
 
-@author: oasis
+@author: Dmitry A. Duev
 """
 
 import struct # pack/read binary data

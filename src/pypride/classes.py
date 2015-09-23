@@ -2,9 +2,9 @@
 """
 Created on Mon Oct  7 17:05:04 2013
 
-Definitions of classes used in pyp
+Definitions of classes used in pypride
 
-@author: oasis
+@author: Dmitry A. Duev
 """
 
 import ConfigParser
@@ -308,7 +308,7 @@ class obs(object):
                 echo = 'time range: {:s} - {:s}, n_obs: {:d}'.\
                         format(str(self.scanStartTimes[0]), \
                                str(self.scanStopTimes[-1]), len(self.tstamps))
-            return 'probably a fake obs for one reason or another\n' + echo
+            return 'probably a fake obs object for one reason or another\n' + echo
 
 #    def __str__(self):
 #        if self.tstamps == []:

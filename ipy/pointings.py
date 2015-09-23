@@ -11,7 +11,7 @@ RA/Decs for J2000 and date in radians and Az/El in degrees
 
 Created on Fri Jan 17 22:52:40 2014
 
-@author: oasis
+@author: Dmitry A. Duev
 """
 
 from pypride.vintlib import pointings
@@ -31,9 +31,13 @@ if __name__=='__main__':
     stations = ['BADARY', 'CEDUNA']
     
     ''' time slot '''
-    date_t_start = datetime.datetime(2013,12,28,23,57,0)
-    date_t_stop  = datetime.datetime(2013,12,29,0,1,0)
-    t_step = 10 # seconds
+#    date_t_start = datetime.datetime(2013,12,28,23,57,0)
+#    date_t_stop  = datetime.datetime(2013,12,29,0,1,0)
+#    t_step = 10 # seconds
+    
+    date_t_start = datetime.datetime(2015,9,24,2,0,0)
+    date_t_stop  = datetime.datetime(2015,9,24,3,0,0)
+    t_step = 20*60 # seconds
     
     # output txt dumps?
     output = False

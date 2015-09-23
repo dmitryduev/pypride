@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # executable command line scripts
     BIN = 'bin/'
     ls_bin = os.listdir(BIN)
-    ls_bin = [BIN+l for l in ls_bin if l[-3:]=='.py']
+    ls_bin = [os.path.join(BIN,l) for l in ls_bin if l[-3:]=='.py']
     
     from numpy.distutils.core import setup
     setup(name = NAME,
@@ -31,7 +31,7 @@ if __name__ == '__main__':
           url           = 'https://github.com/dmitryduev/pypride',
           platforms     = ['Linux', 'MacOS X'],
           licence       = 'GNU GPL v2',
-          version       = '1.0.9',
+          version       = '1.0.10',
           packages      = [NAME],
           package_dir   = {NAME: 'src/pypride'},
 #          py_modules    = ['mod1', 'pkg.mod2'],

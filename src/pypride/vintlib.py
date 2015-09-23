@@ -621,7 +621,7 @@ def freqConst(cat_file='cats/sc.freq', sc=None):
 
 '''
 #==============================================================================
-# Download raw ephemeride files for VEX and MEX
+# Download raw ephemeride files for ESA spacecraft
 #==============================================================================
 '''
 def getESAraweph(source, orb_path='.', replaceDE=True):
@@ -640,12 +640,40 @@ def getESAraweph(source, orb_path='.', replaceDE=True):
             match = p.search(line)
             if match!=None: # if there's a match
                 orbFiles.append(match.group(0))
-        # check contents of orb_path folder
+        
+        # check contents of orb_path folder (final raw ephs:)
         orbFilesLocal = [ f for f in os.listdir(orb_path) \
                             if os.path.isfile(os.path.join(orb_path, f)) and \
-                            ('.gz' not in f) and ('ORB' in f)]
+                            ('.gz' not in f) and ('ORB_0' in f)]
         # find updates
         new = [f for f in orbFiles if f[:-3] not in orbFilesLocal]
+        
+        # check contents of orb_path folder (planned raw ephs:)
+        if source[0:3].upper()=='MEX' and 1==0:
+            p = re.compile('(?<=HREF=")MORB_pln\d.*gz(?=">)', flags=re.IGNORECASE)
+            plnOrbFiles = []
+            # get list of orb files
+            for line in html:
+                match = p.search(line)
+                if match!=None: # if there's a match
+                    plnOrbFiles.append(match.group(0))
+            if len(plnOrbFiles)>0:
+                # get only the latest:
+                plnOrbFile = sorted(plnOrbFiles)[-1]
+            else:
+                plnOrbFile = None
+#            print plnOrbFile
+            
+            plnOrbFilesLocal = [ f for f in os.listdir(orb_path) \
+                            if os.path.isfile(os.path.join(orb_path, f)) and \
+                            ('.gz' not in f) and ('ORB_pln' in f)]
+            if plnOrbFile is not None and plnOrbFile[:-3] not in plnOrbFilesLocal:
+                # remove old planned data:
+                for fOld in plnOrbFilesLocal:
+                    os.remove(os.path.join(orb_path, fOld))
+                # fetch the new file:
+                new.append(plnOrbFile)
+        
         # get 'em. if they exist
         if len(new)>0:
             for fNew in new:
@@ -1288,6 +1316,12 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, \
 #            print t_start, t_end, eph_start, eph_end
             print 'T_obs not within existing BCRS ephemeris time range. Updating '\
                   +sc_bcrs_eph+'...'
+        
+        # start time is in the future? notify the user!
+        if t_start > datetime.datetime.now():
+            print 'Note that start date is in the future! '+\
+                  'Using planning ephs. \n'+\
+                  'Force update computed ephs when final version is available!'
         
         # time slot
         t_start = [t_start.year, t_start.month, t_start.day,\
@@ -12311,8 +12345,8 @@ def vint_s(ob):
                 dtau = delay_nf_moyer(JD, CT, dd, \
                                       state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
                                       const, sta[0], sta[1], inp, UTC)
-                print 'dtau = {:.18f}'.format(dtau)
-                print tstamp, dtau_ - dtau, dtau_ - dtau__
+#                print 'dtau = {:.18f}'.format(dtau)
+#                print tstamp, dtau_ - dtau, dtau_ - dtau__
 #            print dtau_, dtau
 #            raw_input()
             

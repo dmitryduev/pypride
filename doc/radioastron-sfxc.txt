@@ -32,7 +32,7 @@ On jop75 the script is run as a cron job daily at noon.
 
 usage: raeph.py [-h] [-s SCF] [-u USER] [-p PWD] vexfile
 
-Create raw RA eph files for use with PYP.
+Create raw RA eph files for use with PYPRIDE.
 
 positional arguments:
   vexfile               input vex-file
@@ -48,7 +48,7 @@ optional arguments:
 Usually, the latest file(s) is what is wanted.
 
 
-4) RadioAstron ephemerides that are used in PYP must be split on a daily basis, have names of a form RA%YY%MM%DDj.scf, and be placed in <path_to_pypride_installation>/sc_eph/raw_radioastron/. 
+4) RadioAstron ephemerides that are used in pypride must be split on a daily basis, have names of a form RA%YY%MM%DDj.scf, and be placed in <path_to_pypride_installation>/sc_eph/raw_radioastron/. 
 If there are more than 1 file that need to be used (from output of step 2), it is recommended to stick them into one file with an arbitrary name without paying attention to the header, but paying attention to a possible overlapping.
 A script split-scf.py splits the input scf-file (if necessary) on a daily basis, and places the output in <path_to_pypride_installation>/sc_eph/raw_radioastron/:
 
