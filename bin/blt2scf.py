@@ -58,7 +58,7 @@ if __name__ == '__main__':
     header = f_lines.pop(0).split()
     day_start = datetime.datetime.strptime(header[0], '%Y%m%d')
     t_start = datetime.datetime.strptime(header[0]+header[1], '%Y%m%d%H%M%S.%f')
-    t_start = t_start - datetime.timedelta(minutes=args.dmtutc) # Moscow time to UTC
+    t_start = t_start - datetime.timedelta(minutes=int(args.dmtutc)) # Moscow time to UTC
     t_step = datetime.timedelta(seconds=float(header[-1]))
     t_stop = t_start+t_step*(len(f_lines)-1)
 #    print t_start, t_step
