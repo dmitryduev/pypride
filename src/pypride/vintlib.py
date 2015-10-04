@@ -17280,6 +17280,7 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
             rDate = iau_PNM00A(JD, TT)
             xyzDate = np.dot(rDate, xyz2000)
             dec, ra = cart2sph(xyzDate)[1:]
+            if ra < 0: ra += 2.0*np.pi
     #        print st.name, ra, dec
             pnt_Date_sta.append([ra, dec])
             if st.name == 'GEOCENTR' or st.name == 'RA':
