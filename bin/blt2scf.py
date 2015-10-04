@@ -45,7 +45,8 @@ if __name__ == '__main__':
     # optional arguments
     parser.add_argument('-s', '--split', action='store_true',
                         help='split to multiple files if it goes overnight')
-
+    parser.add_argument('-t', '--dmtutc', default=3,
+                        help='Moscow Time - UTC in h. defaults to 3 h.')
     # positional argument
     parser.add_argument('blt', type=str, help='input blt-file')    
     args = parser.parse_args()
@@ -57,6 +58,7 @@ if __name__ == '__main__':
     header = f_lines.pop(0).split()
     day_start = datetime.datetime.strptime(header[0], '%Y%m%d')
     t_start = datetime.datetime.strptime(header[0]+header[1], '%Y%m%d%H%M%S.%f')
+    t_start = t_start - datetime.timedelta(minutes=dmtutc) # Moscow time to UTC
     t_step = datetime.timedelta(seconds=float(header[-1]))
     t_stop = t_start+t_step*(len(f_lines)-1)
 #    print t_start, t_step
