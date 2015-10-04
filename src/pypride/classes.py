@@ -1353,10 +1353,9 @@ class site(object):
         ## Earth:
         rrd = pleph(JD + t_1, 3, 12, jpl_eph)
         earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-        if norm(self.r_BCRS)<1e-3 and norm(self.r_GCRS)>1e-3:
-            # low accuracy is good enough for this application:
-            self.r_BCRS = earth[:,0] + self.r_GCRS
-        
+        # low accuracy is good enough for this application:
+        self.r_BCRS = earth[:,0] + self.r_GCRS
+
         lt_01 = norm(R_0_0 - self.r_BCRS)/C
         
         mjd = JD - 2400000.5
@@ -1422,6 +1421,7 @@ class site(object):
         dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2)) # declination
         if ra < 0: ra += 2.0*np.pi
 #        print ra, dec
+#        print ra*12/np.pi, dec*180/np.pi
 #        raw_input()
 #        self.lt = lt_01
 #        self.ra = ra

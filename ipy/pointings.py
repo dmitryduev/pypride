@@ -50,7 +50,7 @@ if __name__=='__main__':
 #    date_t_stop  = datetime.datetime(2015,10,31,23,0,0)
 #    date_t_start = datetime.datetime(2015,11,2,18,0,0)
 #    date_t_stop  = datetime.datetime(2015,11,2,19,0,0)
-    t_step = 10 # seconds
+    t_step = 60 # seconds
     
     # output txt dumps?
     output = True

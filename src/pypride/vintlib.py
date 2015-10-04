@@ -17202,7 +17202,6 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     
     # load ephemeris
     eph = load_sc_eph(sou_type, source, date_t_start, date_t_stop, inp)
-    
         
     #%% 
     ''' actual pointings '''
@@ -17215,7 +17214,6 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
                                    ob.tstamps[0].month,ob.tstamps[0].day)
     
     for tstamp in ob.tstamps:
-        
         ''' set dates: '''
         mjd = mjuliandate(tstamp.year, tstamp.month, tstamp.day)
         dd = mjd - mjd_start
@@ -17271,12 +17269,13 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
         azel_sta = []
         for st in sta:
             # J2000 RA/Dec:
+#            print eph.CT[0]<= CT + dd <= eph.CT[-1]
             _, ra, dec = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, CT+dd, \
                                         inp['jpl_eph'])
             pnt_J2000_sta.append([ra, dec])
     #        print st.name, ra, dec
             # RA/Dec to date:
-            xyz2000 = sph2cart(np.array([1.0,dec,ra]))
+            xyz2000 = sph2cart(np.array([1.0, dec, ra]))
             rDate = iau_PNM00A(JD, TT)
             xyzDate = np.dot(rDate, xyz2000)
             dec, ra = cart2sph(xyzDate)[1:]
