@@ -5,7 +5,7 @@ Created on Sun Jan 26 23:21:44 2014
 @author: Dmitry A. Duev
 """
 
-from classes import *
+from pypride.classes import *
 from pypride.vintlib import *
 from datetime import datetime
 

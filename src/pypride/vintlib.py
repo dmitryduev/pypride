@@ -27,7 +27,7 @@ import gzip
 from copy import deepcopy
 
 # import all class declarations
-from classes import *
+from pypride.classes import *
 
 ## fortran stuff
 #from lagint import lagint

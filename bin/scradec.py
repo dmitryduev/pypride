@@ -9,7 +9,7 @@ Calculate RA/Dec of a spacecraft given a vex-file with the schedule
 
 """
 
-from classes import ephem
+from pypride.classes import ephem
 from pypride.vintlib import inp_set, load_sc_eph
 from pypride.vex import Vex
 import datetime
