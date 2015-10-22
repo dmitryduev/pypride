@@ -17163,8 +17163,13 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     inp = inp.get_section('all')
     
     ''' mkdir '_out' if non existend '''
-    if not os.path.isdir(os.path.join(inp['out_path'])):
-        os.makedirs(os.path.join(inp['out_path']))
+    if inp['out_path'][0] == '/': # abs path?
+        if not os.path.isdir(os.path.join(inp['out_path'])):
+            os.makedirs(os.path.join(inp['out_path']))
+    else:
+        abs_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
+        if not os.path.isdir(os.path.join(abs_path, inp['out_path'])):
+            os.makedirs(os.path.join(abs_path, inp['out_path']))
     
     const = constants()
     

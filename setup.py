@@ -31,7 +31,7 @@ if __name__ == '__main__':
           url           = 'https://github.com/dmitryduev/pypride',
           platforms     = ['Linux', 'MacOS X'],
           licence       = 'GNU GPL v2',
-          version       = '1.0.18',
+          version       = '1.0.19',
           packages      = [NAME],
           package_dir   = {NAME: 'src/pypride'},
 #          py_modules    = ['mod1', 'pkg.mod2'],
