@@ -1143,7 +1143,7 @@ class site(object):
         ven_star = np.dot(self.vw.T, Crust_star)
         
         el = np.arcsin( ven_star[0] )
-        az = np.arctan2(ven_star[1],ven_star[2])
+        az = np.arctan2(ven_star[1], ven_star[2])
         if az < 0.0:
             az += 2.0*np.pi
         

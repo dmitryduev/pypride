@@ -11854,9 +11854,9 @@ def vint_s(ob):
     ''' mkdir '_out/exp_name' if non existend '''
     exp_name = ob.exp_name
 
-    if not os.path.isdir(inp['out_path']+'/'+exp_name) and \
+    if not os.path.isdir(os.path.join(inp['out_path'], exp_name)) and \
             (exp_name is not None or len(exp_name)>0):
-        os.makedirs(inp['out_path']+'/'+exp_name)
+        os.makedirs(os.path.join(inp['out_path'], exp_name))
     
     ''' init constants '''
     const = constants(inp['jpl_eph'])
@@ -17161,6 +17161,10 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     ''' load input sittings: '''
     inp = inp_set(cfg)
     inp = inp.get_section('all')
+    
+    ''' mkdir '_out' if non existend '''
+    if not os.path.isdir(os.path.join(inp['out_path'])):
+        os.makedirs(os.path.join(inp['out_path']))
     
     const = constants()
     
