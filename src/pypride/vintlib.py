@@ -48,7 +48,7 @@ except:
 #from pypride.vintflib import lagint, pleph, iau_xys00a_fort, admint2#, lagintt
 
 ## parallelism
-#import multiprocessing as mp
+import multiprocessing as mp
 
 #from decimal import *
 
@@ -1394,9 +1394,9 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
             inps_gtrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
 
         if parallel:  # Parallel way
-            n_cpu = multiprocessing.cpu_count()
+            n_cpu = mp.cpu_count()
             # create pool
-            pool = multiprocessing.Pool(np.min((n_cpu, len(inps_bcrs)))) #
+            pool = mp.Pool(np.min((n_cpu, len(inps_bcrs)))) #
             # asynchronously apply helper to each of inps
             '''bcrs'''
             result = pool.map_async(esa_eph_download_helper, inps_bcrs)
