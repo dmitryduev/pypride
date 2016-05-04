@@ -24,6 +24,7 @@ import urllib2
 from ftplib import FTP
 import paramiko # ssh client
 import gzip
+import collections
 from copy import deepcopy
 
 # import all class declarations
@@ -1257,15 +1258,234 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
 
 '''
 #==============================================================================
+# Create vispy eph-files for ESA spacecraft
+# [download from https://www.fd-tasc.info]
+#==============================================================================
+'''
+def esa_eph_download_helper(args):
+    sc_name, seg_start, seg_stop, ref_object, frame, scale = args
+    print(sc_name, seg_start, seg_stop, ref_object, frame, scale)
+    known_spacecraft = {'vex': 'Venus-Express', 'mex': 'Mars-Express', 'gai': 'Gaia'}
+    eph_url = 'https://www.fd-tasc.info/{:s}cmd-cgi-bin/seqgenExec.pl?'.format(sc_name) + \
+              'queryType=run&ops=ops_Routine&' + \
+              'job={:s}_job_tmpl_fdtool_crttab_state.dat&'.format(sc_name[0]) + \
+              'source=seqgenExec&opsConfig=opsSelect&jobConfig=jobTable&TIME_SCALE={:s}&'.format(scale) + \
+              'INITIAL_TIME={:s}&'.format(datetime.datetime.strftime(seg_start,
+                                                                     '%Y/%m/%d+%H:%M:%S.000')) + \
+              'FINAL_TIME={:s}&'.format(datetime.datetime.strftime(seg_stop,
+                                                                   '%Y/%m/%d+%H:%M:%S.000')) + \
+              'TIME_STEP=000+00:00:01.000&' + \
+              'OBJECT={:s}&'.format(known_spacecraft[sc_name]) + \
+              'REF_OBJECT={:s}&'.format(ref_object) + \
+              'FRAME={:s}&'.format(frame) + \
+              'LTC_FLAG=NO' + \
+              '&scenarioId=NEW_ID&inputCase=DEFAULT_case'
+
+    # these guys are just unable to unify things somehow...
+    if sc_name == 'vex':
+        eph_url = eph_url.replace('_Routine', '')
+
+    # get and parse response
+    response = urllib2.urlopen(eph_url)
+    html_seg = response.read()
+    # print html
+    html_seg = html_seg.split('\n')
+    html_seg = [l for l in html_seg if len(l) > 5 and (l.strip()[0] != '#' and l.strip()[0] != '<')]
+
+    # save current segment
+    return html_seg
+
+
+def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, parallel=True):
+    """
+    Let ESOC do all the transformations for us.
+
+    Note that they're using different JPL ephemerides for different spacecraft (e.g. DE405 for MEX and VEX)
+
+    This should be somehow addressed in the code revisions to come,
+    just as it was done when ESOC used to provide raw orbits with the actual
+    (varying) t_int steps and in the system where integration was carried out
+
+    :param sc_name:
+    :param start:
+    :param stop:
+    :return:
+    """
+
+    sc_name = sc_name.lower()
+
+    known_spacecraft = {'vex': 'Venus-Express', 'mex': 'Mars-Express', 'gai': 'Gaia'}
+    # 'ros':'Rosetta', 'lpf':'', 'pla':'', 'her':''
+    if sc_name not in known_spacecraft:
+        raise Exception('Spacecraft unknown')
+
+    # beidseitig padding:
+    t_start = start - datetime.timedelta(minutes=paddLeft)
+    t_stop = stop + datetime.timedelta(minutes=paddRight)
+
+    # date string:
+    date_string = start.strftime("%y%m%d")
+
+    # file names
+    sc_bcrs_eph = ''.join((sc_name, '.bcrs.tdb.', date_string, '.eph'))
+    sc_gcrs_eph = ''.join((sc_name, '.gcrs.utc.', date_string, '.eph'))
+    sc_gtrs_eph = ''.join((sc_name, '.gtrs.utc.', date_string, '.eph'))
+
+    # check whether the file with BCRS eph exists
+    if os.path.isfile(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph)):
+        eph_bc_exist = True
+    else:
+        eph_bc_exist = False
+    # if it does, check that T_obs is within the time slot of the existing ephemeris
+    t_obs_out_of_eph_boundary = False
+    if eph_bc_exist:
+        try:
+            # load it:
+            with open(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph), 'r') as f:
+                tmp = f.readlines()
+            firstLine = map(int, [float(x) for x in tmp[0].split()[0:6]])
+            lastLine = map(int, [float(x) for x in tmp[-1].split()[0:6]])
+            eph_start = datetime.datetime(*firstLine)
+            eph_stop = datetime.datetime(*lastLine)
+            if (t_start < eph_start) or (t_stop > eph_stop):
+                t_obs_out_of_eph_boundary = True
+        except:
+            t_obs_out_of_eph_boundary = True
+
+    # force update requested?
+    if eph_bc_exist and inp['sc_eph_force_update']:
+        print('Precalculated S/C ephs forced update requested.')
+        print('removing {:s}'.format(sc_bcrs_eph))
+        os.remove(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph))
+        print('removing {:s}'.format(sc_gcrs_eph))
+        os.remove(os.path.join(inp['sc_eph_cat'], sc_gcrs_eph))
+        print('removing {:s}'.format(sc_gtrs_eph))
+        os.remove(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph))
+
+    # now make/update the eph
+    if not eph_bc_exist or t_obs_out_of_eph_boundary:
+        if not eph_bc_exist:
+            print('S/C BCRS ephemeris file ' + sc_bcrs_eph + ' not found, creating...')
+        if t_obs_out_of_eph_boundary:
+            #            print t_start, t_end, eph_start, eph_end
+            print('T_obs not within existing BCRS ephemeris time range. Updating {:s}...'.format(sc_bcrs_eph))
+
+        # start time is in the future? notify the user!
+        if t_start > datetime.datetime.now():
+            print('Note that start date is in the future! ' +
+                  'Using planning ephs. \n' + 'Force update computed ephs when final version is available!')
+
+        '''create inputs for the helper function'''
+        # BCRS
+        inps_bcrs = []
+        inps_gcrs = []
+        inps_gtrs = []
+        for seg in range(0, 12):
+            seg_start = t_start + datetime.timedelta(hours=2 * (seg - 1))
+            seg_stop = t_start + datetime.timedelta(hours=2 * seg) - datetime.timedelta(seconds=1)
+            ref_object = 'Solar+System+Barycentre'
+            frame = 'mean+equatorial+J2000'
+            scale = 'TDB'
+            inps_bcrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
+            ref_object = 'Earth'
+            scale = 'UTC'
+            inps_gcrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
+            frame = 'Earth+fixed'
+            inps_gtrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
+
+        if parallel:  # Parallel way
+            n_cpu = multiprocessing.cpu_count()
+            # create pool
+            pool = multiprocessing.Pool(np.min((n_cpu, len(inps_bcrs)))) #
+            # asynchronously apply helper to each of inps
+            '''bcrs'''
+            result = pool.map_async(esa_eph_download_helper, inps_bcrs)
+            # get the ordered results
+            bcrs = np.hstack(np.array(result.get()))
+            # print(bcrs[0])
+            # print(bcrs[-1])
+            '''gcrs'''
+            result = pool.map_async(esa_eph_download_helper, inps_gcrs)
+            # get the ordered results
+            gcrs = np.hstack(np.array(result.get()))
+            # print(gcrs[0])
+            # print(gcrs[-1])
+            '''gtrs'''
+            result = pool.map_async(esa_eph_download_helper, inps_gtrs)
+            # get the ordered results
+            gtrs = np.hstack(np.array(result.get()))
+            # print(gtrs[0])
+            # print(gtrs[-1])
+            # close bassejn
+            pool.close()
+            # tell it to wait until all threads are done before going on
+            pool.join()
+        else:  # Serial way
+            bcrs = []
+            gcrs = []
+            gtrs = []
+            for _inp in inps_bcrs:
+                bcrs.append(esa_eph_download_helper(_inp))
+            for _inp in inps_gcrs:
+                gcrs.append(esa_eph_download_helper(_inp))
+            for _inp in inps_gtrs:
+                gtrs.append(esa_eph_download_helper(_inp))
+            bcrs = np.hstack(np.array(bcrs))
+            gcrs = np.hstack(np.array(gcrs))
+            gtrs = np.hstack(np.array(gtrs))
+
+        ''' dump to files '''
+        tstamps = [datetime.datetime.strptime(t.split()[0], '%Y/%m/%dT%H:%M:%S.%f') for t in bcrs]
+        eph_bcrs = np.array([map(float, s.split()[1:]) for s in bcrs])
+        eph_gcrs = np.array([map(float, s.split()[1:]) for s in gcrs])
+        eph_gtrs = np.array([map(float, s.split()[1:4]) + [0, 0, 0] for s in gtrs])
+        ''' BCRS '''
+        with open(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph), 'w') as f:
+            for ii, t in enumerate(tstamps):
+                #            line = '{:4d}-{:02d}-{:02d}T{:02d}:{:02d}:{:06.3f}'.\
+                line = '{:4d} {:02d} {:02d} {:02d} {:02d} {:06.3f}'. \
+                    format(t.year, t.month, t.day, t.hour, t.minute, t.second)
+                line += '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f}\n' \
+                    .format(*eph_bcrs[ii, 0:6])
+                f.write(line)
+
+        ''' GCRS '''
+        with open(os.path.join(inp['sc_eph_cat'], sc_gcrs_eph), 'w') as f:
+            for ii, t in enumerate(tstamps):
+                line = '{:4d} {:02d} {:02d} {:02d} {:02d} {:06.3f}' \
+                    .format(t.year, t.month, t.day, t.hour, t.minute, t.second)
+                line += '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f} ' \
+                    .format(*eph_gcrs[ii, 0:6])
+                line += '{:16.10f} {:15.10f} {:15.10f}\n' \
+                    .format(*np.zeros(3))
+                f.write(line)
+
+        ''' GTRS '''
+        with open(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph), 'w') as f:
+            for ii, t in enumerate(tstamps):
+                line = '{:4d} {:02d} {:02d} {:02d} {:02d} {:06.3f}'. \
+                    format(t.year, t.month, t.day, t.hour, t.minute, t.second)
+                line += '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f}\n' \
+                    .format(*eph_gtrs[ii, 0:6])
+                f.write(line)
+
+        return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
+
+
+'''
+#==============================================================================
 # Create vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
 #==============================================================================
 '''
-def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, \
+def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp, \
                     paddLeft=30, paddRight=0):
     '''
     Make vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
     
-    padding - 2-sided, in minutes for each side
+    padding - in minutes for each side
+
+    NOTE from 03/05/2016: these raw files are not available anymore
+    since the old ESA TASC site was turned down, and the new one does not have those
     '''
     # 30 min beidseitig padding:
     t_start = date_t_start - datetime.timedelta(minutes=paddLeft)
@@ -1403,7 +1623,7 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, \
 #==============================================================================
 '''
 def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
-    orbtyp = 'ops';
+    orbtyp = 'ops'
 
     if source=='VEX': staobj='Venus-Express'
     if source=='MEX': staobj='Mars-Express'
@@ -12053,7 +12273,7 @@ def vint_s(ob):
 #        print 'UT1 = {:.18f}'.format(UT1)
 #        print 'CT_mine = {:.18f}'.format(CT)
         
-        astro_tstamp = Time(str(tstamp), format='iso', scale='utc', precision=9, \
+        astro_tstamp = Time(str(tstamp), format='iso', scale='utc', precision=9,
                  location=EarthLocation.from_geocentric(*sta[0].r_GTRS, unit=units.m))
 #        t = Time(str(tstamp), format='iso', scale='utc', precision=9, \
 #                 location=EarthLocation.from_geocentric(*sta[0].r_GTRS, unit=units.m))
@@ -12098,7 +12318,7 @@ def vint_s(ob):
         ## Earth:
 #        print JD
         rrd = pleph(JD+CT, 3, 12, inp['jpl_eph'])
-        earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
+        earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
         # Earth's acceleration in m/s**2:
         v_plus = np.array(pleph(JD+CT+1.0/86400.0, 3, 12, inp['jpl_eph'])[3:])
         v_minus = np.array(pleph(JD+CT-1.0/86400.0, 3, 12, inp['jpl_eph'])[3:])
@@ -12721,14 +12941,14 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
                     #dec:
                     sou.radec.append([float(i) for i in f_line[34:49].strip().split()])
             # ra/dec in rad:
-            sou.ra = pi*(sou.radec[0][0] + sou.radec[0][1]/60.0 +\
+            sou.ra = pi*(sou.radec[0][0] + sou.radec[0][1]/60.0 +
                          sou.radec[0][2]/3600.0)/12.0
-            sou.dec = pi*(abs(sou.radec[1][0]) + sou.radec[1][1]/60.0 +\
+            sou.dec = pi*(abs(sou.radec[1][0]) + sou.radec[1][1]/60.0 +
                           sou.radec[1][2]/3600.0)/180.0
             if sou.radec[1][0]<0: sou.dec *= -1
         # J2000.0 source unit vector:        
-        sou.K_s = np.array([cos(sou.dec)*cos(sou.ra), \
-                            cos(sou.dec)*sin(sou.ra), \
+        sou.K_s = np.array([cos(sou.dec)*cos(sou.ra),
+                            cos(sou.dec)*sin(sou.ra),
                             sin(sou.dec)])
     
     ## Station info

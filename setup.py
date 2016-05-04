@@ -5,6 +5,7 @@ Created on Fri Aug 14 15:34:38 2015
 
 @author: Dmitry A. Duev
 '''
+from __future__ import division, absolute_import
 
 # compile fortran code using f2py
 from numpy.distutils.core import Extension
@@ -30,8 +31,8 @@ if __name__ == '__main__':
           author_email  = 'duev@jive.eu',
           url           = 'https://github.com/dmitryduev/pypride',
           platforms     = ['Linux', 'MacOS X'],
-          licence       = 'GNU GPL v2',
-          version       = '1.0.19',
+#          licence       = 'GNU GPL v2',
+          version       = '1.1.0',
           packages      = [NAME],
           package_dir   = {NAME: 'src/pypride'},
 #          py_modules    = ['mod1', 'pkg.mod2'],
@@ -39,13 +40,13 @@ if __name__ == '__main__':
           ext_modules   = [vintflib],
           scripts       = ls_bin,
           package_data  = {NAME : ['cats/*', 'jpl_eph/*', 'inp.cfg']},
-          install_requires = [ 'numpy',
-                               'scipy',
-                               'matplotlib',
-                               'astropy',
-                               'paramiko',
-                               'numba',
-                               'sklearn'],
+#          install_requires = [ 'numpy',
+#                               'scipy',
+#                               'matplotlib',
+#                               'astropy',
+#                               'paramiko',
+#                               'numba',
+#                               'sklearn'],
           classifiers   = ['Development Status :: 5 - Production/Stable',
                            'Environment :: Console',
                            'Framework :: IDLE',

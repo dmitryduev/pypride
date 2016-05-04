@@ -24,36 +24,27 @@ import datetime
 #==============================================================================
 '''
 if __name__=='__main__':
-    cfg = 'inp.cfg'
+    cfg = '/Users/dmitryduev/anaconda/lib/python2.7/site-packages/pypride/inp.cfg'
     
-    source = 'MEX'
+    source = 'RA'
     
 #    stations = ['GBT-VLBA', 'HN-VLBA', 'NL-VLBA']
     stations = ['GBT-VLBA']
 #    stations = ['ONSALA60']
-#    stations = ['EFLSBERG', 'SVETLOE', 'ZELENCHK', 'WETTZELL']
+#    stations = ['ZELENCHK', 'SVETLOE']
+#    stations = ['EFLSBERG', 'WETTZELL']
+#    stations = ['WETTZELL', 'WETTZ13N']
     
     ''' time slot '''
 #    date_t_start = datetime.datetime(2013,12,28,23,57,0)
 #    date_t_stop  = datetime.datetime(2013,12,29,23,57,0)
 #    t_step = 10 # seconds
     
-#    date_t_start = datetime.datetime(2015,2,15,16,0,0)
-#    date_t_stop  = datetime.datetime(2015,2,15,16,1,0)
-    
-#    date_t_start = datetime.datetime(2015,10,8,11,0,0)
-#    date_t_stop  = datetime.datetime(2015,10,8,14,0,0)
-    date_t_start = datetime.datetime(2015,10,10,7,0,0)
-    date_t_stop  = datetime.datetime(2015,10,10,9,0,0)
-#    date_t_start = datetime.datetime(2015,10,24,14,0,0)
-#    date_t_stop  = datetime.datetime(2015,10,24,15,0,0)
-#    date_t_start = datetime.datetime(2015,10,25,14,0,0)
-#    date_t_stop  = datetime.datetime(2015,10,25,15,0,0)
-#    date_t_start = datetime.datetime(2015,10,31,22,0,0)
-#    date_t_stop  = datetime.datetime(2015,10,31,23,0,0)
-#    date_t_start = datetime.datetime(2015,11,2,18,0,0)
-#    date_t_stop  = datetime.datetime(2015,11,2,19,0,0)
-    t_step = 3600 # seconds
+#    date_t_start = datetime.datetime(2015,12,22,3,0,0)
+#    date_t_stop  = datetime.datetime(2015,12,22,5,10,0)
+    date_t_start = datetime.datetime(2015,12,23,20,0,0)
+    date_t_stop  = datetime.datetime(2015,12,23,22,10,0)
+    t_step = 10 # seconds
     
     # output txt dumps?
     output = True
