@@ -1287,7 +1287,8 @@ def esa_eph_download_helper(args):
         eph_url = eph_url.replace('_Routine', '')
     try:
         # get and parse response
-        response = requests.get(eph_url, timeout=5)
+        # response = requests.get(eph_url, timeout=5)
+        response = requests.get(eph_url)
         html_seg = response.text
         # print html
         html_seg = html_seg.split('\n')
