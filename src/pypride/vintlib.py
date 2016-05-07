@@ -12,7 +12,7 @@ import numpy as np
 import scipy as sp
 #from scipy import interpolate
 from scipy.interpolate import BarycentricInterpolator as bi
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import datetime
 from astropy.time import Time, TimeDelta
@@ -21,6 +21,7 @@ from astropy.coordinates import EarthLocation, Angle
 import os
 import re # regular expressions
 import urllib2
+import requests
 from ftplib import FTP
 import paramiko # ssh client
 import gzip
@@ -1284,13 +1285,20 @@ def esa_eph_download_helper(args):
     # these guys are just unable to unify things somehow...
     if sc_name == 'vex':
         eph_url = eph_url.replace('_Routine', '')
-
-    # get and parse response
-    response = urllib2.urlopen(eph_url)
-    html_seg = response.read()
-    # print html
-    html_seg = html_seg.split('\n')
-    html_seg = [l for l in html_seg if len(l) > 5 and (l.strip()[0] != '#' and l.strip()[0] != '<')]
+    try:
+        # get and parse response
+        response = requests.get(eph_url, timeout=5)
+        html_seg = response.text
+        # print html
+        html_seg = html_seg.split('\n')
+        html_seg = [l for l in html_seg if len(l) > 5 and (l.strip()[0] != '#' and l.strip()[0] != '<')]
+    # handle errors
+    except urllib2.HTTPError, e:
+        print "HTTP Error:", e.code, eph_url
+        html_seg = []
+    except urllib2.URLError, e:
+        print "URL Error:", e.reason, eph_url
+        html_seg = []
 
     # save current segment
     return html_seg
@@ -1376,11 +1384,10 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
                   'Using planning ephs. \n' + 'Force update computed ephs when final version is available!')
 
         '''create inputs for the helper function'''
-        # BCRS
         inps_bcrs = []
         inps_gcrs = []
         inps_gtrs = []
-        for seg in range(0, 12):
+        for seg in range(1, 13):
             seg_start = t_start + datetime.timedelta(hours=2 * (seg - 1))
             seg_stop = t_start + datetime.timedelta(hours=2 * seg) - datetime.timedelta(seconds=1)
             ref_object = 'Solar+System+Barycentre'
@@ -1392,34 +1399,24 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
             inps_gcrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
             frame = 'Earth+fixed'
             inps_gtrs.append([sc_name, seg_start, seg_stop, ref_object, frame, scale])
+        inps = inps_bcrs + inps_gcrs + inps_gtrs
 
         if parallel:  # Parallel way
             n_cpu = mp.cpu_count()
-            # create pool
-            pool = mp.Pool(np.min((n_cpu, len(inps_bcrs)))) #
+            # create a Thread pool pool. a Process pool silently fails for some reason
+            pool = mp.pool.ThreadPool(np.min((n_cpu, len(inps))))  #
             # asynchronously apply helper to each of inps
-            '''bcrs'''
-            result = pool.map_async(esa_eph_download_helper, inps_bcrs)
-            # get the ordered results
-            bcrs = np.hstack(np.array(result.get()))
-            # print(bcrs[0])
-            # print(bcrs[-1])
-            '''gcrs'''
-            result = pool.map_async(esa_eph_download_helper, inps_gcrs)
-            # get the ordered results
-            gcrs = np.hstack(np.array(result.get()))
-            # print(gcrs[0])
-            # print(gcrs[-1])
-            '''gtrs'''
-            result = pool.map_async(esa_eph_download_helper, inps_gtrs)
-            # get the ordered results
-            gtrs = np.hstack(np.array(result.get()))
-            # print(gtrs[0])
-            # print(gtrs[-1])
+            '''bcrs, gcrs, and gtrs'''
+            result = pool.map_async(esa_eph_download_helper, inps)
             # close bassejn
             pool.close()
             # tell it to wait until all threads are done before going on
             pool.join()
+            # get the ordered results
+            allstacked = np.hstack(np.array(result.get()))
+            bcrs = allstacked[:86400]
+            gcrs = allstacked[86400:86400 * 2]
+            gtrs = allstacked[86400 * 2:]
         else:  # Serial way
             bcrs = []
             gcrs = []
@@ -13245,8 +13242,8 @@ def R_123 (i, theta):
 #==============================================================================
 # 
 #==============================================================================
-def load_sc_eph(sou_type, source, t_start, t_end, inp, \
-                uvw_calc=False, sc_rhophitheta=False, sc_xyz=False, \
+def load_sc_eph(sou_type, source, t_start, t_end, inp,
+                uvw_calc=False, sc_rhophitheta=False, sc_xyz=False,
                 load=True, forcePaddLeft=None, forcePaddRight=None):
     '''
     (Down)Load spacecraft ephemerides into an ephem-class object
@@ -13298,7 +13295,7 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp, \
     for t_s, t_e in days:
         # ESA's spacecraft (VEX, MEX, HERSHEL):
         if sou_type=='S' and (source.lower()!='gaia' and source.lower()!='ce3'):        
-            eph_file_names = esa_sc_eph_make(source, t_s, t_e, inp, paddLeft=0)
+            eph_file_names = esa_sc_eph_make(source, t_s, t_e, inp, paddLeft=0, paddRight=0)
         # RadioAstron:
         elif (sou_type=='C' and source.lower()=='ra') or sou_type=='R':
             eph_file_names = ra_eph_down(source, t_s, t_e, inp)
