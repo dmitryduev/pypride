@@ -1264,7 +1264,7 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
 '''
 def esa_eph_download_helper(args):
     sc_name, seg_start, seg_stop, ref_object, frame, scale = args
-    print(sc_name, seg_start, seg_stop, ref_object, frame, scale)
+    # print(sc_name, seg_start, seg_stop, ref_object, frame, scale)
     known_spacecraft = {'vex': 'Venus-Express', 'mex': 'Mars-Express', 'gai': 'Gaia'}
     eph_url = 'https://www.fd-tasc.info/{:s}cmd-cgi-bin/seqgenExec.pl?'.format(sc_name) + \
               'queryType=run&ops=ops_Routine&' + \
@@ -1477,8 +1477,8 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
 # Create vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
 #==============================================================================
 '''
-def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp, \
-                    paddLeft=30, paddRight=0):
+def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
+                             paddLeft=30, paddRight=0):
     '''
     Make vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
     
