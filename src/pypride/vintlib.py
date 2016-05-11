@@ -1300,7 +1300,7 @@ def esa_eph_download_helper(args):
     except urllib2.URLError, e:
         print "URL Error:", e.reason, eph_url
         html_seg = []
-
+    # print(sc_name, seg_start, seg_stop, ref_object, frame, scale, len(html_seg))
     # save current segment
     return html_seg
 
@@ -1415,6 +1415,7 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
             pool.join()
             # get the ordered results
             allstacked = np.hstack(np.array(result.get()))
+            # print(allstacked.shape)
             bcrs = allstacked[:86400]
             gcrs = allstacked[86400:86400 * 2]
             gtrs = allstacked[86400 * 2:]
@@ -1467,7 +1468,7 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
                     .format(*eph_gtrs[ii, 0:6])
                 f.write(line)
 
-        return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
+    return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
 
 
 '''
@@ -1506,7 +1507,7 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
     t_obs_out_of_eph_boundary = False
     if eph_bc_exist:
         # load it:
-        with open(inp['sc_eph_cat']+'/'+sc_bcrs_eph,'r') as f:
+        with open(inp['sc_eph_cat']+'/'+sc_bcrs_eph, 'r') as f:
             tmp = f.readlines()
         firstLine = map(int, [float(x) for x in tmp[0].split()[0:6]])
         lastLine  = map(int, [float(x) for x in tmp[-1].split()[0:6]])
@@ -1613,7 +1614,7 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
                         .format(*eph_gtrs[ii,0:6])
                 f.write(line)
 
-    return (sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph)
+    return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
 
 '''
 #==============================================================================
@@ -3071,10 +3072,10 @@ def PMUT1_OCEANS(rjd):
     cor_ut1 = np.sum(UTCOS*np.cos(ag) + UTSIN*np.sin(ag),0)
 #    cor_lod = np.sum((UTCOS*np.cos(ag) - UTSIN*np.sin(ag))*dag,0)
 
-    cor_x   = cor_x * 1.0e-6   # arcseconds (")
-    cor_y   = cor_y * 1.0e-6   # arcseconds (")
-    cor_ut1 = cor_ut1 * 1.0e-6 # seconds (s)
-#    cor_lod = cor_lod * 1.0e-6 # seconds (s)
+    cor_x   *= 1.0e-6   # arcseconds (")
+    cor_y   *= 1.0e-6   # arcseconds (")
+    cor_ut1 *= 1.0e-6 # seconds (s)
+#    cor_lod *= 1.0e-6 # seconds (s)
     
 #    return cor_x, cor_y, cor_ut1, cor_lod
 #    return cor_x, cor_y, cor_ut1
@@ -3082,7 +3083,7 @@ def PMUT1_OCEANS(rjd):
 
 
 def PM_GRAVI(rjd):
-    '''
+    """
      This subroutine provides, in time domain, the diurnal
      lunisolar effet on polar motion (")
      
@@ -3097,15 +3098,14 @@ def PM_GRAVI(rjd):
      cor_y    - tidal correction in y (sec. of arc)
 %
      coded by Ch. Bizouard (2002)
-    '''      
+    """
     halfpi = 1.5707963267948966
     secrad = 2.0*halfpi/(180.0*3600.0)
 
 #  Diurnal lunisolar tidal terms present in x (microas),y(microas)      
-#  narg(j,6) : Multipliers of GMST+pi and Delaunay arguments. 
-	
+#  narg(j,6) : Multipliers of GMST+pi and Delaunay arguments.
 
-    narg = np.asarray([\
+    narg = np.asarray([
          [1,-1, 0,-2, 0,-1],
          [1,-1, 0,-2, 0,-2],
          [1, 1, 0,-2,-2,-2],
@@ -3160,13 +3160,13 @@ def PM_GRAVI(rjd):
 
     # CORRECTIONS    
     ag = np.sum(narg[:,]*arg,1)
-    ag = np.fmod(ag,4.0*halfpi)
+    ag = np.fmod(ag, 4.0 * halfpi)
     
     cor_x = np.sum(XCOS*np.cos(ag) + XSIN*np.sin(ag),0)
     cor_y = np.sum(YCOS*np.cos(ag) + YSIN*np.sin(ag),0)
     
-    cor_x   = cor_x * 1.0e-6   # arcseconds (")
-    cor_y   = cor_y * 1.0e-6   # arcseconds (")
+    cor_x *= 1.0e-6   # arcseconds (")
+    cor_y *= 1.0e-6   # arcseconds (")
     
     return cor_x, cor_y
     
@@ -12059,7 +12059,7 @@ def vint_s(ob):
     # This is used when a station-centric mode of SFXC is wanted
     # in other words, when the phase center is at one of the stations
     if inp['delay_calc'] and ob.sta[0]==ob.sta[1]:
-        if ob.sta[0]!='RA':
+        if ob.sta[0] != 'RA':
             dud.delay = np.zeros((len(ob.tstamps), 5))
         else:
             # in case some freak wants a RadioAstron-centric delays
@@ -12073,61 +12073,62 @@ def vint_s(ob):
     exp_name = ob.exp_name
 
     if not os.path.isdir(os.path.join(inp['out_path'], exp_name)) and \
-            (exp_name is not None or len(exp_name)>0):
+            (exp_name is not None or len(exp_name) > 0):
         os.makedirs(os.path.join(inp['out_path'], exp_name))
     
     ''' init constants '''
     const = constants(inp['jpl_eph'])
     
     ''' load s/c ephemerides '''
-    if ob.sou_type!='C':
-        eph = load_sc_eph(ob.sou_type, ob.source, \
-                          ob.tstamps[0], ob.tstamps[-1], inp, \
-                          inp['uvw_calc'], \
-                          inp['sc_rhophitheta'], \
+    if ob.sou_type != 'C':
+        eph = load_sc_eph(ob.sou_type, ob.source,
+                          ob.tstamps[0], ob.tstamps[-1], inp,
+                          inp['uvw_calc'],
+                          inp['sc_rhophitheta'],
                           inp['sc_xyz'])
-    elif ('RA' in ob.sta): # RA was observing
-        eph = load_sc_eph(ob.sou_type, 'RA', \
-                          ob.tstamps[0], ob.tstamps[-1], inp, \
-                          inp['uvw_calc'], \
-                          inp['sc_rhophitheta'], \
+    elif 'RA' in ob.sta:  # RA was observing
+        eph = load_sc_eph(ob.sou_type, 'RA',
+                          ob.tstamps[0], ob.tstamps[-1], inp,
+                          inp['uvw_calc'],
+                          inp['sc_rhophitheta'],
                           inp['sc_xyz'])
     else:
         eph = None
     
     ''' load S/C freq ramping parameters if 2(3)-way Doppler '''
-    if ob.sou_type!='C' and inp['doppler_calc'] and \
-            inp['dop_model'] == 'bary3way':
-        freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp'], \
-                                       sc=ob.source.lower(), tx_type='3way'))
+    if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary3way':
+        freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp'],
+                                      sc=ob.source.lower(), tx_type='3way'))
         freq_type = 'proper'
         # cut the time range of ob.tstamps:
         obs_start = Time(str(ob.tstamps[0]), format='iso', scale='utc')
         obs_stop = Time(str(ob.tstamps[-1]), format='iso', scale='utc')
-        _, _, lt_sec = eph.RaDec_bc_sec(obs_start.tdb.jd1, \
-                                    obs_start.tdb.jd2*86400.0, inp['jpl_eph'])
+        # print obs_start, obs_stop
+        _, _, lt_sec = eph.RaDec_bc_sec(obs_start.tdb.jd1,
+                                        obs_start.tdb.jd2*86400.0, inp['jpl_eph'])
         numlt = datetime.timedelta(seconds=int(3.5*lt_sec))
-#        print numlt
-        obs_ind_start = np.logical_and(freq_ramp[:,0]<=obs_start.datetime-numlt,\
-                                 freq_ramp[:,1]>=obs_start.datetime-numlt)
+        # print numlt
+        obs_ind_start = np.logical_and(freq_ramp[:, 0] <= obs_start.datetime-numlt,
+                                       freq_ramp[:, 1] >= obs_start.datetime-numlt)
         ind_start = np.argmax(obs_ind_start)
-        obs_ind_stop = np.logical_and(freq_ramp[:,0]<=obs_stop.datetime,\
-                                     freq_ramp[:,1]>=obs_stop.datetime)
+        # print ind_start
+        obs_ind_stop = np.logical_and(freq_ramp[:, 0] <= obs_stop.datetime,
+                                      freq_ramp[:, 1] >= obs_stop.datetime)
         ind_stop = np.argmax(obs_ind_stop)
-        freq_ramp = freq_ramp[ind_start:ind_stop+1,:]
-#        print freq_ramp
+        # print ind_stop
+        freq_ramp = freq_ramp[ind_start:ind_stop+1, :]
+        # print freq_ramp
         # add uplink stations to self.sta list:
-        ob.sta.append(list(set(freq_ramp[:,4])))
+        ob.sta.append(list(set(freq_ramp[:, 4])))
         # flatten the list
         ob.sta = list(flatten(ob.sta))
     
     ''' load S/C freq if 1-way Doppler '''
-    if ob.sou_type!='C' and inp['doppler_calc'] and \
-            inp['dop_model'] == 'bary1way':
+    if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary1way':
         try:
             # is it a 'ramped' s/c? let's find out:
-            freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp1w'], \
-                                       sc=ob.source.lower(), tx_type='1way'))
+            freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp1w'],
+                                          sc=ob.source.lower(), tx_type='1way'))
             freq_type = 'proper'
         except Exception, err:
             print str(err)
@@ -12408,13 +12409,14 @@ def vint_s(ob):
                 # tstart, tstop in UTC; f_0, df, up_sta
 #                rampTslot = [x for x in freq_ramp if \
 #                                x[0] <= tstamp-2*lt <= x[1]][-1]
-                rampTslot = freq_ramp[np.logical_and(freq_ramp[:,0]<=tstamp-2*lt,\
-                                        freq_ramp[:,1]>=tstamp-2*lt),:][0]
-#                print lt, rampTslot
+#                 print(freq_ramp)
+                rampTslot = freq_ramp[np.logical_and(freq_ramp[:, 0] <= tstamp-2*lt,
+                                                     freq_ramp[:, 1] >= tstamp-2*lt), :][0]
+                # print lt, rampTslot
                 upSta = rampTslot[4]
             except Exception, err:
                 print str(err)
-                raise Exception('Not found ramp params for '+\
+                raise Exception('Not found ramp params for '+
                                 ob.source+' at ' + str(tstamp))
                                 
         ''' coarse! f ramp table for 1-way deep space Doppler (for iono) '''
@@ -12574,35 +12576,34 @@ def vint_s(ob):
             #  propagation(troposphere, ionosphere),
             #  dtau/dt - 1, LT to Ra for tracking station]
             # instrumental effects are given for receiving station
-            if ob.sou_type=='C' and ('RA' in ob.sta):
-                if ob.sta[1]=='RA':
-                    delay = [dtau, \
-                         (sta[2].dtau_therm - sta[0].dtau_therm),\
-                         (sta[2].dtau_ao - sta[0].dtau_ao),\
-                         (sta[2].dtau_tropo - sta[0].dtau_tropo),\
-                         (sta[2].dtau_iono - sta[0].dtau_iono),\
-                         dtau_dt_min1, lt_downlink]
+            if ob.sou_type == 'C' and ('RA' in ob.sta):
+                if ob.sta[1] == 'RA':
+                    delay = [dtau,
+                             (sta[2].dtau_therm - sta[0].dtau_therm),
+                             (sta[2].dtau_ao - sta[0].dtau_ao),
+                             (sta[2].dtau_tropo - sta[0].dtau_tropo),
+                             (sta[2].dtau_iono - sta[0].dtau_iono),
+                             dtau_dt_min1, lt_downlink]
                 # perverted case of 'Ra-centric'-delays
-                if ob.sta[0]=='RA':
+                if ob.sta[0] == 'RA':
                     # indices of sta[xx] are not set at random,
                     # I actually did some thinking about the issue!
-                    delay = [dtau, \
-                         (sta[1].dtau_therm - sta[2].dtau_therm),\
-                         (sta[1].dtau_ao - sta[2].dtau_ao),\
-                         (sta[1].dtau_tropo - sta[2].dtau_tropo),\
-                         (sta[1].dtau_iono - sta[2].dtau_iono),\
+                    delay = [dtau,
+                         (sta[1].dtau_therm - sta[2].dtau_therm),
+                         (sta[1].dtau_ao - sta[2].dtau_ao),
+                         (sta[1].dtau_tropo - sta[2].dtau_tropo),
+                         (sta[1].dtau_iono - sta[2].dtau_iono),
                          dtau_dt_min1, lt_downlink]
 
             else:
-            # usual far-field or near-field:
-            # [(geometry, geophysics), instrumental(thermal, axis offset),
-            #  propagation(troposphere, ionosphere)]
-                delay = [dtau,\
-                         (sta[1].dtau_therm - sta[0].dtau_therm),\
-                         (sta[1].dtau_ao - sta[0].dtau_ao),\
-                         (sta[1].dtau_tropo - sta[0].dtau_tropo),\
+                # usual far-field or near-field:
+                # [(geometry, geophysics), instrumental(thermal, axis offset),
+                #  propagation(troposphere, ionosphere)]
+                delay = [dtau,
+                         (sta[1].dtau_therm - sta[0].dtau_therm),
+                         (sta[1].dtau_ao - sta[0].dtau_ao),
+                         (sta[1].dtau_tropo - sta[0].dtau_tropo),
                          (sta[1].dtau_iono - sta[0].dtau_iono)]
-            
                      
             # the rug really tied the room together, did it not?:
             dud.delay.append(delay)
@@ -12610,7 +12611,6 @@ def vint_s(ob):
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
-
         
         ''' far-field uvw '''
         # compute numerically as c*(cos(dec)*dtau/dra,dtau/ddec,tau)
@@ -13295,7 +13295,7 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
     eph_files = []
     for t_s, t_e in days:
         # ESA's spacecraft (VEX, MEX, HERSHEL):
-        if sou_type=='S' and (source.lower()!='gaia' and source.lower()!='ce3'):        
+        if sou_type=='S' and (source.lower()!='gaia' and source.lower()!='ce3'):
             eph_file_names = esa_sc_eph_make(source, t_s, t_e, inp, paddLeft=0, paddRight=0)
         # RadioAstron:
         elif (sou_type=='C' and source.lower()=='ra') or sou_type=='R':
@@ -13305,7 +13305,6 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
             eph_file_names = ra_eph_down(source, t_s, t_e, inp)
         # GNSS:
         elif sou_type=='G':
-#            raise NotImplemented
             eph_file_names = ra_eph_down(source, t_s, t_e, inp)
         # append to eph_files name list
         eph_files.append(eph_file_names)
