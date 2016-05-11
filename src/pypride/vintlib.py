@@ -50,6 +50,7 @@ except:
 
 ## parallelism
 import multiprocessing as mp
+import subprocess
 
 #from decimal import *
 
@@ -11865,9 +11866,24 @@ def iau_S00 ( DATE1, DATE2, X, Y ):
 # Download/update EOP, meteo and iono data
 #==============================================================================
 '''
-def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
-             date_start, date_stop, iono_model='igs'):
-    ''' Download/update EOP, meteo and iono data '''
+def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
+         date_start, date_stop, iono_model='igs'):
+    """
+    Download/update EOP, meteo and iono data
+
+    Args:
+        do_trp_calc:
+        do_ion_calc:
+        cat_eop:
+        meteo_cat:
+        ion_cat:
+        date_start:
+        date_stop:
+        iono_model:
+
+    Returns:
+
+    """
     ''' EOPs '''
     eop_update(cat_eop, 3)
 
@@ -11878,16 +11894,16 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
     
     ''' load data from first day to last+1 '''
     # set dates
-    day_start = datetime.datetime(date_start.year,date_start.month,\
-                                  date_start.day,0,0,0)
-    day_stop = datetime.datetime(date_stop.year,date_stop.month,\
-                      date_stop.day,0,0,0) + datetime.timedelta(days=1)
+    day_start = datetime.datetime(date_start.year, date_start.month,
+                                  date_start.day, 0, 0, 0)
+    day_stop = datetime.datetime(date_stop.year, date_stop.month,
+                                 date_stop.day, 0, 0, 0) + datetime.timedelta(days=1)
     dd = (day_stop - day_start).days
 
     # make list with datetime objects ranging from 1st day to last+1
     dates = [day_start]
-    for d in range(1,dd+1):
-        dates.append(day_start+ datetime.timedelta(days=d))
+    for d in range(1, dd+1):
+        dates.append(day_start + datetime.timedelta(days=d))
 
     ''' meteo data '''
     if do_trp_calc:
@@ -11901,14 +11917,13 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
             vmf_file = '{:4d}{:03d}.vmf1_r'.format(year, doy)
             if not os.path.isfile(meteo_cat+'/'+vmf_file):
                 try:
-                    print 'vmf1 meteo file '+vmf_file+\
-                          ' not found, downloading...'
+                    print 'vmf1 meteo file '+vmf_file + ' not found, downloading...'
                     met_url = 'http://ggosatm.hg.tuwien.ac.at/DELAY/SITE/VLBI/'+\
                               str(year)+'/'+vmf_file
                     response = urllib2.urlopen(met_url)
                     met_file = response.read()
                     # print it to file:
-                    with open(meteo_cat+'/'+vmf_file,'w') as out:
+                    with open(os.path.join(meteo_cat, vmf_file), 'w') as out:
                         for line in met_file:
                             out.write(line)
                 except Exception, err:
@@ -11928,7 +11943,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
                     response = urllib2.urlopen(met_url)
                     met_file = response.read()
                     # print it to file:
-                    with open(meteo_cat+'/'+lhg_file,'w') as out:
+                    with open(os.path.join(meteo_cat, lhg_file), 'w') as out:
                         for line in met_file:
                             out.write(line)
                 except Exception, err:
@@ -11938,7 +11953,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
             ''' vmf1 grid files: '''
             vmf_grid_file = 'VMFG_{:4d}{:02d}{:02d}.H'\
                                 .format(year, day.month, day.day)
-            #(check the last file):
+            # (check the last file):
             if not os.path.isfile(meteo_cat+'/'+vmf_grid_file+'18'): 
                 print 'vmf1 grid files '+vmf_grid_file+\
                       '00-18 not found, downloading...'
@@ -11977,18 +11992,29 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat, \
             doy = day.timetuple().tm_yday # day of year
             # download and uncompress the ionex files, if necessary
             ionex_zip = iono_model+'g{:03d}'.format(doy)+'0.'+str(year)[2:]+'i.Z'
-            if not os.path.isfile(ion_cat+'/'+ionex_zip[:-2]):
+            if not os.path.isfile(os.path.join(ion_cat, ionex_zip[:-2])):
                 print 'iono TEC file: '+ionex_zip+' not found, fetching...'
                 try:
                     ftp = FTP('cddis.nasa.gov')
                     ftp.login() # user anonymous, passwd anonymous
                     ftp.cwd('pub/gps/products/ionex/{:4d}/{:03d}'.format(year,doy))
                     if ionex_zip in ftp.nlst(): # check that the file is there
-                        ftp.retrbinary('RETR {:s}'.format(ionex_zip), \
-                                   open(ion_cat+'/'+ionex_zip, 'wb').write)
-                        # uncompress:
+                        ftp.retrbinary('RETR {:s}'.format(ionex_zip),
+                                       open(os.path.join(ion_cat, ionex_zip), 'wb').write)
+                        # uncompress: [try uncompress and gzip]
                         print 'uncompressing: ' + ionex_zip + '...'
-                        os.system('uncompress -f {:s}'.format(ion_cat+'/'+ionex_zip))
+                        try:
+                            subprocess.call(['uncompress', '-f',
+                                             '{:s}'.format(os.path.join(ion_cat, ionex_zip))])
+                        except OSError as e:
+                            print(e)
+                            try:
+                                subprocess.call(['gzip', '-d',
+                                                 '{:s}'.format(os.path.join(ion_cat, ionex_zip))])
+                            except OSError:
+                                print(e)
+                                print('not found a program to uncompress .Z files. '+
+                                      'install uncompress or gzip')
                     else:
                         print 'file {:s} not found on the server. no iono this time'.\
                                 format(ionex_zip)
@@ -12399,11 +12425,10 @@ def vint_s(ob):
 #        tic = _time()
 
         ''' uplink sta and f for 2(3)-way Doppler '''
-        if ob.sou_type!='C' and inp['doppler_calc'] and \
-            inp['dop_model']=='bary3way':
+        if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary3way':
             _, _, lt_sec = eph.RaDec_bc_sec(JD, CT*86400.0, inp['jpl_eph'])
 #            lt = datetime.timedelta(seconds=int(eph.fLt_gc(UTC+dd))) # lt [sec]
-            lt = datetime.timedelta(seconds=int(lt_sec)) # lt [sec]
+            lt = datetime.timedelta(seconds=int(lt_sec))  # lt [sec]
 #            print lt, tstamp-2*lt
             try:
                 # tstart, tstop in UTC; f_0, df, up_sta
@@ -12421,29 +12446,28 @@ def vint_s(ob):
                                 
         ''' coarse! f ramp table for 1-way deep space Doppler (for iono) '''
         if ob.sou_type!='C' and inp['doppler_calc'] and \
-            inp['dop_model']=='bary1way' and freq_ramp is not None:
+            inp['dop_model'] == 'bary1way' and freq_ramp is not None:
             _, _, lt_sec = eph.RaDec_bc_sec(JD, CT*86400.0, inp['jpl_eph'])
 #            lt = datetime.timedelta(seconds=int(eph.fLt_gc(UTC+dd))) # lt [sec]
             lt = datetime.timedelta(seconds=int(lt_sec)) # lt [sec]
             try:
                 # tstart, tstop in TDB; f_0, df
-#                print astro_tstamp.tdb.datetime-lt
-#                tic = _time()
-#                rampTslot = [x for x in freq_ramp if \
-#                             x[0] <= astro_tstamp.tdb.datetime-lt <= x[1]][-1]
-#                print rampTslot, _time()-tic
-#                tic = _time()
-#                print np.logical_and(\
-#                                freq_ramp[:,0]<astro_tstamp.tdb.datetime-lt,\
-#                                freq_ramp[:,1]>=astro_tstamp.tdb.datetime-lt)
+                # print astro_tstamp.tdb.datetime-lt
+                # tic = _time()
+                # rampTslot = [x for x in freq_ramp if \
+                #             x[0] <= astro_tstamp.tdb.datetime-lt <= x[1]][-1]
+                # print rampTslot, _time()-tic
+                # tic = _time()
+                # print np.logical_and(\
+                #                freq_ramp[:,0]<astro_tstamp.tdb.datetime-lt,\
+                #                freq_ramp[:,1]>=astro_tstamp.tdb.datetime-lt)
                 rampTslot = freq_ramp[np.logical_and(\
                                 freq_ramp[:,0]<=astro_tstamp.tdb.datetime-lt,\
                                 freq_ramp[:,1]>=astro_tstamp.tdb.datetime-lt),:][0]
 #                print rampTslot#, _time()-tic
             except Exception, err:
                 print str(err)
-                raise Exception('Not found ramp params for '+\
-                                ob.source+' at ' + str(tstamp))
+                raise Exception('Not found ramp params for '+ob.source+' at ' + str(tstamp))
         
         ''' delays due to instrumental and propagation effects '''
         for si, st in enumerate(sta):
