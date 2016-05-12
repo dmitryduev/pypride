@@ -12007,12 +12007,12 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                             subprocess.call(['uncompress', '-f',
                                              '{:s}'.format(os.path.join(ion_cat, ionex_zip))])
                         except OSError as e:
-                            print(e)
+                            # print(e)
                             try:
                                 subprocess.call(['gzip', '-d',
                                                  '{:s}'.format(os.path.join(ion_cat, ionex_zip))])
                             except OSError:
-                                print(e)
+                                # print(e)
                                 print('not found a program to uncompress .Z files. '+
                                       'install uncompress or gzip')
                     else:
