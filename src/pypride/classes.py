@@ -480,7 +480,8 @@ class obs(object):
                                if subScanStartNominal <= t <= subScanStopNominal]
                 scanStartTimes.append(tstamps_cut[0])
                 scanStopTimes.append(tstamps_cut[-1])
-                freqs.append([start, stop, self.freqs[s][2], 0, None])
+                if len(self.freqs) > 0:
+                    freqs.append([start, stop, self.freqs[s][2], 0, None])
             # fix last subscan end time
             scanStopTimes[-1] = stop
             s += 1
