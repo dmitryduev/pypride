@@ -252,8 +252,7 @@ class obs(object):
     the class contains data previously stored in .obs-files
     for each source on each baseline back in Matlab days
     """
-    def __init__(self, sta, source, sou_type, \
-                 exp_name='', sou_radec=None, inp=None):
+    def __init__(self, sta, source, sou_type, exp_name='', sou_radec=None, inp=None):
         #self.sta = [sta1, sta2]
         self.sta = sta
         self.source = source
@@ -341,7 +340,6 @@ class obs(object):
                     ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0)))
         return sorted(list(facs))
 
-
     def resample(self, tstep=1):
         # resample scan time stamps
         tstamps = []
@@ -396,18 +394,18 @@ class obs(object):
 #                print str(err)
 #                print 'Could not load ramp params for ' + sc + '.'
     
-    
-    def addScan(self, start, step, stop=None, nobs=None, \
-                      freq=None, freq_type=None, ramping=False):
+    def addScan(self, start, step, stop=None, nobs=None, freq=None,
+                force_step=False):
         # start and stop must be a datetime object
         # step is an integer time step in seconds
 
-        if stop==None and nobs==None:
+        if stop is None and nobs is None:
             raise Exception('You should specify either "stop" time \
                             or number of time stamps "nobs" to add')
-        elif stop==None:
+        elif stop is None:
+            # nobs is set
             self.scanStartTimes.append(start)
-            nobs = int(nobs) # this is needed for the range() function
+            nobs = int(nobs)  # this is needed for the range() function
             stop = start + (nobs-1)*datetime.timedelta(seconds=step)
             self.scanStopTimes.append(stop)                            
             for ii in range(nobs):
@@ -415,7 +413,8 @@ class obs(object):
                 # avoid duplicates! this might become too slow, so drop it...
 #                if tmp not in self.tstamps:
                 self.tstamps.append(tmp)
-        elif nobs==None:
+        elif nobs is None:
+            # stop is set
             self.scanStartTimes.append(start)
             self.scanStopTimes.append(stop)
             stopMinusStart = stop - start
@@ -426,71 +425,87 @@ class obs(object):
             if modf(stopMinusStart.total_seconds()/step)[0] < 1e-9:
                 nobs = int(stopMinusStart.total_seconds()/step + 1)
             else:
-                print 'bad t_step: not a multiple of N_sec. set to nearest possible.'
-                facs = self.factors(stopMinusStart.total_seconds())
-                # use smaller value (to the left). max for if pos is [0]
-                pos = max(0, np.searchsorted(facs, step) - 1)
-                step = facs[pos]
-                nobs = stopMinusStart.total_seconds()/step + 1
+                if not force_step:
+                    print 'bad t_step: not a multiple of N_sec. set to nearest possible.'
+                    facs = self.factors(stopMinusStart.total_seconds())
+                    # use smaller value (to the left). max for if pos is [0]
+                    pos = max(0, np.searchsorted(facs, step) - 1)
+                    step = facs[pos]
+                    nobs = int(stopMinusStart.total_seconds() / step + 1)
+                else:
+                    # force time step?
+                    nobs = int(stopMinusStart.total_seconds() // step + 1)
+
             for ii in range(int(nobs)):
                 tmp = start + ii*datetime.timedelta(seconds=step)
                 # avoid duplicates! this might become too slow, so drop it...
 #                if tmp not in self.tstamps:
                 self.tstamps.append(tmp)
+
+            # fix the case with the forced step:
+            if force_step:
+                self.tstamps.append(stop)
         
         # frequency for ionospheric delay calculation
-        if freq!=None:
+        if freq is not None:
             self.freqs.append([start, stop, freq, 0, None])
-        
-#        if freq!=None:
-#            for ii in range(int(nobs)):
-#                # should be in Hz!
-##                self.freqs.append(freq*1e6) # if in MHz
-#                self.freqs.append(freq) 
 
-#        if ramping:
-#            if freq!=None:
-#                raise Exception('Ramping is requested. Don\'t set freq!')
-#            # DSN-style freq ramping for 3wayDop
-#            # load ramp table
-#            ramp = self.freqRamp(sc=self.source)
-#            for t in self.tstamps:
-#                try:
-#                    tslot = [x for x in ramp if x[0]<=t<=x[1]][0]
-#                except Exception, err:
-#                    print str(err)
-#                    raise Exception('Not found ramp params for '+\
-#                                    self.source+', ' + str(t))
-#                # ramped frequency:
-#                f = tslot[2] + tslot[3]*(t-tslot[0]).total_seconds()
-#                self.freqs.append(f)
-#                # current uplink station:
-#                self.upSta.append(tslot[4])
-#            # add uplink stations to self.sta list:
-#            self.sta.append(list(set(self.upSta)))
-#            # flatten the list
-#            self.sta = list(flatten(self.sta))
-##            print self.sta
-##            print np.array(zip(self.tstamps, self.freqs))
+    def splitScans(self, duration=60):
+        """
+            Split longer scans into shorter ones.
+            useful for running together with handy.py (on very long scan) and self.smoothDude:
+            increase t_step for a faster computation, then split into shorter subscans,
+            and run self.smoothDude()
+        Args:
+            duration: subscan duration in seconds. if last subscan is shorter,
+                      it get appended to the last but one
 
-    
+        Returns:
+
+        """
+        scanStartTimes = []
+        scanStopTimes = []
+        freqs = []
+        s = 0
+        for start, stop in zip(self.scanStartTimes, self.scanStopTimes):
+            stopMinusStart = stop - start
+            # skip scan if it's already shorter than duration
+            if stopMinusStart < datetime.timedelta(seconds=duration):
+                continue
+            n_subscans = int(stopMinusStart.total_seconds() // duration)
+            for ii in range(n_subscans):
+                subScanStartNominal = start + ii * datetime.timedelta(seconds=duration)
+                subScanStopNominal = start + (ii+1) * datetime.timedelta(seconds=duration)
+                tstamps_cut = [t for t in self.tstamps
+                               if subScanStartNominal <= t <= subScanStopNominal]
+                scanStartTimes.append(tstamps_cut[0])
+                scanStopTimes.append(tstamps_cut[-1])
+                freqs.append([start, stop, self.freqs[s][2], 0, None])
+            # fix last subscan end time
+            scanStopTimes[-1] = stop
+            s += 1
+        # update self:
+        self.scanStartTimes = scanStartTimes
+        self.scanStopTimes = scanStopTimes
+        self.freqs = freqs
+
     def smoothDude(self, tstep=1, method='cheb'):
-        '''
+        """
         Scan-based smoothing of DUDE data
-        '''
-        if method=='poly':
+        """
+        if method == 'poly':
             # initialise optimal polinomial estimator:
             estimator = PolynomialRegression()
-            degrees = np.arange(0, 8)
+            _degrees = np.arange(0, 8)
             cv_model = GridSearchCV(estimator,
-                                    param_grid={'deg': degrees},
+                                    param_grid={'deg': _degrees},
                                     scoring='mean_squared_error')
-        elif method=='cheb':
+        elif method == 'cheb':
             # initialise optimal polinomial estimator:
             estimator = ChebyshevRegression()
-            degrees = np.arange(0, 10)
+            _degrees = np.arange(0, 10)
             cv_model = GridSearchCV(estimator,
-                                    param_grid={'deg': degrees},
+                                    param_grid={'deg': _degrees},
                                     scoring='mean_squared_error')
         else:
             raise Exception('Unknown smoothing method. Use \'poly\' or \'cheb\'')
@@ -498,60 +513,60 @@ class obs(object):
         delay_smooth = []
         uvw_smooth = []
         doppler_smooth = []
-        
+
         for start, stop in zip(self.scanStartTimes, self.scanStopTimes):
-            dd0 = datetime.datetime(start.year,start.month,start.day)
+            dd0 = datetime.datetime(start.year, start.month, start.day)
             # time scale and proper indices to make fit
-            time = np.array([ \
-                    ( ii, t.hour*3600 + t.minute*60.0 + t.second + \
-                      (t-dd0).days*86400.0 ) \
-                    for ii, t in enumerate(self.tstamps) \
+            time = np.array([
+                    ( ii, t.hour*3600 + t.minute*60.0 + t.second +
+                      (t-dd0).days*86400.0 )
+                    for ii, t in enumerate(self.tstamps)
                     if start <= t <= stop ])
 
             # time scale used for smoothing:
-            t_dense = np.arange(time[0,1], time[-1,1]+tstep, tstep)
-            
+            t_dense = np.arange(time[0, 1], time[-1, 1]+tstep, tstep)
+
             # renorm
-            time[:,1] = 24.0*time[:,1]/86400.0
+            time[:, 1] = 24.0*time[:, 1]/86400.0
             t_dense = 24.0*t_dense/86400.0
 
-            if len(self.dude.delay)>0:
+            if len(self.dude.delay) > 0:
                 # make optimal fit to each of delay 'components'
                 delay_smooth_scan = []
                 for ii in range(self.dude.delay.shape[1]):
                     # time[:,0] - indices of current scan in full-len tstamps
                     # time[:,1] - time stamps in the flesh
-                    ind = map(int, time[:,0])
-                    cv_model.fit(time[:,1], self.dude.delay[ind, ii])
-#                    print [grid_score.mean_validation_score for \
-#                            grid_score in cv_model.grid_scores_]
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.delay[ind, ii])
+                    # print [grid_score.mean_validation_score for \
+                    #        grid_score in cv_model.grid_scores_]
                     delay_smooth_scan.append(cv_model.predict(t_dense))
                 try:
-                    delay_smooth = np.vstack((delay_smooth, \
+                    delay_smooth = np.vstack((delay_smooth,
                                               np.array(delay_smooth_scan).T))
                 except:
                     delay_smooth = np.array(delay_smooth_scan).T
 
-            if len(self.dude.uvw)>0:
+            if len(self.dude.uvw) > 0:
                 uvw_smooth_scan = []
                 for ii in range(self.dude.uvw.shape[1]):
-                    ind = map(int, time[:,0])
-                    cv_model.fit(time[:,1], self.dude.uvw[ind, ii])
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
                     uvw_smooth_scan.append(cv_model.predict(t_dense))
                 try:
-                    uvw_smooth = np.vstack((uvw_smooth, \
+                    uvw_smooth = np.vstack((uvw_smooth,
                                               np.array(uvw_smooth_scan).T))
                 except:
                     uvw_smooth = np.array(uvw_smooth_scan).T
 
-            if len(self.dude.doppler)>0:
+            if len(self.dude.doppler) > 0:
                 doppler_smooth_scan = []
                 for ii in range(self.dude.doppler.shape[1]):
-                    ind = map(int, time[:,0])
-                    cv_model.fit(time[:,1], self.dude.doppler[ind, ii])
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
                     doppler_smooth_scan.append(cv_model.predict(t_dense))
                 try:
-                    doppler_smooth = np.vstack((doppler_smooth, \
+                    doppler_smooth = np.vstack((doppler_smooth,
                                               np.array(doppler_smooth_scan).T))
                 except:
                     doppler_smooth = np.array(doppler_smooth_scan).T
@@ -559,11 +574,9 @@ class obs(object):
         self.dude.delay = delay_smooth
         self.dude.uvw = uvw_smooth
         self.dude.doppler = doppler_smooth
-        
+
         # resample tstamps and freqs:
         self.resample(tstep=tstep)
-            
-#        pass
 
 '''
 #==============================================================================

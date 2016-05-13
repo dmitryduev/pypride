@@ -122,13 +122,8 @@ class vispy(object):
         if self.showTiming: 
             toc = _time()
             print 'Initialising vispy took {:.1f} seconds.'.format(toc-tic)
- 
-       
-    def makeObs(self, t_step=1, \
-            delays=True, \
-            dopplerPhaseCor=False, \
-            dopplers=False, \
-            staz='all'):
+
+    def makeObs(self, t_step=1, delays=True, dopplerPhaseCor=False, staz='all'):
         ''' 
             Parse vex-file and create obs-objects for vint 
             staz - list of station short names to process or 'all'
@@ -186,20 +181,20 @@ class vispy(object):
                         obs_type = 'C' # calibrator observations
                     # append
                     if staSh != 'Ra':
-                        obsz.append( obs([self.inp.phase_center, sta], \
-                                         sou, obs_type, \
+                        obsz.append( obs([self.inp.phase_center, sta],
+                                         sou, obs_type,
                                          self.exp_name, sou_radec, inp=inp_swchs) )
                     else:
                         # if RA was observing, add Pu or Gt to the station list, 
                         # it'll be used for calculating formatter time offset for 
                         # the RA downlink stream
-                        obsz.append( obs([self.inp.phase_center, sta, sta_ra_ts], \
-                                         sou, obs_type, \
+                        obsz.append( obs([self.inp.phase_center, sta, sta_ra_ts],
+                                         sou, obs_type,
                                          self.exp_name, sou_radec, inp=inp_swchs) )
                                  
         # set input switches for Doppler correction
         if delays and dopplerPhaseCor:
-#            inp_swchs = self.inp.get_section('Switches') # reset to default Falses
+            # inp_swchs = self.inp.get_section('Switches') # reset to default Falses
             inp_swchs = self.inp.get_section('all') # reset to default Falses
             inp_swchs['doppler_calc'] = True
             inp_swchs['sc_eph_force_update'] = False
@@ -289,9 +284,9 @@ class vispy(object):
  
            
     def eop2vex(self, cat_eop):
-        ''' 
+        """
             Add EOP section to a vex-file, if it's not there 
-        '''
+        """
         try:
             # is it there already?
             self.vex['EOP']
@@ -364,15 +359,15 @@ class vispy(object):
                     vexOutFile.write(line)
                     
     def clocks(self):
-        '''
+        """
             Extract linear clocks from vex-file
-        '''
+        """
         try:
             self.vex['CLOCK']
             clock = {}
             for sta in self.vex['CLOCK']:
-                epoch = datetime.datetime.strptime(\
-                                    self.vex['CLOCK'][sta]['clock_early'][2],\
+                epoch = datetime.datetime.strptime(
+                                    self.vex['CLOCK'][sta]['clock_early'][2],
                                     '%Yy%jd%Hh%Mm%Ss')
                 offset = float(self.vex['CLOCK'][sta]['clock_early'][1].split()[0])
                 rate = float(self.vex['CLOCK'][sta]['clock_early'][3])
@@ -382,9 +377,9 @@ class vispy(object):
             return {}
 
     def updates(self):
-        '''
+        """
             Do all kinds of stuff checks and update/download if necessary
-        '''
+        """
         if self.showTiming: 
             tic = _time()
         
@@ -400,7 +395,7 @@ class vispy(object):
         
         # get GNSS sp3 files (otherwise it could go mad if run in parallel..)
         for source in sources_obs:
-            if source[0:2].lower()=='pr' or source[0:2].lower()=='pg':
+            if source[0:2].lower() == 'pr' or source[0:2].lower() == 'pg':
                 beg = datetime.datetime(self.date_start.year,
                                         self.date_start.month,
                                         self.date_start.day)
@@ -409,7 +404,7 @@ class vispy(object):
                                         self.date_stop.day)
                 dd = (end-beg).days
                 for d in range(dd+1):
-                    load_sp3(self.inp.sc_eph_cat, source, \
+                    load_sp3(self.inp.sc_eph_cat, source,
                              beg+datetime.timedelta(days=d), load=False)
         
         # spacecraft ephs, if they were observed:
@@ -431,7 +426,7 @@ class vispy(object):
                     sou_scan = self.vex['SCHED'][s].getall('source')
                     if sousou in [ss.upper() for ss in sou_scan]:
                         t_start = datetime.datetime.strptime(\
-                                            self.vex['SCHED'][s]['start'], \
+                                            self.vex['SCHED'][s]['start'],
                                                       '%Yy%jd%Hh%Mm%Ss')
                         if t_begin is None:
                             t_begin = t_start
@@ -442,7 +437,7 @@ class vispy(object):
                 if t_begin is not None:
                     inp_swchs = self.inp.get_section('all')
                     inp_swchs['sc_eph_force_update'] = False
-                    inps.append([stst, sousou, t_begin, t_end, \
+                    inps.append([stst, sousou, t_begin, t_end,
                                   inp_swchs, False])
         
         n_sc = len(inps) # number of sc for which to make ephs
@@ -460,7 +455,6 @@ class vispy(object):
             else: # Serial way
                 for inp in inps:
                     sc_eph(inp)
-
         
         # check if RadioAstron observed, download/update its eph:
         sou = ['RA']
@@ -469,12 +463,12 @@ class vispy(object):
             if sousou in self.stations.values(): # RA observing scheduled?
                 t_begin, t_end = None, None
                 for s in self.vex['SCHED']:
-                    sta = [st for st in self.vex['SCHED'][s].getall('station') \
-                            if st[0].upper()==sousou]
+                    sta = [st for st in self.vex['SCHED'][s].getall('station')
+                           if st[0].upper() == sousou]
                     if len(sta)>0:
                         sta = sta[0]
-                        t_start = datetime.datetime.strptime(\
-                                            self.vex['SCHED'][s]['start'], \
+                        t_start = datetime.datetime.strptime(
+                                            self.vex['SCHED'][s]['start'],
                                                       '%Yy%jd%Hh%Mm%Ss')
                         if t_begin is None:
                             t_begin = t_start
@@ -485,16 +479,14 @@ class vispy(object):
                 if t_begin is not None:
                     inp_swchs = self.inp.get_section('all')
                     inp_swchs['sc_eph_force_update'] = False
-                    load_sc_eph('C', sousou, t_begin, t_end, \
-                                inp_swchs, load=False)
-                
+                    load_sc_eph('C', sousou, t_begin, t_end, inp_swchs, load=False)
 
         ''' update/(down)load eops, meteo and iono data '''
         # check internet connection
         if internet_on():
             try:
-                doup(self.inp.do_trp_calc, self.inp.do_ion_calc, \
-                     self.inp.cat_eop, self.inp.meteo_cat, self.inp.ion_cat,\
+                doup(self.inp.do_trp_calc, self.inp.do_ion_calc,
+                     self.inp.cat_eop, self.inp.meteo_cat, self.inp.ion_cat,
                      self.date_start, self.date_stop, self.inp.iono_model)
             except Exception, err:
                 print str(err)
@@ -506,11 +498,10 @@ class vispy(object):
             toc = _time()
             print 'Updating stuff took {:.1f} seconds.'.format(toc-tic)
     
-    
     def calcDelays(self):
-        '''
+        """
             Run vint for each of the created obs-objects
-        '''
+        """
         # Delays, Uvws, Doppler, Etc. = DUDE
         if not self.parallel:
             ''' Serial way '''
@@ -546,13 +537,12 @@ class vispy(object):
                 toc = _time()
                 print 'Calculation took {:.1f} seconds.'.format(toc-tic)
 
-    
     def packDelays(self, delay_type = 'group', \
-              smoothing=True, ionPhaseCor=False, dopplerPhaseCor=False,\
-              noIonDelay=False):     
-        ''' 
+                   smoothing=True, ionPhaseCor=False, dopplerPhaseCor=False,\
+                   noIonDelay=False):
+        """
             Pack dudes into binary SFXC del-files and human-readable txt-files
-        '''
+        """
         # load input sittings:
         inp = self.inp
         
@@ -723,16 +713,17 @@ class vispy(object):
                      for (st, st_sh) in zip(stations, stations_short)]
             for inpu in inps:
                 packie(inpu)
-                
 
         if self.showTiming: 
             toc = _time()
             print 'Output took {:.1f} seconds.'.format(toc-tic)
 
+
 def sc_eph(inps):
     # helper func to make s/c ephs (in parallel)
     stst, sousou, t_begin, t_end, inp, load = inps
     load_sc_eph(stst, sousou, t_begin, t_end, inp, load=load)
+
 
 def packie(inps):
     # unpack inps:
@@ -983,23 +974,23 @@ def smoothie(ob):
     ob.smoothDude(tstep=1)
     return ob
     
-#%%
+
 def main():
     # create parser
-    parser = argparse.ArgumentParser(prog='vispy.py', \
-                formatter_class=argparse.RawDescriptionHelpFormatter,\
-                description='Computation of VLBI delays.')
+    parser = argparse.ArgumentParser(prog='vispy.py',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description='Computation of VLBI delays.')
     # optional arguments
     parser.add_argument('-p', '--parallel', action='store_true',
                         help='run computation in parallel mode')
     parser.add_argument('-t', '--showTiming', action='store_true',
                         help='display timing info')
     parser.add_argument('-s', '--stations', type=str, default='all',
-                        help='2-letter station code(s) to process. '+\
+                        help='2-letter station code(s) to process. ' +
                              'defaults to \'all\'')
-    parser.add_argument('-ts', '--timeStep', metavar='SECONDS',\
+    parser.add_argument('-ts', '--timeStep', metavar='SECONDS',
                         type=int, default=10,
-                        help='time step [sec] for delay calculation. '+\
+                        help='time step [sec] for delay calculation. ' +
                              'defaults to 10 sec')
     parser.add_argument('-nid', '--noIonDelay', action='store_true',
                         help='do not include ionospheric delay')                         
@@ -1013,7 +1004,6 @@ def main():
     parser.add_argument('vexfile', type=str, help='input vex-file')
     parser.add_argument('cfgfile', type=str, help='input config-file')
     args = parser.parse_args()
-    
     
     if args.info:
         ''' Display info and exit '''
@@ -1042,8 +1032,8 @@ def main():
         noIonDelay = args.noIonDelay
         
         # only some specific stations wanted?
-        staz = 'all'
-        if args.stations=='all':
+        # staz = 'all'
+        if args.stations == 'all':
             staz = args.stations
         else:
             staz = args.stations.split(',')
@@ -1063,9 +1053,7 @@ def main():
                      noIonDelay=noIonDelay)
         # a happy end
         sys.exit(1)
-   
-   
-#%%    
+
     
 if __name__ == '__main__':
     '''

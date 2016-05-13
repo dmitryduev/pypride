@@ -1357,6 +1357,7 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
             lastLine = map(int, [float(x) for x in tmp[-1].split()[0:6]])
             eph_start = datetime.datetime(*firstLine)
             eph_stop = datetime.datetime(*lastLine)
+            # print t_start, eph_start, t_stop, eph_stop
             if (t_start < eph_start) or (t_stop > eph_stop):
                 t_obs_out_of_eph_boundary = True
         except:
