@@ -624,13 +624,130 @@ def freqConst(cat_file='cats/sc.freq', sc=None):
 
 '''
 #==============================================================================
-# Download raw ephemeride files for ESA spacecraft
+# Download raw ephemerides files for ESA spacecraft
 #==============================================================================
 '''
 def getESAraweph(source, orb_path='.', replaceDE=True):
-    ''' 
+    """
     Download raw ephemeride files for VEX, MEX, and ROSETTA
-    '''
+    """
+    if internet_on():
+        ftp = FTP('ssols01.esac.esa.int')
+        ftp.login()  # user anonymous, passwd anonymous
+        folder = '/pub/data/ESOC/{:s}/'.format(source.upper())
+        ftp.cwd(folder)
+        contents = ftp.nlst()
+        # print(contents)
+
+        if source.upper() != 'ROSETTA':
+            p = re.compile(u'OR(VV|MM)_FDL(V|M)MA_DA_\d.*_\d.*(VEX|MEX)', flags=re.IGNORECASE)
+
+            orbFiles = []
+            # get list of orbfiles
+            for f in contents:
+                match = p.search(f)
+                if match is not None:  # if there's a match
+                    orbFiles.append(match.group(0))
+            # print(orbFiles)
+            orbFiles = sorted(orbFiles)
+
+            # check contents of orb_path folder (final raw ephs:)
+            orbFilesLocal = [f for f in os.listdir(orb_path) if
+                             os.path.isfile(os.path.join(orb_path, f)) and ('FDL' in f)]
+            orbFilesLocal = sorted(orbFilesLocal)
+
+            # get base_names:
+            orbFiles_base = sorted(list(set([f[:27] for f in orbFiles])))
+            orbFilesLocal_base = sorted(list(set([f[:27] for f in orbFilesLocal])))
+
+            latest = sorted([sorted([f for f in orbFiles if b in f])[-1] for b in orbFiles_base])
+            # print(latest)
+
+            # find updates
+            # new = [f for f in orbFiles if f not in orbFilesLocal]
+            new = [f for b, f in zip(orbFiles_base, latest) if (b not in orbFilesLocal_base) or
+                   ((b in orbFilesLocal_base) and (f not in orbFilesLocal))]
+            # print(new)
+            remove = [[f for f in orbFilesLocal if b in f] for b in orbFilesLocal_base]
+            remove = [sorted(f)[:-1] for f in remove if len(f) > 1]
+            # print(remove)
+
+            # get 'em. if they exist
+            if len(new) > 0:
+                for fNew in new:
+                    try:
+                        print('downloading {:s}'.format(fNew))
+                        fNew_local = os.path.join(orb_path, fNew)
+                        ftp.retrbinary('RETR {:s}'.format(fNew),
+                                       open('{:s}'.format(fNew_local), 'wb').write)
+                        # replace all D+/- with E+/-
+                        if replaceDE:
+                            with open(fNew_local, 'r') as fOut:
+                                data = fOut.read()
+                            data = data.replace('D+', 'E+')
+                            data = data.replace('D-', 'E-')
+                            with open(fNew_local, 'w') as fOut:
+                                fOut.write(data)
+                    except:
+                        continue
+            # remove outdated files:
+            if len(remove) > 0:
+                for fRem in remove:
+                    os.remove(os.path.join(orb_path, fRem))
+
+        else:
+            # Rosetta is different
+            p = re.compile(u'RORB_DV_\d.*_\d.*(ROS)', flags=re.IGNORECASE)
+            # they just dump everything into one huge file
+
+            orbFiles = []
+            # get list of orbfiles
+            for f in contents:
+                match = p.search(f)
+                if match is not None:  # if there's a match
+                    orbFiles.append(match.group(0))
+            orbFiles = sorted(orbFiles)
+            # print(orbFiles)
+
+            # check contents of orb_path folder (final raw ephs:)
+            orbFilesLocal = [f for f in os.listdir(orb_path) if
+                             os.path.isfile(os.path.join(orb_path, f)) and ('RORB_DV' in f)]
+
+            if len(orbFiles) > 0 and (orbFiles[-1] not in orbFilesLocal):
+                try:
+                    fNew = orbFiles[-1]
+                    print('downloading {:s}'.format(fNew))
+                    fNew_local = os.path.join(orb_path, fNew)
+                    ftp.retrbinary('RETR {:s}'.format(fNew),
+                                   open('{:s}'.format(fNew_local), 'wb').write)
+                    # replace all D+/- with E+/-
+                    if replaceDE:
+                        with open(fNew_local, 'r') as fOut:
+                            data = fOut.read()
+                        data = data.replace('D+', 'E+')
+                        data = data.replace('D-', 'E-')
+                        with open(fNew_local, 'w') as fOut:
+                            fOut.write(data)
+
+                    # remove outdated files:
+                    if len(orbFilesLocal) > 0:
+                        for fRem in orbFilesLocal:
+                            os.remove(os.path.join(orb_path, fRem))
+                except:
+                    pass
+
+            return True
+    else:
+        print 'No Internet connection, unable to get ESA\'s ephs.'
+        return False
+
+
+def getESAraweph_old(source, orb_path='.', replaceDE=True):
+    """
+    Download raw ephemeride files for VEX, MEX, and ROSETTA
+
+    Update: as of 2016/05/13 the old tasc.esa.int site is down and not working anymore
+    """
     if internet_on():
         eph_url = 'http://tasc.esa.int/data/' + source[0:3].upper()
         response = urllib2.urlopen(eph_url)
@@ -641,77 +758,77 @@ def getESAraweph(source, orb_path='.', replaceDE=True):
         # get list of orb files
         for line in html:
             match = p.search(line)
-            if match!=None: # if there's a match
+            if match != None:  # if there's a match
                 orbFiles.append(match.group(0))
-        
+
         # check contents of orb_path folder (final raw ephs:)
-        orbFilesLocal = [ f for f in os.listdir(orb_path) \
-                            if os.path.isfile(os.path.join(orb_path, f)) and \
-                            ('.gz' not in f) and ('ORB_0' in f)]
+        orbFilesLocal = [f for f in os.listdir(orb_path) \
+                         if os.path.isfile(os.path.join(orb_path, f)) and \
+                         ('.gz' not in f) and ('ORB_0' in f)]
         # find updates
         new = [f for f in orbFiles if f[:-3] not in orbFilesLocal]
-        
+
         # check contents of orb_path folder (planned raw ephs:)
-        if source[0:3].upper()=='MEX' and 1==0:
+        if source[0:3].upper() == 'MEX' and 1 == 0:
             p = re.compile('(?<=HREF=")MORB_pln\d.*gz(?=">)', flags=re.IGNORECASE)
             plnOrbFiles = []
             # get list of orb files
             for line in html:
                 match = p.search(line)
-                if match!=None: # if there's a match
+                if match != None:  # if there's a match
                     plnOrbFiles.append(match.group(0))
-            if len(plnOrbFiles)>0:
+            if len(plnOrbFiles) > 0:
                 # get only the latest:
                 plnOrbFile = sorted(plnOrbFiles)[-1]
             else:
                 plnOrbFile = None
-#            print plnOrbFile
-            
-            plnOrbFilesLocal = [ f for f in os.listdir(orb_path) \
-                            if os.path.isfile(os.path.join(orb_path, f)) and \
-                            ('.gz' not in f) and ('ORB_pln' in f)]
+            # print plnOrbFile
+
+            plnOrbFilesLocal = [f for f in os.listdir(orb_path) \
+                                if os.path.isfile(os.path.join(orb_path, f)) and \
+                                ('.gz' not in f) and ('ORB_pln' in f)]
             if plnOrbFile is not None and plnOrbFile[:-3] not in plnOrbFilesLocal:
                 # remove old planned data:
                 for fOld in plnOrbFilesLocal:
                     os.remove(os.path.join(orb_path, fOld))
                 # fetch the new file:
                 new.append(plnOrbFile)
-        
+
         # get 'em. if they exist
-        if len(new)>0:
+        if len(new) > 0:
             for fNew in new:
                 try:
-                    url = eph_url+'/'+fNew
+                    url = eph_url + '/' + fNew
                     fu = urllib2.urlopen(url)
                     print "downloading " + fNew
                     # Save zipped file
-                    with open(os.path.join(orb_path,fNew), "wb") as local_file:
+                    with open(os.path.join(orb_path, fNew), "wb") as local_file:
                         local_file.write(fu.read())
                     # unzip:
                     print "unzipping " + fNew
-                    with gzip.open(os.path.join(orb_path,fNew), 'rb') as fIn, \
-                         open(os.path.join(orb_path,fNew[:-3]), "w") as fOut:
+                    with gzip.open(os.path.join(orb_path, fNew), 'rb') as fIn, \
+                            open(os.path.join(orb_path, fNew[:-3]), "w") as fOut:
                         fOut.write(fIn.read())
                     # replace all D+/- with E+/-
                     if replaceDE:
-                        with open(os.path.join(orb_path,fNew[:-3]), 'r') as fOut:
+                        with open(os.path.join(orb_path, fNew[:-3]), 'r') as fOut:
                             data = fOut.read()
-                        data = data.replace('D+','E+')
-                        data = data.replace('D-','E-')
-                        with open(os.path.join(orb_path,fNew[:-3]), 'w') as fOut:
+                        data = data.replace('D+', 'E+')
+                        data = data.replace('D-', 'E-')
+                        with open(os.path.join(orb_path, fNew[:-3]), 'w') as fOut:
                             fOut.write(data)
                     # delete zipped file:
-                    os.remove(os.path.join(orb_path,fNew))
+                    os.remove(os.path.join(orb_path, fNew))
                     # find and delete older local files:
                     # (eph numbers are the same, dates are different)
                     [os.remove(os.path.join(orb_path, x)) \
-                        for x in orbFilesLocal if x[:9] in fNew]
-                #handle errors
+                     for x in orbFilesLocal if x[:9] in fNew]
+                # handle errors
                 except urllib2.HTTPError, e:
                     print "HTTP Error:", e.code, url
                 except urllib2.URLError, e:
                     print "URL Error:", e.reason, url
-            
+
             return True
     else:
         print 'No Internet connection, unable to get ESA\'s ephs.'
@@ -723,9 +840,9 @@ def getESAraweph(source, orb_path='.', replaceDE=True):
 #==============================================================================
 '''
 def checkbound(source, orb_path='.', n=7):
-    '''
+    """
     Check time boundaries of orb files
-    '''
+    """
     # There must be a file 'boundaries.raw'
     # If it's >1 week old, recalculate it
     # first check that it actually exist:
@@ -736,25 +853,31 @@ def checkbound(source, orb_path='.', n=7):
 #              datetime.datetime.utcfromtimestamp(os.path.getmtime(path))
     
     updates = getESAraweph(source, orb_path=orb_path, replaceDE=True)
-    
+
+    def sc_condition(sc):
+        if sc.upper() != 'ROSETTA':
+            return fle[:2] == 'OR' and 'FDL' in fle
+        else:
+            return fle[:8] == 'RORB_DV_' and 'ROS' in fle
+
     bounds = []
 #    if (os.path.isfile(path) and age.days > n) or (not os.path.isfile(path)):
     if updates or (not os.path.isfile(path)):
         r = re.compile('[-T:]+')
         for root, subFolders, files in os.walk(orb_path):
             for fle in files:
-                if 'ORB_' in fle and 'gz' not in fle and 'svn' not in fle:
+                if sc_condition(source):
                     with open(os.path.join(root, fle), 'r') as f:
                         data = f.readlines()
-                    starts = [i for i,v in enumerate(data) if 'START_TIME' in v]
-                    stops = [i for i,v in enumerate(data) if 'STOP_TIME' in v]
+                    starts = [i for i, v in enumerate(data) if 'START_TIME' in v]
+                    stops = [i for i, v in enumerate(data) if 'STOP_TIME' in v]
                     eq = data[starts[0]].index('=')            
                     t = r.split(data[starts[0]][eq+1:].strip())
                     t_start = map(int,t[:-1])
                     t_start.append(float(t[-1]))
                     eq = data[stops[-1]].index('=')            
                     t = r.split(data[stops[-1]][eq+1:].strip())
-                    t_stop = map(int,t[:-1])
+                    t_stop = map(int, t[:-1])
                     t_stop.append(float(t[-1]))
 #                    print fle, t_start, t_stop
                     # return file_name, t_start, t_stop
@@ -762,7 +885,6 @@ def checkbound(source, orb_path='.', n=7):
 
         with open(path, 'w') as f:
             for line in bounds:
-#                print line[1]
                 out = '{:s}  '.format(line[0])
                 out += '{:5d} {:02d} {:02d} {:02d} {:02d} {:011.8f}   '.\
                         format(*line[1])
@@ -787,27 +909,27 @@ def checkbound(source, orb_path='.', n=7):
 #==============================================================================
 '''
 def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
-    '''
+    """
     The orbital data proper are just lines providing at discrete time steps the
     epoch of the state, the state (position in km, velocity in km/s) and, if
     applicable, the state derivative (w.r.t time scale in days).
     
     cbody = 'venus' for VEX, 'mars' for MEX
-    '''
-    with open(orb_file,'r') as f:
+    """
+    with open(orb_file, 'r') as f:
         f_lines = f.readlines()
     
-    slots = [ii for ii,v in enumerate(f_lines) if 'START_TIME' in v]
+    slots = [ii for ii, v in enumerate(f_lines) if 'START_TIME' in v]
     
     slotData = []
     r = re.compile('[-T:]+')
     
     for slot in slots:
         out = [slot]
-        for jj in (0,1):
+        for jj in (0, 1):
             eq = f_lines[slot+jj].index('=')            
             t = r.split(f_lines[slot+jj][eq+1:].strip())
-            ttag = map(int,t[:-1])
+            ttag = map(int, t[:-1])
             ttag.append(float(t[-1]))
             out.append(ttag)
 #            slot_start = datetime(*map(int,ttag))
@@ -829,47 +951,43 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     for ii, sta, sto in s:
         kk = ii + 8
         block = []
-        while len(f_lines[kk])>5 and ('META_START' not in f_lines[kk]):
+        while len(f_lines[kk]) > 5 and ('META_START' not in f_lines[kk]):
             # skip state derivatives:
-            if f_lines[kk][0]==' ': 
+            if f_lines[kk][0] == ' ':
                 kk += 1
                 continue
             line_split = f_lines[kk].split()
             ttag = map(float, r.split(line_split[0]))
-            dd = (datetime.datetime(*map(int,ttag[0:3])) - date_start).days
+            dd = (datetime.datetime(*map(int, ttag[0:3])) - date_start).days
             ct = ttag[3] + ttag[4]/60.0 + ttag[5]/3600.0 + dd*24.0
-            block.append(flatten([ct, map(float,line_split[1:])]))
+            block.append(flatten([ct, map(float, line_split[1:])]))
             kk += 1
         eph_blocks.append( np.array(block) )
 
-
     ''' make ephemerides for output '''
     # fake obs
-    ob = obs(['DUMMY'],'DUMMY','C')
+    ob = obs(['DUMMY'], 'DUMMY', 'C')
     date_t_start = datetime.datetime(*t_start)
     date_t_stop = datetime.datetime(*t_stop)
     ob.addScan(date_t_start, t_step, stop=date_t_stop)
     
     ''' load input sittings: '''
-    if inp==None:
-#        inp = inp_set('inp.cfg')
+    if inp is None:
+        # inp = inp_set('inp.cfg')
         raise Exception('inp-file not provided')
     jpl_eph = inp['jpl_eph']
     cat_eop = inp['cat_eop']
-#    jpl_eph = '/Users/oasis/_jive/python/vispy/jpl_eph/JPLEPH.421'
-#    jpl_eph = '/Users/oasis/_jive/python/vispy/jpl_eph/JPLEPH.405'
-#    cat_eop = '/Users/oasis/_jive/python/vispy/cats/eopc04.cat'
     
-    #load eops
+    # load eops
     ''' get the relevant eop entries from the catalogue: '''
-    mjd_start = mjuliandate(date_t_start.year, date_t_start.month,\
-                            date_t_start.day, date_t_start.hour, \
+    mjd_start = mjuliandate(date_t_start.year, date_t_start.month,
+                            date_t_start.day, date_t_start.hour,
                             date_t_start.minute, date_t_start.second)
     with open(cat_eop, 'r') as fc:
         fc_lines = fc.readlines()
-    eops = np.zeros((7,7)) # +/- 3 days
+    eops = np.zeros((7, 7)) # +/- 3 days
     for jj in range(len(fc_lines)):
-        if fc_lines[jj][0]!=' ' and fc_lines[jj][0]!='*':
+        if fc_lines[jj][0] != ' ' and fc_lines[jj][0] != '*':
             entry = [float(x) for x in fc_lines[jj].split()]
             if len(entry) > 0 and entry[3] == np.floor(mjd_start) - 3:
                 for kk in range(7):
@@ -881,12 +999,12 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
                     eops[kk,5] = entry[8] # dX
                     eops[kk,6] = entry[9] # dY
                     entry = [float(x) for x in fc_lines[jj+kk+1].split()]
-                break #exit loop
+                break  # exit loop
     
-    ''' stick relevant eph blocks together and cut relevant peace '''
+    ''' stack relevant eph blocks together and cut relevant peace '''
     # raw cut
-    mjd_end = mjuliandate(date_t_stop.year, date_t_stop.month,\
-                            date_t_stop.day, date_t_stop.hour, \
+    mjd_end = mjuliandate(date_t_stop.year, date_t_stop.month,
+                            date_t_stop.day, date_t_stop.hour,
                             date_t_stop.minute, date_t_stop.second)
     ii_start = [ii for ii,v in enumerate(s) if \
                         mjuliandate(*v[1]) <= mjd_start < mjuliandate(*v[2])][0]
@@ -895,7 +1013,7 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     eph_blocks = eph_blocks[ii_start:ii_end+1]
     s = s[ii_start:ii_end+1]
     
-    # stick
+    # stack
 #    tmp = eph_blocks[0]
 #    for b in eph_blocks[1:]:
 #        # last entry of block n = first entry of block n+1. skip duplicates
@@ -904,15 +1022,12 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     
     # tailored cut of each of the first and the last blocks
     # start and stop t in h to compare with eph_blocks
-    th_start = date_t_start.hour + date_t_start.minute/60.0 +\
-                date_t_start.second/3600.0
-    th_end = date_t_stop.hour + date_t_stop.minute/60.0 +\
-                date_t_stop.second/3600.0
-    dd = (datetime.datetime(*t_stop[0:3]) -\
-          datetime.datetime(*t_start[0:3])).days
+    th_start = date_t_start.hour + date_t_start.minute/60.0 + date_t_start.second/3600.0
+    th_end = date_t_stop.hour + date_t_stop.minute/60.0 + date_t_stop.second/3600.0
+    dd = (datetime.datetime(*t_stop[0:3]) - datetime.datetime(*t_start[0:3])).days
 
-    th_start_ii = np.searchsorted(eph_blocks[0][:,0], th_start)
-    th_end_ii = np.searchsorted(eph_blocks[-1][:,0], th_end + dd*24.0)
+    th_start_ii = np.searchsorted(eph_blocks[0][:, 0], th_start)
+    th_end_ii = np.searchsorted(eph_blocks[-1][:, 0], th_end + dd*24.0)
     eph_blocks[0] = eph_blocks[0][th_start_ii-1:, :]
     eph_blocks[-1] = eph_blocks[-1][:th_end_ii+1, :]
     
@@ -962,8 +1077,8 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
             # then GTRS
             astrotime = Time(mjd, format='mjd', scale='tdb', precision=9)
             UTCdatetime = astrotime.utc.datetime
-            UTC = (UTCdatetime.hour*3600.0 + \
-                   UTCdatetime.minute*60.0 + \
+            UTC = (UTCdatetime.hour*3600.0 +
+                   UTCdatetime.minute*60.0 +
                    UTCdatetime.second + UTCdatetime.microsecond*1e-6)/86400.0
 
             ''' interpolate eops to t_obs '''
@@ -1019,21 +1134,21 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
 #        print 'ii =',ii
 #        print i_s, i_e
         for jj in range(6):
-#            bcrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
-#                                       eph_bcrs_blocks[ii][:, jj], \
-#                                       th[i_s:i_e])
-#            gcrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
-#                                       eph_gcrs_blocks[ii][:, jj], \
-#                                       th[i_s:i_e])
-#            gtrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
-#                                       eph_gtrs_blocks[ii][:, jj], \
-#                                       th[i_s:i_e])
+            # bcrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+            #                           eph_bcrs_blocks[ii][:, jj], \
+            #                           th[i_s:i_e])
+            # gcrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+            #                           eph_gcrs_blocks[ii][:, jj], \
+            #                           th[i_s:i_e])
+            # gtrs[i_s:i_e, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+            #                           eph_gtrs_blocks[ii][:, jj], \
+            #                           th[i_s:i_e])
             for kk in range(i_s, i_e):
-                bcrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+                bcrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0],
                                        eph_bcrs_blocks[ii][:, jj], th[kk])
-                gcrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+                gcrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0],
                                        eph_gcrs_blocks[ii][:, jj], th[kk])
-                gtrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0], \
+                gtrs[kk, jj], _ = lagint(9, eph_blocks[ii][:, 0],
                                        eph_gtrs_blocks[ii][:, jj], th[kk])
 
 #            gtrs[:,jj], _ = lagint(9, eph_blocks[:,0], eph_gtrs[:,jj], th)
@@ -1043,220 +1158,7 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
 #    print bcrs
 #    raw_input('bugagaga')
     return astrotime_out, bcrs, gcrs, gtrs 
- 
- 
-'''
-#==============================================================================
-# Load time slots needed from ESA orb file
-#==============================================================================
-'''
-#def load_slots_obsolete(orb_file, t_start, t_stop, t_step, source, inp=None):
-#    '''
-#    The orbital data proper are just lines providing at discrete time steps the
-#    epoch of the state, the state (position in km, velocity in km/s) and, if
-#    applicable, the state derivative (w.r.t time scale in days).
-#    
-#    cbody = 'venus' for VEX, 'mars' for MEX
-#    '''
-#    with open(orb_file,'r') as f:
-#        f_lines = f.readlines()
-#    
-#    slots = [ii for ii,v in enumerate(f_lines) if 'START_TIME' in v]
-#    
-#    slotData = []
-#    r = re.compile('[-T:]+')
-#    
-#    for slot in slots:
-#        out = [slot]
-#        for jj in (0,1):
-#            eq = f_lines[slot+jj].index('=')            
-#            t = r.split(f_lines[slot+jj][eq+1:].strip())
-#            ttag = map(int,t[:-1])
-#            ttag.append(float(t[-1]))
-#            out.append(ttag)
-##            slot_start = datetime(*map(int,ttag))
-#        slotData.append(out)
-#    
-#    # line number of 'start_time', start_time, stop_time
-#    s = [x for x in slotData if (mjuliandate(*t_start)>=mjuliandate(*x[1]) and\
-#                                mjuliandate(*t_start)<=mjuliandate(*x[2])) or\
-#                                (mjuliandate(*t_start)<=mjuliandate(*x[1]) and\
-#                                (mjuliandate(*t_stop)<=mjuliandate(*x[2]) and\
-#                                 mjuliandate(*t_stop)>=mjuliandate(*x[1]))) or\
-#                                 (mjuliandate(*t_start)<=mjuliandate(*x[1]) and\
-#                                  mjuliandate(*t_stop)>=mjuliandate(*x[2]))]
-##    print s
-#    # load blocks of ephm corresponding to s'es
-#    eph_blocks = []
-#    # count not from block start (commented below), but t_start
-#    date_start = datetime.datetime(*t_start[0:3])
-#    for ii, sta, sto in s:
-##        date_start = datetime.datetime(*sta[0:3])
-##        print date_start
-#        kk = ii + 8
-#        block = []
-#        while len(f_lines[kk])>5 and ('META_START' not in f_lines[kk]):
-#            # skip state derivatives:
-#            if f_lines[kk][0]==' ': 
-#                kk += 1
-#                continue
-#            line_split = f_lines[kk].split()
-#            ttag = map(float, r.split(line_split[0]))
-#            dd = (datetime.datetime(*map(int,ttag[0:3])) - date_start).days
-#            ct = ttag[3] + ttag[4]/60.0 + ttag[5]/3600.0 + dd*24.0
-##            print flatten([ct, map(float,line_split[1:])])
-##            raw_input()
-#            block.append(flatten([ct, map(float,line_split[1:])]))
-#            kk += 1
-#        eph_blocks.append( np.array(block) )
-#
-#
-#    ''' make the ephemeris for output '''
-#    # fake obs
-#    ob = obs(['DUMMY'],'DUMMY','C')
-#    date_t_start = datetime.datetime(*t_start)
-#    date_t_stop = datetime.datetime(*t_stop)
-#    ob.addScan(date_t_start, t_step, stop=date_t_stop)
-#    
-#    ''' load input sittings: '''
-#    if inp==None:
-#        inp = inp_set('inp.cfg')
-#    jpl_eph = inp.jpl_eph
-#    cat_eop = inp.cat_eop
-##    jpl_eph = '/Users/oasis/_jive/python/vispy/jpl_eph/JPLEPH.421'
-##    jpl_eph = '/Users/oasis/_jive/python/vispy/jpl_eph/JPLEPH.405'
-##    cat_eop = '/Users/oasis/_jive/python/vispy/cats/eopc04.cat'
-#    
-#    #load eops
-#    ''' get the relevant eop entries from the catalogue: '''
-#    mjd_start = mjuliandate(date_t_start.year, date_t_start.month,\
-#                            date_t_start.day, date_t_start.hour, \
-#                            date_t_start.minute,date_t_start.second)
-#    with open(cat_eop, 'r') as fc:
-#        fc_lines = fc.readlines()
-#    eops = np.zeros((7,7)) # +/- 3 days
-#    for jj in range(len(fc_lines)):
-#        if fc_lines[jj][0]!=' ' and fc_lines[jj][0]!='*':
-#            entry = [float(x) for x in fc_lines[jj].split()]
-#            if len(entry) > 0 and entry[3] == np.floor(mjd_start) - 3:
-#                for kk in range(7):
-#                    eops[kk,0] = entry[3] # mjd
-#                    eops[kk,1] = entry[6] # UT1-UTC
-#                    eops[kk,2] = entry[6] - nsec(entry[3]) # UT1 - TAI
-#                    eops[kk,3] = entry[4] # x_p
-#                    eops[kk,4] = entry[5] # y_p
-#                    eops[kk,5] = entry[8] # dX
-#                    eops[kk,6] = entry[9] # dY
-#                    entry = [float(x) for x in fc_lines[jj+kk+1].split()]
-#                break #exit loop
-#    
-#    eph_bcrs = []
-#    eph_gcrs = []
-#    eph_gtrs = []
-#    mjd0 = mjuliandate(ob.tstamps[0].year,\
-#                        ob.tstamps[0].month, ob.tstamps[0].day)
-#    for t in ob.tstamps:
-#        # dd is counted from 0h of date_t_start
-#        mjd = mjuliandate(t.year, t.month, t.day)
-#        dd = mjd - mjd0
-#        # CT in hours from mjd
-#        ct_h = t.hour + t.minute/60.0 + t.second/3600.0 + dd*24.0
-#        mjd_full = mjuliandate(t.year,t.month,t.day,t.hour,t.minute,t.second)
-#        
-#        jd = mjd + 2400000.5
-#        ct = (t.hour*3600.0 + t.minute*60.0 + t.second)/86400.0
-#        
-#        # choose proper eph block
-#        ii_cur = [ii for ii,v in enumerate(s) if \
-#                        mjuliandate(*v[1]) <= mjd_full < mjuliandate(*v[2])][0]
-#        
-##        n = 8 # Lagrange poly order
-##        # cut n+1 points around ct_h
-##        ctz = tuple(eph_blocks[ii_cur][:,0])
-##        position = np.searchsorted(ctz, ct_h)
-###        print position
-##        # number of points to cut from the left-hand side
-##        n_left = int(floor((n+1)/2.0))
-##        # number of points to cut from the right-hand side
-##        n_right = int(ceil((n+1)/2.0))
-##    
-###        print n_left, n_right
-##        
-##        # check/correct bounds:
-###        print len(ctz[:position])
-##        if len(ctz[:position]) < n_left:
-##            n_right += n_left - len(ctz[:position])
-##            n_left = len(ctz[:position])
-###        print len(ctz[position:])
-##        if len(ctz[position:]) < n_right:
-##            n_left += n_right - len(ctz[position:])
-##            n_right = len(ctz[position:])
-##
-###        print n_left, n_right
-##        
-##        # cut the proper piece:
-##        ctz = ctz[position-n_left:position+n_right]
-##        # cut proper pieces of r/v:
-##        rv = []
-##        for jj in range(1,7):
-##            yp = tuple(eph_blocks[ii_cur][:,jj])
-##            yp = yp[position-n_left:position+n_right]
-##            # interpolate to current CT
-##            L = make_lag_bi(ctz, yp)
-##            rv.append(L(ct_h))
-##        rv = np.array(rv)
-#        
-#        # this is an order of magnitude faster with the same precision:
-#        rv = []
-#        for jj in range(1,7):
-#            x, _ = lagint(9, eph_blocks[ii_cur][:,0],\
-#                             eph_blocks[ii_cur][:,jj], ct_h)
-#            rv.append(x)
-#        rv = np.array(flatten(rv))
-#        
-#        # add barycentric r/v of cbody at CT:
-#        if source.lower()=='vex':
-#            cbodyState = pleph(jd+ct, 2, 12, jpl_eph)
-#        elif source.lower()=='mex':
-#            cbodyState = pleph(jd+ct, 4, 12, jpl_eph)
-#        # append line to output SS barycentric ephemeris of VEX:
-#        rv_bcrs = rv + cbodyState
-#        eph_bcrs.append(rv_bcrs)
-#        
-#        # calculate geocentric orbits
-##        dtdbtt = dtdb( jd, 0.0, 0.5, 0.0, 0.0, 0.0 )
-#        # GCRS first:
-#        earth = pleph(jd+ct, 3, 12, jpl_eph)
-#        rv_gcrs = rv_bcrs - earth
-#        eph_gcrs.append(rv_gcrs)
-#        
-#        # then GTRS
-#        astrotime = Time(str(t), format='iso', scale='tdb', precision=9)
-#        UTCdatetime = astrotime.utc.datetime
-#        UTC = (UTCdatetime.hour*3600.0 + \
-#               UTCdatetime.minute*60.0 + \
-#               UTCdatetime.second + UTCdatetime.microsecond*1e-6)/86400.0
-#
-#        ''' interpolate eops to t_obs '''
-#        UT1, eop_int = eop_iers(mjd, UTC, eops)
-#        
-#        ''' rotation matrix IERS '''
-#        r2000 = ter2cel(UTCdatetime, eop_int, mode='der')
-#        rv_gtrs = np.zeros(6)
-#        rv_gtrs[0:3] = dot(r2000[:,:,0].T, rv_gcrs[0:3].T)
-#        rv_gtrs[3:6] = dot(r2000[:,:,0].T, rv_gcrs[3:6].T) + \
-#                       dot(r2000[:,:,1].T, rv_gcrs[0:3].T)
-#        eph_gtrs.append(rv_gtrs)
-#        
-#        
-#    # turn into numpy array:
-#    eph_bcrs = np.array(eph_bcrs)
-#    eph_gcrs = np.array(eph_gcrs)
-#    eph_gtrs = np.array(eph_gtrs)
-#    
-#    astrotime_out = Time(map(str, ob.tstamps), format='iso', scale='tdb')
-#
-#    return astrotime_out, eph_bcrs, eph_gcrs, eph_gtrs
+
 
 '''
 #==============================================================================
@@ -1306,7 +1208,7 @@ def esa_eph_download_helper(args):
     return html_seg
 
 
-def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, parallel=True):
+def esa_sc_eph_make_tasc(sc_name, start, stop, inp, paddLeft=30, paddRight=2, parallel=True):
     """
     Let ESOC do all the transformations for us.
 
@@ -1478,16 +1380,17 @@ def esa_sc_eph_make(sc_name, start, stop, inp, paddLeft=30, paddRight=2, paralle
 # Create vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
 #==============================================================================
 '''
-def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
-                             paddLeft=30, paddRight=0):
-    '''
+def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRight=0):
+    """
     Make vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
     
     padding - in minutes for each side
 
-    NOTE from 03/05/2016: these raw files are not available anymore
-    since the old ESA TASC site was turned down, and the new one does not have those
-    '''
+    NOTE from 03/05/2016: these raw files are not available anymore from the TASC server
+    since the old ESA TASC site was turned down
+    The same files are available from ftp://ssols01.esac.esa.int/pub/data/ESOC/
+
+    """
     # 30 min beidseitig padding:
     t_start = date_t_start - datetime.timedelta(minutes=paddLeft)
     t_end = date_t_stop + datetime.timedelta(minutes=paddRight)
@@ -1496,12 +1399,12 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
     date_string = date_t_start.strftime("%y%m%d")
 
     # file names    
-    sc_bcrs_eph = ''.join((source.lower(),'.bcrs.tdb.', date_string, '.eph'))
-    sc_gcrs_eph = ''.join((source.lower(),'.gcrs.utc.', date_string, '.eph'))
-    sc_gtrs_eph = ''.join((source.lower(),'.gtrs.utc.', date_string, '.eph'))
+    sc_bcrs_eph = ''.join((source.lower(), '.bcrs.tdb.', date_string, '.eph'))
+    sc_gcrs_eph = ''.join((source.lower(), '.gcrs.utc.', date_string, '.eph'))
+    sc_gtrs_eph = ''.join((source.lower(), '.gtrs.utc.', date_string, '.eph'))
     
     # check whether the file with BCRS eph exists
-    if os.path.isfile(inp['sc_eph_cat']+'/'+sc_bcrs_eph):
+    if os.path.isfile(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph)):
         eph_bc_exist = True
     else:
         eph_bc_exist = False
@@ -1509,13 +1412,13 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
     t_obs_out_of_eph_boundary = False
     if eph_bc_exist:
         # load it:
-        with open(inp['sc_eph_cat']+'/'+sc_bcrs_eph, 'r') as f:
+        with open(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph), 'r') as f:
             tmp = f.readlines()
         firstLine = map(int, [float(x) for x in tmp[0].split()[0:6]])
         lastLine  = map(int, [float(x) for x in tmp[-1].split()[0:6]])
         eph_start = datetime.datetime(*firstLine)
         eph_end = datetime.datetime(*lastLine)
-        if (t_start<eph_start) or (t_end>eph_end):
+        if (t_start < eph_start) or (t_end > eph_end):
             t_obs_out_of_eph_boundary = True            
     
     # force update requested?
@@ -1527,38 +1430,37 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
         os.remove(os.path.join(inp['sc_eph_cat'], sc_gcrs_eph))
         print 'removing {:s}'.format(sc_gtrs_eph)
         os.remove(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph))
-        
     
-    #now make/update the eph
+    # now make/update the eph
     if not eph_bc_exist or t_obs_out_of_eph_boundary:
         if not eph_bc_exist:
             print 'S/C BCRS ephemeris file '+sc_bcrs_eph+' not found, creating...'
         if t_obs_out_of_eph_boundary:
-#            print t_start, t_end, eph_start, eph_end
+            # print t_start, t_end, eph_start, eph_end
             print 'T_obs not within existing BCRS ephemeris time range. Updating '\
                   +sc_bcrs_eph+'...'
         
         # start time is in the future? notify the user!
         if t_start > datetime.datetime.now():
-            print 'Note that start date is in the future! '+\
-                  'Using planning ephs. \n'+\
+            print 'Note that start date is in the future! ' + \
+                  'Using planning ephs. \n' + \
                   'Force update computed ephs when final version is available!'
         
         # time slot
-        t_start = [t_start.year, t_start.month, t_start.day,\
+        t_start = [t_start.year, t_start.month, t_start.day,
                    t_start.hour, t_start.minute, t_start.second]
-        t_stop  = [t_end.year, t_end.month, t_end.day,\
+        t_stop  = [t_end.year, t_end.month, t_end.day,
                    t_end.hour, t_end.minute, t_end.second]
         
-        t_step = 1 # seconds
+        t_step = 1  # seconds
     
         path = os.path.join(inp['sc_eph_cat'], 'raw_'+source.lower())
-        # downlaod fresh ephs from tasc
+        # downlaod fresh ephs from ftp://ssols01.esac.esa.int/pub/data/ESOC/
         boundaries = checkbound(source, orb_path=path)
         try:
-            eph_file = os.path.join(path, [x[0] for x in boundaries if \
-                        mjuliandate(*x[1]) < mjuliandate(*t_start) < \
-                        mjuliandate(*t_stop) < mjuliandate(*x[2]) ][-1] )
+            eph_file = os.path.join(path, [x[0] for x in boundaries if
+                                    mjuliandate(*x[1]) < mjuliandate(*t_start) <
+                                    mjuliandate(*t_stop) < mjuliandate(*x[2]) ][-1] )
         except:
             raise Exception('No suitable raw ephemeris found. Fail!')
 
@@ -1584,7 +1486,7 @@ def esa_sc_eph_make_from_raw(source, date_t_start, date_t_stop, inp,
 #            eph_gtrs[:,jj], _ = lagint(9, ut, eph_gtrs[:,jj], ct)
         
         ''' output to files '''
-        tstamps = astrotime.tdb.datetime # t stamps look the same in utc and tdb
+        tstamps = astrotime.tdb.datetime  # t stamps look the same in utc and tdb
     
         ''' BCRS '''
         with open(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph),'w') as f:
@@ -2455,26 +2357,23 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                 sc_gtrs[:,jj] = derivative(UT_eph, sc_gtrs[:,jj-3], \
                                             points=5, poly=2) / 86400.0
             for ii, _ in enumerate(ob.tstamps):
-                sc_gcrs[ii,9:12] = dot(r2000_keep[ii][:,:,0], \
-                                        sc_gtrs[ii,9:12].T) + \
-                                   dot(r2000_keep[ii][:,:,1], \
-                                        sc_gtrs[ii,6:9].T)
-                sc_bcrs[ii,9:12] += sc_gcrs[ii,9:12]
+                sc_gcrs[ii, 9:12] = dot(r2000_keep[ii][:, :, 0], sc_gtrs[ii, 9:12].T) + \
+                                   dot(r2000_keep[ii][:, :, 1], sc_gtrs[ii, 6:9].T)
+                sc_bcrs[ii, 9:12] += sc_gcrs[ii, 9:12]
                 
         ''' calculate acceleration using an optimal Chebyshёv poly '''
-        for jj in range(12,15):
-            p = optimalFit(UT_eph, sc_gcrs[:,jj-3], \
+        for jj in range(12, 15):
+            p = optimalFit(UT_eph, sc_gcrs[:,jj-3],
                                min_order=3, max_order=15, fit_type='cheb')
-            sc_gcrs[:,jj] = cheb.chebval(UT_eph,
-                            cheb.chebder(p.best_estimator_.coef_)) / 86400.0
+            sc_gcrs[:, jj] = cheb.chebval(UT_eph, cheb.chebder(p.best_estimator_.coef_)) / 86400.0
                             
         ''' resample to 1 sec grid '''
         if t_step!=1:
             N_obs = int((date_t_end - date_t_start + 2*dt).total_seconds()) + 1
-            date_t_stamps = [date_t_start - dt + datetime.timedelta(seconds=x) \
+            date_t_stamps = [date_t_start - dt + datetime.timedelta(seconds=x)
                              for x in range(N_obs)]
 #            print np.array(date_t_stamps)
-            t0 = ((date_t_start-dt).hour*3600.0 + (date_t_start-dt).minute*60.0 + \
+            t0 = ((date_t_start-dt).hour*3600.0 + (date_t_start-dt).minute*60.0 +
                          (date_t_start-dt).second)/86400.0
             t_stamps = [t0 + (x - (date_t_start-dt)).total_seconds()/86400.0 \
                         for x in date_t_stamps]
@@ -2556,7 +2455,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                     .format(*sc_bcrs_save[jj,6:12]/1e3)
                 f.write(s)
         
-    return (sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph)
+    return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
             
 '''
 #==============================================================================
@@ -2626,7 +2525,7 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
         print 'GNSS sp3-file: {:s}.Z not found, fetching...'.format(sp3_name)
         try:
             ftp = FTP('cddis.nasa.gov')
-            ftp.login() # user anonymous, passwd anonymous
+            ftp.login()  # user anonymous, passwd anonymous
             if 'igl' in sp3_name:
                 folder = 'glonass'
             elif 'igs' in sp3_name:

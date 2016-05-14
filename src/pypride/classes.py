@@ -55,7 +55,8 @@ class PolynomialRegression(BaseEstimator):
     
     def fit(self, X, y, deg=None):
         self.model = LinearRegression(fit_intercept=False)
-        self.model.fit(np.vander(X, N=self.deg + 1), y, n_jobs=-1)
+        # self.model.fit(np.vander(X, N=self.deg + 1), y, n_jobs=-1)
+        self.model.fit(np.vander(X, N=self.deg + 1), y)
     
     def predict(self, x):
         try:
@@ -88,6 +89,29 @@ class ChebyshevRegression(BaseEstimator):
     @property
     def coef_(self):
         return self.chefit
+
+
+'''
+#==============================================================================
+# Optimal fit to data
+#==============================================================================
+'''
+def optimalFit(x, y, min_order=0, max_order=8, fit_type='poly'):
+    # initialise optimal estimator:
+    if fit_type == 'poly':
+        estimator = PolynomialRegression()
+    elif fit_type == 'cheb':
+        estimator = ChebyshevRegression()
+    else:
+        raise Exception('unknown fit type')
+    degrees = np.arange(min_order, max_order)
+    cv_model = GridSearchCV(estimator,
+                            param_grid={'deg': degrees},
+                            scoring='mean_squared_error')
+    cv_model.fit(x, y)
+    # use as: cv_model.predict(x_new)
+    return cv_model
+
 
 '''
 #==============================================================================
@@ -555,8 +579,7 @@ class obs(object):
                     cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
                     uvw_smooth_scan.append(cv_model.predict(t_dense))
                 try:
-                    uvw_smooth = np.vstack((uvw_smooth,
-                                              np.array(uvw_smooth_scan).T))
+                    uvw_smooth = np.vstack((uvw_smooth, np.array(uvw_smooth_scan).T))
                 except:
                     uvw_smooth = np.array(uvw_smooth_scan).T
 
@@ -567,8 +590,7 @@ class obs(object):
                     cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
                     doppler_smooth_scan.append(cv_model.predict(t_dense))
                 try:
-                    doppler_smooth = np.vstack((doppler_smooth,
-                                              np.array(doppler_smooth_scan).T))
+                    doppler_smooth = np.vstack((doppler_smooth, np.array(doppler_smooth_scan).T))
                 except:
                     doppler_smooth = np.array(doppler_smooth_scan).T
 #            print '___'
@@ -2285,14 +2307,14 @@ class bindel(object):
         '''
         Dump parsed (and processed) data back to a binary .del-file
         '''
-        if out_name==None:
+        if out_name is None:
             dot = self.fname.index('.')
             out_name = self.fname[:dot] + 'i.del'
 #            out_name = self.fname
         if txt:
             dot = self.fname.index('.')
             out_name_txt = self.fname[:dot] + '.txt'
-        if out_dir==None:
+        if out_dir is None:
             out_dir = self.fdir
         # create output dir if it doesn't exist:
         if not os.path.isdir(out_dir):
@@ -2306,11 +2328,11 @@ class bindel(object):
                 
                 for sn in self.scans.keys():
                     # source name and mjd
-                    line = struct.pack('<80sxi', self.scans[sn]['source'], \
+                    line = struct.pack('<80sxi', self.scans[sn]['source'],
                                                  self.scans[sn]['mjd'])
                     f_del.write(line)
-                    for t, (u,v,w), d, p, a in zip(self.scans[sn]['time'], \
-                          self.scans[sn]['uvw'], self.scans[sn]['delay'], \
+                    for t, (u,v,w), d, p, a in zip(self.scans[sn]['time'],
+                          self.scans[sn]['uvw'], self.scans[sn]['delay'],
                           -self.scans[sn]['phase'], self.scans[sn]['amp']):
     #                      np.zeros_like(self.scans[sn]['delay']), self.scans[sn]['amp']):
                         line = struct.pack('<7d', t,u,v,w,d,p,a)
@@ -2328,14 +2350,14 @@ class bindel(object):
                 
                 for sn in self.scans.keys():
                     # source name and mjd
-                    line = '{:s} {:f}\n'.format(self.scans[sn]['source'].strip(), \
+                    line = '{:s} {:f}\n'.format(self.scans[sn]['source'].strip(),
                                                  self.scans[sn]['mjd'])
                     f_txt.write(line)
-                    for t, (u,v,w), d, p, a in zip(self.scans[sn]['time'], \
-                          self.scans[sn]['uvw'], self.scans[sn]['delay'], \
+                    for t, (u,v,w), d, p, a in zip(self.scans[sn]['time'],
+                          self.scans[sn]['uvw'], self.scans[sn]['delay'],
                           -self.scans[sn]['phase'], self.scans[sn]['amp']):
-    #                      np.zeros_like(self.scans[sn]['delay']), self.scans[sn]['amp']):
-                        line = '{:f} {:f} {:f} {:f} {:.15e} {:.15e} {:.15e}\n'.format(t,\
+                         # np.zeros_like(self.scans[sn]['delay']), self.scans[sn]['amp'])
+                        line = '{:f} {:f} {:f} {:f} {:.15e} {:.15e} {:.15e}\n'.format(t,
                                                                    u,v,w,d,p,a)
                         f_txt.write(line)
 
