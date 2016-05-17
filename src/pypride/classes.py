@@ -286,11 +286,11 @@ class obs(object):
         self.sou_radec = sou_radec
         self.exp_name = exp_name
         self.upSta = [] # list of uplink stations in case of n-way Doppler, n>1
-        self.tstamps = [] # list of datetime objs [datetime(2013,9,18,14,28),.]
-        self.scanStartTimes = [] # might be useful.. integrate the phase?
-        self.scanStopTimes = [] # to put trailing zeros in proper places (.del)
-        self.freqs = [] # list of obs freqs as defined in $MODE
-        self.dude = dude() # Delays, Uvws, Doppler, Etc. = DUDE
+        self.tstamps = []   # list of datetime objs [datetime(2013,9,18,14,28),.]
+        self.scanStartTimes = []  # might be useful.. integrate the phase?
+        self.scanStopTimes = []  # to put trailing zeros in proper places (.del)
+        self.freqs = []  # list of obs freqs as defined in $MODE
+        self.dude = dude()  # Delays, Uvws, Doppler, Etc. = DUDE
         # input switches (like what to calculate and what not)
         # default values
         self.inp = {'do_trp_calc':False, 'do_ion_calc':False, \
@@ -607,10 +607,10 @@ class obs(object):
 #==============================================================================
 '''
 class dude(object):
-    '''
+    """
     the class contains values of Delays, Uvws, Doppler and Etc. 
     calculated for a given obs-object
-    '''
+    """
     def __init__(self):
         # initialise lists for delays, uvws, dopplers
         self.delay = []

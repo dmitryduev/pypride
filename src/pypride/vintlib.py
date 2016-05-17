@@ -908,7 +908,7 @@ def checkbound(source, orb_path='.', n=7):
 # Load time slots needed from ESA orb file
 #==============================================================================
 '''
-def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
+def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
     """
     The orbital data proper are just lines providing at discrete time steps the
     epoch of the state, the state (position in km, velocity in km/s) and, if
@@ -916,8 +916,13 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     
     cbody = 'venus' for VEX, 'mars' for MEX
     """
-    with open(orb_file, 'r') as f:
+    with open(orb_files[0], 'r') as f:
         f_lines = f.readlines()
+    # relevant data spread across two files?
+    if len(orb_files) > 1:
+        with open(orb_files[1], 'r') as f:
+            # append second file:
+            f_lines += f.readlines()[1:]
     
     slots = [ii for ii, v in enumerate(f_lines) if 'START_TIME' in v]
     
@@ -1006,12 +1011,20 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     mjd_end = mjuliandate(date_t_stop.year, date_t_stop.month,
                             date_t_stop.day, date_t_stop.hour,
                             date_t_stop.minute, date_t_stop.second)
-    ii_start = [ii for ii,v in enumerate(s) if \
-                        mjuliandate(*v[1]) <= mjd_start < mjuliandate(*v[2])][0]
-    ii_end = [ii for ii,v in enumerate(s) if \
-                        mjuliandate(*v[1]) <= mjd_end < mjuliandate(*v[2])][0]
+    # exculde a pathalogical case when mjd_start == last point of a block
+    # for ii, v in enumerate(s):
+    #     print ii, v, mjuliandate(*v[1]), mjd_start, mjuliandate(*v[2]), \
+    #         (mjuliandate(*v[1]) <= mjd_start < mjuliandate(*v[2])) and (mjd_start != mjuliandate(*v[2]))
+    ii_start = [ii for ii, v in enumerate(s) if
+                (mjuliandate(*v[1]) <= mjd_start < mjuliandate(*v[2]))
+                and (mjd_start != mjuliandate(*v[2]))][0]
+    # print ii_start
+    ii_end = [ii for ii, v in enumerate(s) if
+                        mjuliandate(*v[1]) < mjd_end <= mjuliandate(*v[2])][0]
     eph_blocks = eph_blocks[ii_start:ii_end+1]
     s = s[ii_start:ii_end+1]
+    # print eph_blocks
+    # print s
     
     # stack
 #    tmp = eph_blocks[0]
@@ -1028,16 +1041,18 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
 
     th_start_ii = np.searchsorted(eph_blocks[0][:, 0], th_start)
     th_end_ii = np.searchsorted(eph_blocks[-1][:, 0], th_end + dd*24.0)
-    eph_blocks[0] = eph_blocks[0][th_start_ii-1:, :]
-    eph_blocks[-1] = eph_blocks[-1][:th_end_ii+1, :]
+    if th_start_ii != 0:
+        eph_blocks[0] = eph_blocks[0][th_start_ii-1:, :]
+    if th_end_ii != len(eph_blocks[-1]):
+        eph_blocks[-1] = eph_blocks[-1][:th_end_ii+1, :]
     
-#    print eph_blocks, len(eph_blocks)
-#    print s
-#    raw_input('bugagaga')
+    # print eph_blocks, len(eph_blocks)
+    # print s
+    # raw_input('bugagaga')
     '''
     make ephs only for the entries in eph_blocks, then interp 'em to 1s grid
     '''
-    mjd0 = mjuliandate(date_t_start.year, date_t_start.month,date_t_start.day)
+    mjd0 = mjuliandate(date_t_start.year, date_t_start.month, date_t_start.day)
 #    tic = _time()
     eph_bcrs_blocks = []
     eph_gcrs_blocks = []
@@ -1120,10 +1135,8 @@ def load_slots(orb_file, t_start, t_stop, t_step, source, inp=None):
     gtrs = np.zeros((len(th), 6))
     # which eph_block to use with each time stamp
     ii_cur = []
-#    print eph_blocks
     for thi in th:
-        ii_cur.append([i for i,v in enumerate(eph_blocks) if \
-                        v[0,0] <= thi < v[-1,0]][0])
+        ii_cur.append([i for i, v in enumerate(eph_blocks) if v[0, 0] <= thi < v[-1, 0]][0])
     ii_cur = flatten(ii_cur)
 
     # choose proper eph block and cut array in a clever way:
@@ -1458,14 +1471,23 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
         # downlaod fresh ephs from ftp://ssols01.esac.esa.int/pub/data/ESOC/
         boundaries = checkbound(source, orb_path=path)
         try:
-            eph_file = os.path.join(path, [x[0] for x in boundaries if
+            # is it in one file?
+            eph_files = [os.path.join(path, [x[0] for x in boundaries if
                                     mjuliandate(*x[1]) < mjuliandate(*t_start) <
-                                    mjuliandate(*t_stop) < mjuliandate(*x[2]) ][-1] )
+                                    mjuliandate(*t_stop) < mjuliandate(*x[2]) ][-1] )]
         except:
-            raise Exception('No suitable raw ephemeris found. Fail!')
+            # or spread across two?
+            try:
+                eph_files = []
+                eph_files.append(os.path.join(path, [x[0] for x in boundaries if
+                                 mjuliandate(*x[1]) <= mjuliandate(*t_start) < mjuliandate(*x[2])][-1]))
+                eph_files.append(os.path.join(path, [x[0] for x in boundaries if
+                                 mjuliandate(*x[1]) < mjuliandate(*t_stop) <= mjuliandate(*x[2])][-1]))
+            except:
+                raise Exception('No suitable raw ephemeris found. Fail!')
 
         astrotime, eph_bcrs, eph_gcrs, eph_gtrs = \
-                 load_slots(eph_file, t_start, t_stop, t_step, source, inp)
+                 load_slots(eph_files, t_start, t_stop, t_step, source, inp)
 
         ''' interpolate geocentric ephs to utc time stamps'''
         utz = astrotime.utc.datetime
@@ -12025,6 +12047,7 @@ def vint_s(ob):
     if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary3way':
         freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp'],
                                       sc=ob.source.lower(), tx_type='3way'))
+        # print(freq_ramp)
         freq_type = 'proper'
         # cut the time range of ob.tstamps:
         obs_start = Time(str(ob.tstamps[0]), format='iso', scale='utc')
@@ -12032,14 +12055,19 @@ def vint_s(ob):
         # print obs_start, obs_stop
         _, _, lt_sec = eph.RaDec_bc_sec(obs_start.tdb.jd1,
                                         obs_start.tdb.jd2*86400.0, inp['jpl_eph'])
-        numlt = datetime.timedelta(seconds=int(3.5*lt_sec))
+        # numlt = datetime.timedelta(seconds=int(3.5 * lt_sec))
+        numlt = datetime.timedelta(seconds=int(2.1 * lt_sec))
         # print numlt
         obs_ind_start = np.logical_and(freq_ramp[:, 0] <= obs_start.datetime-numlt,
                                        freq_ramp[:, 1] >= obs_start.datetime-numlt)
         ind_start = np.argmax(obs_ind_start)
         # print ind_start
-        obs_ind_stop = np.logical_and(freq_ramp[:, 0] <= obs_stop.datetime,
-                                      freq_ramp[:, 1] >= obs_stop.datetime)
+        # obs_ind_stop = np.logical_and(freq_ramp[:, 0] <= obs_stop.datetime,
+        #                               freq_ramp[:, 1] >= obs_stop.datetime)
+        # use 1 second safety bumper
+        onesec = datetime.timedelta(seconds=1)
+        obs_ind_stop = np.logical_and(freq_ramp[:, 0] <= obs_stop.datetime - onesec,
+                                      freq_ramp[:, 1] >= obs_stop.datetime - onesec)
         ind_stop = np.argmax(obs_ind_stop)
         # print ind_stop
         freq_ramp = freq_ramp[ind_start:ind_stop+1, :]
@@ -12061,8 +12089,7 @@ def vint_s(ob):
             print 'No ramp table found for 1-way Tx of {:s}, trying sc.freq...'\
                     .format(ob.source.lower())
             try:
-                freq, freq_type = freqConst(cat_file=inp['f_gc'], \
-                                            sc=ob.source.lower())
+                freq, freq_type = freqConst(cat_file=inp['f_gc'], sc=ob.source.lower())
                 freq_ramp = None
             except:
                 raise Exception('Can\'t find s/c Tx freq in cats/sc.freq')
@@ -12327,14 +12354,14 @@ def vint_s(ob):
         ''' uplink sta and f for 2(3)-way Doppler '''
         if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary3way':
             _, _, lt_sec = eph.RaDec_bc_sec(JD, CT*86400.0, inp['jpl_eph'])
-#            lt = datetime.timedelta(seconds=int(eph.fLt_gc(UTC+dd))) # lt [sec]
+            # lt = datetime.timedelta(seconds=int(eph.fLt_gc(UTC+dd))) # lt [sec]
             lt = datetime.timedelta(seconds=int(lt_sec))  # lt [sec]
-#            print lt, tstamp-2*lt
+            # print lt, tstamp-2*lt
             try:
                 # tstart, tstop in UTC; f_0, df, up_sta
-#                rampTslot = [x for x in freq_ramp if \
-#                                x[0] <= tstamp-2*lt <= x[1]][-1]
-#                 print(freq_ramp)
+                # rampTslot = [x for x in freq_ramp if \
+                #                 x[0] <= tstamp-2*lt <= x[1]][-1]
+                # print(freq_ramp)
                 rampTslot = freq_ramp[np.logical_and(freq_ramp[:, 0] <= tstamp-2*lt,
                                                      freq_ramp[:, 1] >= tstamp-2*lt), :][0]
                 # print lt, rampTslot
@@ -12771,25 +12798,29 @@ def vint_s(ob):
 
         ''' turn delays due to instr. and propagation effects
             into delay rates in Hz '''
-        tp = doppler_raw[:,1]*86400.0
-        doppler = doppler_raw[:,0]
-        
-        for ii in range(2,6):
+        tp = doppler_raw[:, 1]*86400.0
+        doppler = doppler_raw[:, 0]
+        # print doppler_raw
+        for ii in range(2, 6):
             # make cheb polyfit to delays, then differentiate it to get rates
-#            cheb_order = min(len(doppler_raw[:,ii]), 10)
-#            p = cheb.chebfit(tp, doppler_raw[:,ii], cheb_order)
-#            drate = cheb.chebval(tp, cheb.chebder(p))
+            # cheb_order = min(len(doppler_raw[:,ii]), 10)
+            # p = cheb.chebfit(tp, doppler_raw[:,ii], cheb_order)
+            # drate = cheb.chebval(tp, cheb.chebder(p))
             # optimal high-order Cheb-fit:
-#            p = optimalFit(tp, doppler_raw[:,ii], \
-#                               min_order=10, max_order=15, fit_type='cheb')
-#            drate = cheb.chebval(tp, cheb.chebder(p.best_estimator_.coef_))
+            # p = optimalFit(tp, doppler_raw[:,ii], \
+            #                   min_order=10, max_order=15, fit_type='cheb')
+            # drate = cheb.chebval(tp, cheb.chebder(p.best_estimator_.coef_))
             # local polyfit:
-#            fig = plt.figure()
-#            ax = fig.add_subplot(211)
-#            ax.plot(tp, doppler_raw[:,ii], '.')
-            drate = derivative(tp, doppler_raw[:,ii], points=7, poly=2)
-#            ax = fig.add_subplot(212)
-#            ax.plot(tp, drate, '.')
+            # fig = plt.figure()
+            # ax = fig.add_subplot(211)
+            # ax.plot(tp, doppler_raw[:,ii], '.')
+            # check for nans (could happen if e.g. fraudulent uplink sta)
+            if not np.isnan(np.sum(doppler_raw[:, ii])):
+                drate = derivative(tp, doppler_raw[:, ii], points=7, poly=2)
+            else:
+                drate = np.zeros_like(doppler_raw[:, ii])
+            # ax = fig.add_subplot(212)
+            # ax.plot(tp, drate, '.')
             doppler = np.vstack((doppler, -drate*doppler_raw[:,0]))
         dud.doppler = doppler.T
     return dud
