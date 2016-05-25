@@ -1901,10 +1901,10 @@ class source(object):
 #==============================================================================
 '''
 class ephem(object):
-    '''
+    """
     Class containing spacecraft ephemerides
     in GTRS, GCRS and BCRS
-    '''
+    """
     def __init__(self, sc_name):
         self.sc_name = sc_name
         self.gtrs = np.array([]) # empty numpy array
@@ -1922,26 +1922,30 @@ class ephem(object):
 #        self.fRadec = []
 #        self.fLt_gc = 0.0
         
-    def RaDec_bc_sec(self, jd, T_1, jpl_eph):
-        '''
+    def RaDec_bc_sec(self, jd, T_1, jpl_eph, return_R10=False):
+        """
         Calculate geocentric [Ra, Dec] of the S/C
         
         input: 
             JD   - Julian Date
             t_1  - obs epoch in decimal days, TDB
+            return_R10 - return vector R_GC - R_SC in BCRS or not
         output:
             ra, dec [rad] 
             lt_01 [seconds]
-        '''
+        """
         JD = deepcopy(jd)
         t_1 = deepcopy(T_1)
         
         const = constants()
-        C = const.C # m/s
+        C = const.C  # m/s
         GM = const.GM
-        
+
+        # must go below 1 ps to stop iterating:
         precision = 1e-13
+        # but should do so in no more than n_max iterations:
         n_max = 3
+        # lagrange poly order for interpolation
         lag_order = 5
         
         # initial approximation:
@@ -1952,14 +1956,14 @@ class ephem(object):
         tdb = self.CT*86400.0
         
         # correct 'overnighter'
-        if t_1>=86400.0:
+        if t_1 >= 86400.0:
             JD += 1
             t_1 -= 86400.0
         
         astropy_t_1 = Time(JD + t_1/86400.0, format='jd', scale='tdb', precision=9)
-        eph_t_0 = datetime.datetime(*map(int, bcrs[0,:3]))
+        eph_t_0 = datetime.datetime(*map(int, bcrs[0, :3]))
         # first time stamp negative?
-        if tdb[0]<0:
+        if tdb[0] < 0:
             eph_t_0 += datetime.timedelta(days=1)
         # cut eph and it's tomorrow?
         if tdb[0]//86400 > 0:
@@ -1971,9 +1975,9 @@ class ephem(object):
 #        print tdb, JD, t_1, dd, '\n'
 #        print 't_1 = {:.18f}'.format(t_1)
         
-        x, _ = lagint(lag_order, tdb, bcrs[:,6], t_1+dd*86400)
-        y, _ = lagint(lag_order, tdb, bcrs[:,7], t_1+dd*86400)
-        z, _ = lagint(lag_order, tdb, bcrs[:,8], t_1+dd*86400)
+        x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_1+dd*86400)
+        y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_1+dd*86400)
+        z, _ = lagint(lag_order, tdb, bcrs[:, 8], t_1+dd*86400)
         R_0 = np.hstack((x,y,z))
 #        print 'R_0 = {:.18f} {:.18f} {:.18f}'.format(*R_0)
         
@@ -2046,10 +2050,10 @@ class ephem(object):
 
             nn += 1
 
-        x, _ = lagint(lag_order, tdb, bcrs[:,6], t_0+dd*86400)
-        y, _ = lagint(lag_order, tdb, bcrs[:,7], t_0+dd*86400)
-        z, _ = lagint(lag_order, tdb, bcrs[:,8], t_0+dd*86400)        
-        R_0 = np.hstack((x,y,z))
+        x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_0+dd*86400)
+        y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_0+dd*86400)
+        z, _ = lagint(lag_order, tdb, bcrs[:, 8], t_0+dd*86400)
+        R_0 = np.hstack((x, y, z))
         r = R_0 - R_1
 #        print 'R_0 = {:.18f} {:.18f} {:.18f}'.format(*R_0)
 #        print 'R_0-R_1 = {:.18f} {:.18f} {:.18f}'.format(*r)
@@ -2060,14 +2064,17 @@ class ephem(object):
         # S/C position is given at a moment LT seconds ago, which
         # means r is abberated in the far-field case sense
 
-        ra  = np.arctan2(r[1], r[0]) # right ascention
-        dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2)) # declination
-        if ra < 0: ra += 2.0*np.pi
+        ra = np.arctan2(r[1], r[0])  # right ascension
+        dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2))  # declination
+        if ra < 0:
+            ra += 2.0*np.pi
 
 #        if dec > -1*np.pi/180: raise Exception()
-        
-        return ra, dec, lt_01
 
+        if not return_R10:
+            return ra, dec, lt_01
+        else:
+            return ra, dec, lt_01, r
         
 '''  
 #==============================================================================

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-'''
+"""
 Created on Fri Aug 14 15:34:38 2015
 
 @author: Dmitry A. Duev
-'''
+"""
 from __future__ import division, absolute_import
 
 # compile fortran code using f2py
@@ -22,31 +22,31 @@ if __name__ == '__main__':
     # executable command line scripts
     BIN = 'bin/'
     ls_bin = os.listdir(BIN)
-    ls_bin = [os.path.join(BIN,l) for l in ls_bin if l[-3:]=='.py']
+    ls_bin = [os.path.join(BIN, l) for l in ls_bin if l[-3:] == '.py']
     
     from numpy.distutils.core import setup
     setup(name = NAME,
           description   = 'Python Tools for Planetary Interferometry and Doppler Experiments',
           author        = 'Dmitry A. Duev',
-          author_email  = 'duev@jive.eu',
+          author_email  = 'duev@caltech.edu',
           url           = 'https://github.com/dmitryduev/pypride',
           platforms     = ['Linux', 'MacOS X'],
-#          licence       = 'GNU GPL v2',
+          # licence       = 'GNU GPL v2',
           version       = '1.1.0',
           packages      = [NAME],
           package_dir   = {NAME: 'src/pypride'},
-#          py_modules    = ['mod1', 'pkg.mod2'],
+          # py_modules    = ['mod1', 'pkg.mod2'],
           ext_package   = NAME,
           ext_modules   = [vintflib],
           scripts       = ls_bin,
           package_data  = {NAME : ['cats/*', 'jpl_eph/*', 'inp.cfg']},
-#          install_requires = [ 'numpy',
-#                               'scipy',
-#                               'matplotlib',
-#                               'astropy',
-#                               'paramiko',
-#                               'numba',
-#                               'sklearn'],
+          # install_requires = [ 'numpy',
+          #                      'scipy',
+          #                      'matplotlib',
+          #                      'astropy',
+          #                      'paramiko',
+          #                      'numba',
+          #                      'sklearn'],
           classifiers   = ['Development Status :: 5 - Production/Stable',
                            'Environment :: Console',
                            'Framework :: IDLE',

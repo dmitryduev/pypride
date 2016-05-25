@@ -12093,7 +12093,6 @@ def vint_s(ob):
                 freq_ramp = None
             except:
                 raise Exception('Can\'t find s/c Tx freq in cats/sc.freq')
-        
 
     ''' read all kinds of catalogs '''
     # update/(down)load eops, meteo and iono data
