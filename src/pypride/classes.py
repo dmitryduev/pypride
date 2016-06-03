@@ -1360,63 +1360,63 @@ class site(object):
 #        print _time()-tic
         
     def LT_radec_bc(self, bcrs, tdb, JD, t_1, jpl_eph):
-        '''
+        """
         Calculate station-centric LTs and LT-corrected ra/decs
         
         input: 
             bcrs - eph.bcrs
             tdb  - eph.CT in decimal days
             t_1  - obs epoch in decimal days, TDB scale
-        '''
+        """
         const = constants()
-        C = const.C # m/s
+        C = const.C  # m/s
         GM = const.GM
         
         precision = 1e-12
         n_max = 3
         lag_order = 5
-        
+
+        # zero point
+        astropy_t_1 = Time(JD, t_1, format='jd', scale='tdb', precision=9)
+        t_start_day = datetime.datetime(*map(int, bcrs[0, :3]))
+        dd = (astropy_t_1.datetime - t_start_day).total_seconds() // 86400
+
         # initial approximation:
         nn = 0
         lt_01_tmp = 0.0
 
-        x, _ = lagint(lag_order, tdb, bcrs[:,6], t_1)
-        y, _ = lagint(lag_order, tdb, bcrs[:,7], t_1)
-        z, _ = lagint(lag_order, tdb, bcrs[:,8], t_1)
-        R_0_0 = np.hstack((x,y,z))
+        x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_1+dd)
+        y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_1+dd)
+        z, _ = lagint(lag_order, tdb, bcrs[:, 8], t_1+dd)
+        R_0_0 = np.hstack((x, y, z))
         
         # check if self.r_BCRS is set
         ## Earth:
         rrd = pleph(JD + t_1, 3, 12, jpl_eph)
         earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
         # low accuracy is good enough for this application:
-        self.r_BCRS = earth[:,0] + self.r_GCRS
+        self.r_BCRS = earth[:, 0] + self.r_GCRS
 
         lt_01 = norm(R_0_0 - self.r_BCRS)/C
-        
-        mjd = JD - 2400000.5
-        astropy_t_1 = Time(mjd + t_1, format='mjd', scale='tdb', precision=9)
 
         ''' BCRS state vectors of celestial bodies at JD+CT, [m, m/s]: '''
         state_ss = []
-        for jj in (1,2,4,5,6,7,8,9,10,11):
+        for jj in (1, 2, 4, 5, 6, 7, 8, 9, 10, 11):
             rrd = pleph(astropy_t_1.jd, jj, 12, jpl_eph)
-            state_ss.append(np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3)
+            state_ss.append(np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3)
         
         while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
             lt_01_tmp = lt_01
             t_0 = t_1 - lt_01/86400.0
 
-            astropy_t_0 = Time(mjd + t_0, format='mjd', scale='tdb', precision=9)
-
-            x, _ = lagint(lag_order, tdb, bcrs[:,6], t_0)
-            y, _ = lagint(lag_order, tdb, bcrs[:,7], t_0)
-            z, _ = lagint(lag_order, tdb, bcrs[:,8], t_0)
-            vx, _ = lagint(lag_order, tdb, bcrs[:,9], t_0)
-            vy, _ = lagint(lag_order, tdb, bcrs[:,10], t_0)
-            vz, _ = lagint(lag_order, tdb, bcrs[:,11], t_0)
-            R_0 = np.hstack((x,y,z))
-            V_0 = np.hstack((vx,vy,vz))
+            x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_0+dd)
+            y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_0+dd)
+            z, _ = lagint(lag_order, tdb, bcrs[:, 8], t_0+dd)
+            vx, _ = lagint(lag_order, tdb, bcrs[:, 9], t_0+dd)
+            vy, _ = lagint(lag_order, tdb, bcrs[:, 10], t_0+dd)
+            vz, _ = lagint(lag_order, tdb, bcrs[:, 11], t_0+dd)
+            R_0 = np.hstack((x, y, z))
+            V_0 = np.hstack((vx, vy, vz))
             
             # vector needed for RLT calculation
 #            R_01 = -(self.r_GCRS - R_0)  ## WTF, Mityaj???
@@ -1424,9 +1424,9 @@ class site(object):
             
             RLT = 0.0
             
-            for j, ii in enumerate((1,2,4,5,6,7,8,9,10,11)):
-                rrd = pleph(astropy_t_0.jd, ii, 12, jpl_eph)
-                state = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
+            for j, ii in enumerate((1, 2, 4, 5, 6, 7, 8, 9, 10, 11)):
+                rrd = pleph(JD + t_0, ii, 12, jpl_eph)
+                state = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
                 R_B = state[:,0]
 
                 R_0_B  = R_B - R_0
@@ -1434,146 +1434,28 @@ class site(object):
                 R_01_B = R_1_B - R_0_B
 #                print ii, R_0, rb, vb, t_0, t_0_0
                 RLT += (2.0*GM[ii-1]/C**3) * \
-                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
-                              2.0*GM[ii-1]/C**2 ) / \
-                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
-                              2.0*GM[ii-1]/C**2 ) )
+                    log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + 2.0*GM[ii-1]/C**2 ) /
+                        ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + 2.0*GM[ii-1]/C**2 ) )
 
             lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
                         ( 1.0 - np.dot(R_01, V_0)/(C*norm(R_01)) )
-
 
             t_0 = t_1 - lt_01/86400.0
 
             nn += 1
 
-        x, _ = lagint(lag_order, tdb, bcrs[:,6], t_0)
-        y, _ = lagint(lag_order, tdb, bcrs[:,7], t_0)
-        z, _ = lagint(lag_order, tdb, bcrs[:,8], t_0)
+        x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_0+dd)
+        y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_0+dd)
+        z, _ = lagint(lag_order, tdb, bcrs[:, 8], t_0+dd)
         # it's still station-centric!
-        r = -(self.r_BCRS - np.hstack((x,y,z)))
+        r = -(self.r_BCRS - np.hstack((x, y, z)))
 
-        ra = np.arctan2(r[1],r[0]) # right ascention
-        dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2)) # declination
-        if ra < 0: ra += 2.0*np.pi
+        ra = np.arctan2(r[1], r[0])  # right ascension
+        dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2))  # declination
+        if ra < 0:
+            ra += 2.0*np.pi
 #        print ra, dec
 #        print ra*12/np.pi, dec*180/np.pi
-#        raw_input()
-#        self.lt = lt_01
-#        self.ra = ra
-#        self.dec = dec
-
-        return lt_01, ra, dec
-        
-        
-    def LT_radec(self, gcrs, utc, JD, t_1, jpl_eph):
-        '''
-        DON'T USE!!!
-        Calculate station-centric LTs and LT-corrected ra/decs
-        
-        input: 
-            gcrs - eph.gcrs
-            utc  - eph.UT in decimal days
-            t_1  - obs epoch in decimal days
-        '''
-        const = constants()
-        C = const.C # m/s
-        GM = const.GM
-        
-        precision = 1e-12
-        n_max = 3
-        lag_order = 5
-        
-        # initial approximation:
-        nn = 0
-        lt_01_tmp = 0.0
-
-        x, _ = lagint(lag_order, utc, gcrs[:,6], t_1)
-        y, _ = lagint(lag_order, utc, gcrs[:,7], t_1)
-        z, _ = lagint(lag_order, utc, gcrs[:,8], t_1)
-        R_0_0 = np.hstack((x,y,z))
-
-        lt_01 = norm(R_0_0 - self.r_GCRS)/C
-        
-        
-        mjd = JD - 2400000.5
-        astropy_t_0 = Time(mjd + t_1 - lt_01/86400.0, \
-                            format='mjd', scale='utc', precision=9)
-        t_0_0 = astropy_t_0.tdb.jd2
-
-        ''' BCRS state vectors of celestial bodies at JD+CT, [m, m/s]: '''
-        ## Earth:
-        rrd = pleph(JD+t_0_0, 3, 12, jpl_eph)
-        earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-        ## Sun:
-        rrd = pleph(JD+t_0_0, 11, 12, jpl_eph)
-        sun = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-        ## Moon:
-        rrd = pleph(JD+t_0_0, 10, 12, jpl_eph)
-        moon = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-    
-        state_ss = []
-        for jj in (1,2,4,5,6,7,8,9):
-            rrd = pleph(JD+t_0_0, jj, 12, jpl_eph)
-            state_ss.append(np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3)
-        state_ss.insert(2, earth)
-        state_ss.append(moon)
-        state_ss.append(sun)
-        
-        while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
-            lt_01_tmp = lt_01
-            t_0 = t_1 - lt_01/86400.0
-
-            x, _ = lagint(lag_order, utc, gcrs[:,6], t_0)
-            y, _ = lagint(lag_order, utc, gcrs[:,7], t_0)
-            z, _ = lagint(lag_order, utc, gcrs[:,8], t_0)
-            vx, _ = lagint(lag_order, utc, gcrs[:,9], t_0)
-            vy, _ = lagint(lag_order, utc, gcrs[:,10], t_0)
-            vz, _ = lagint(lag_order, utc, gcrs[:,11], t_0)
-            R_0 = np.hstack((x,y,z))
-            V_0 = np.hstack((vx,vy,vz))
-            
-            # vector needed for RLT calculation
-#            R_01 = -(self.r_GCRS - R_0)  ## WTF, Mityaj???
-            R_01 = self.r_GCRS - R_0
-            
-            RLT = 0.0
-            for ii, state in enumerate(state_ss):
-                if ii==2 and norm(self.r_GCRS)==0.0: continue
-                rb = state[:,0]
-                vb = state[:,1]
-                R_0_B  = R_0 - (rb - (t_0-t_0_0)*86400.0*vb)
-                R_1_B  = self.r_GCRS - rb
-                R_01_B = R_1_B - R_0_B
-
-                RLT += (2.0*GM[ii]/C**3) * \
-                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
-                              2.0*GM[ii]/C**2 ) / \
-                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
-                              2.0*GM[ii]/C**2 ) )
-
-            lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
-                        ( 1.0 - np.dot(R_01, V_0)/(C*norm(R_01)) )
-            
-#            RLT = 0.0
-#
-#            lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
-#                        ( 1.0 - np.dot(R_01, V_0)/(C*norm(R_01)) )
-
-            t_0 = t_1 - lt_01/86400.0
-
-            nn += 1
-
-        x, _ = lagint(lag_order, utc, gcrs[:,6], t_0)
-        y, _ = lagint(lag_order, utc, gcrs[:,7], t_0)
-        z, _ = lagint(lag_order, utc, gcrs[:,8], t_0)
-        # it's still station-centric!
-        r = -(self.r_GCRS - np.hstack((x,y,z)))
-
-        ra = np.arctan2(r[1],r[0]) # right ascention
-        dec = np.arctan(r[2]/np.sqrt(r[0]**2+r[1]**2)) # declination
-        if ra < 0: ra += 2.0*np.pi
-#        print ra, dec
 #        raw_input()
 #        self.lt = lt_01
 #        self.ra = ra

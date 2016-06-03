@@ -33,18 +33,20 @@ if __name__ == '__main__':
     # stations = ['ZELENCHK', 'SVETLOE']
     # stations = ['EFLSBERG', 'WETTZELL']
     # stations = ['WETTZELL', 'WETTZ13N']
-    stations = ['EFLSBERG', 'WETTZELL', 'ONSALA60', 'ZELENCHK', 'SVETLOE']
+    # stations = ['EFLSBERG', 'WETTZELL', 'ZELENCHK', 'SVETLOE']
+    # stations = ['ONSALA60']
+    stations = ['HARTRAO']
     
     ''' time slot '''
-    # date_t_start = datetime.datetime(2013,12,28,23,57,0)
-    # date_t_stop = datetime.datetime(2013,12,29,23,57,0)
-    # t_step = 10 # seconds
-    
-    date_t_start = datetime.datetime(2015, 12, 22, 3, 0, 0)
-    date_t_stop = datetime.datetime(2015, 12, 22, 5, 10, 0)
-    # date_t_start = datetime.datetime(2015,12,23,20,0,0)
-    # date_t_stop = datetime.datetime(2015,12,23,22,10,0)
-    t_step = 10  # seconds
+    # date_t_start = datetime.datetime(2016, 5, 28, 10, 0, 5)
+    # date_t_stop = datetime.datetime(2016, 5, 28, 12, 10, 5)
+    # date_t_start = datetime.datetime(2016, 5, 29, 11, 0, 5)
+    # date_t_stop = datetime.datetime(2016, 5, 29, 13, 10, 5)
+    # date_t_start = datetime.datetime(2016, 5, 29, 20, 0, 0)
+    # date_t_stop = datetime.datetime(2016, 5, 29, 22, 10, 0)
+    date_t_start = datetime.datetime(2016, 6, 4, 0, 5, 0)
+    date_t_stop = datetime.datetime(2016, 6, 7, 23, 55, 0)
+    t_step = 600  # seconds
     
     # output txt dumps?
     output = True

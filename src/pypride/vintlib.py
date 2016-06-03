@@ -13200,50 +13200,54 @@ def R_123 (i, theta):
 def load_sc_eph(sou_type, source, t_start, t_end, inp,
                 uvw_calc=False, sc_rhophitheta=False, sc_xyz=False,
                 load=True, forcePaddLeft=None, forcePaddRight=None):
-    '''
+    """
     (Down)Load spacecraft ephemerides into an ephem-class object
     Might be worth recoding some parts of this into class ephem methods
-    '''
+    """
     # load constants:
 #    const = constants()
 
     # split if observations go overnight
     # take padding into account (mind the LT!)
     if forcePaddLeft is None:
-        if sou_type=='S' and (source.lower()!='gaia' and source.lower()!='ce3'):        
-            if source.lower()=='mex': paddLeft=50
-            if source.lower()=='vex': paddLeft=30
-            if source.lower()=='her': paddLeft=10
-            if source.lower()=='rosetta': paddLeft=90
+        if sou_type == 'S' and (source.lower() != 'gaia' and source.lower() != 'ce3'):
+            if source.lower() == 'mex':
+                paddLeft = 50
+            if source.lower() == 'vex':
+                paddLeft = 30
+            if source.lower() == 'her':
+                paddLeft = 10
+            if source.lower() == 'rosetta':
+                paddLeft = 90
         else:
-            paddLeft = 1 # much more than enough for GNSS/RA/Gaia
+            paddLeft = 1  # much more than enough for GNSS/RA/Gaia
     else:
         paddLeft = forcePaddLeft
     t_start_padd = t_start - datetime.timedelta(minutes=paddLeft)
     
     # tdb is more than 1 minute ahead of utc. padd the right-hand side therefore!
     if forcePaddRight is None:
-        paddRight = 2 # should do the job
+        paddRight = 2  # should do the job
     else:
         paddRight = forcePaddRight
     t_end_padd = t_end + datetime.timedelta(minutes=paddRight)
     
-    dd = ( datetime.datetime(t_end_padd.year, t_end_padd.month, t_end_padd.day) - \
-           datetime.datetime(t_start_padd.year, t_start_padd.month, \
+    dd = ( datetime.datetime(t_end_padd.year, t_end_padd.month, t_end_padd.day) -
+           datetime.datetime(t_start_padd.year, t_start_padd.month,
                              t_start_padd.day) ).days
     # start/stop times broken into days
     days = []
     for di in range(dd+1):
-        days.append([ datetime.datetime(t_start_padd.year, t_start_padd.month, \
+        days.append([ datetime.datetime(t_start_padd.year, t_start_padd.month,
                        t_start_padd.day) + datetime.timedelta(days=di), 
-                      datetime.datetime(t_start_padd.year, t_start_padd.month, \
+                      datetime.datetime(t_start_padd.year, t_start_padd.month,
                        t_start_padd.day, 23, 59, 59) + datetime.timedelta(days=di) ])
     days = np.array(days)
 #    print days
     # fix for t_start and t_end for Gaia and RadioAstron
-    if source.lower()=='gaia' or source.lower()=='ra':
-        days[0,0] = t_start_padd
-        days[-1,1] = t_end_padd
+    if source.lower() == 'gaia' or source.lower() == 'ra':
+        days[0, 0] = t_start_padd
+        days[-1, 1] = t_end_padd
 
     # eph_file_names for each (full in VEX/MEX case) day
     eph_files = []
@@ -13285,12 +13289,13 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
         return
     
     ''' now load the ephs into an ephem-object '''
-    if sou_type=='C': source = 'RA'
-    eph = ephem(source) # initialise ephem-object
+    if sou_type == 'C':
+        source = 'RA'
+    eph = ephem(source)  # initialise ephem-object
     # load each day separately, stack the result together
     for f_bcrs, f_gtrs, f_gcrs in eph_files:
         # bcrs:
-        with open(os.path.join(inp['sc_eph_cat'], f_bcrs),'r') as f:
+        with open(os.path.join(inp['sc_eph_cat'], f_bcrs), 'r') as f:
             f_float = []
             for f_line in f.readlines():
                 f_float.append([float(x) for x in f_line[:-1].split()])
@@ -13318,13 +13323,13 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
                 eph.gcrs = np.array(f_float)
 
     # convert to metres
-    eph.bcrs[0][:,6:] *= 1e3
-    eph.gcrs[:,6:] *= 1e3
-    eph.gtrs[:,6:] *= 1e3
+    eph.bcrs[0][:, 6:] *= 1e3
+    eph.gcrs[:, 6:] *= 1e3
+    eph.gtrs[:, 6:] *= 1e3
 
     # build up time stamps:
     # decimal days:
-    eph.UT = (eph.gtrs[:,3] + eph.gtrs[:,4]/60.0 + eph.gtrs[:,5]/3600.0)/24.0
+    eph.UT = (eph.gtrs[:, 3] + eph.gtrs[:, 4]/60.0 + eph.gtrs[:, 5]/3600.0)/24.0
     # allow for 'overnighters':
     t0 = datetime.datetime(t_start.year, t_start.month, t_start.day)
     for nn, _ in enumerate(eph.UT):
@@ -13332,18 +13337,15 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
         # if padding goes one day earlier
         eph.UT[nn] += (datetime.datetime(*map(int,eph.gtrs[nn,0:3])) - t0).days
 
-    eph.CT = (eph.bcrs[0][:,3] + eph.bcrs[0][:,4]/60.0 + \
-              eph.bcrs[0][:,5]/3600.0)/24.0
-    eph.CT_sec = eph.bcrs[0][:,3]*3600.0 + eph.bcrs[0][:,4]*60.0 + \
-                 eph.bcrs[0][:,5]
+    eph.CT = (eph.bcrs[0][:, 3] + eph.bcrs[0][:, 4]/60.0 + eph.bcrs[0][:, 5]/3600.0)/24.0
+    eph.CT_sec = eph.bcrs[0][:, 3]*3600.0 + eph.bcrs[0][:, 4]*60.0 + eph.bcrs[0][:, 5]
 
     # allow for 'overnighters':
     for nn in range(len(eph.CT)):
         # should be wrt t_start, i.e. allow for negative values
         # if padding goes one day earlier
-        eph.CT[nn] += (datetime.datetime(*map(int,eph.bcrs[0][nn,0:3])) - t0).days
-        eph.CT_sec[nn] += 86400.0*\
-                   (datetime.datetime(*map(int,eph.bcrs[0][nn,0:3])) - t0).days
+        eph.CT[nn] += (datetime.datetime(*map(int, eph.bcrs[0][nn, 0:3])) - t0).days
+        eph.CT_sec[nn] += 86400.0 * (datetime.datetime(*map(int, eph.bcrs[0][nn, 0:3])) - t0).days
 #    eph.CT_sec = 86400.0*eph.CT
 
     # cut a proper piece
@@ -17311,7 +17313,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 '''
 def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
               output=False):
-    '''
+    """
     Compute pointings on spacecraft for a list of stations
     
     date_t_start and date_t_stop - datetime.datetime objects
@@ -17327,7 +17329,7 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     Function outputs an array of datetime objects with obs epochs,
     RA/Decs for J2000 and date in radians and Az/El in degrees
 
-    '''
+    """
     
     ''' load input sittings: '''
     inp = inp_set(cfg)
@@ -17382,21 +17384,20 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     
     # load ephemeris
     eph = load_sc_eph(sou_type, source, date_t_start, date_t_stop, inp)
-        
-    #%% 
+
     ''' actual pointings '''
     
     pointingsJ2000 = [] # RA/Decs at J2000
     pointingsDate = []  # apparent RA/Decs (precessed and nutated to date)
     azels = [] # azimuth/elevations
     
-    mjd_start = mjuliandate(ob.tstamps[0].year,\
-                                   ob.tstamps[0].month,ob.tstamps[0].day)
+    mjd_start = mjuliandate(ob.tstamps[0].year, ob.tstamps[0].month, ob.tstamps[0].day)
     
     for tstamp in ob.tstamps:
+        print tstamp
         ''' set dates: '''
         mjd = mjuliandate(tstamp.year, tstamp.month, tstamp.day)
-        dd = mjd - mjd_start
+        # dd = mjd - mjd_start
         UTC = (tstamp.hour + tstamp.minute/60.0 + tstamp.second/3600.0)/24.0
         JD = mjd + 2400000.5
     
@@ -17449,40 +17450,36 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
         azel_sta = []
         for st in sta:
             # J2000 RA/Dec:
-#            print eph.CT[0]<= CT + dd <= eph.CT[-1]
-            _, ra, dec = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, CT+dd, \
-                                        inp['jpl_eph'])
+            # print eph.CT[0]<= CT + dd <= eph.CT[-1]
+            _, ra, dec = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, CT, inp['jpl_eph'])
             pnt_J2000_sta.append([ra, dec])
-    #        print st.name, ra, dec
+            # print st.name, ra, dec
             # RA/Dec to date:
             xyz2000 = sph2cart(np.array([1.0, dec, ra]))
             rDate = iau_PNM00A(JD, TT)
             xyzDate = np.dot(rDate, xyz2000)
             dec, ra = cart2sph(xyzDate)[1:]
-            if ra < 0: ra += 2.0*np.pi
-    #        print st.name, ra, dec
+            if ra < 0:
+                ra += 2.0*np.pi
+            print st.name, ra, dec
             pnt_Date_sta.append([ra, dec])
             if st.name == 'GEOCENTR' or st.name == 'RA':
                 azel_sta.append([0, 0])
             else:
-                az, el, _ = st.AzEl2(eph.gcrs, eph.UT, JD, UTC,\
-                                         r2000[:,:,0], inp['jpl_eph'])
+                az, el, _ = st.AzEl2(eph.gcrs, eph.UT, JD, UTC, r2000[:, :, 0], inp['jpl_eph'])
                 azel_sta.append([az*180/np.pi, el*180/np.pi])
     
         pointingsJ2000.append(pnt_J2000_sta)
         pointingsDate.append(pnt_Date_sta)
         azels.append(azel_sta)
-        
     
     pointingsJ2000 = np.array(pointingsJ2000)
     pointingsDate = np.array(pointingsDate)
     azels = np.array(azels)
-    
-    #%% 
+
     ''' save to files '''
     if output:
-        stations_short = shname(stations, inp['shnames_cat'], \
-                                            inp['shnames_cat_igs'])
+        stations_short = shname(stations, inp['shnames_cat'], inp['shnames_cat_igs'])
         
         date_string = date_t_start.strftime("%y%m%d")
         
@@ -17496,13 +17493,11 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
                     az = azels[ii,jj,0]
                     el = azels[ii,jj,1]
                     azel = np.hstack((az, el))
-                    azel_str = \
-                       'az = {:010.6f}  el = {:10.6f}\n'\
-                       .format(*azel) # '{:06.2f} {:6.2f}\n'\
+                    azel_str = 'az = {:010.6f}  el = {:10.6f}\n'.format(*azel) # '{:06.2f} {:6.2f}\n'\
                     line += azel_str
                     f.write(line)
             # save AzEls to human-readable text-files in GreenBank format
-            if stash.lower()=='gb':
+            if stash.lower() == 'gb':
                 with open(inp['out_path']+'/azel.gbt.'+source.lower()+'.'+\
                           date_string+'.'+stash.lower(),'w') as f:
                     f.write('# {:s} tracking table (angles in degrees)\n'.\
