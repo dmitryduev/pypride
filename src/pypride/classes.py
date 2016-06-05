@@ -1359,14 +1359,14 @@ class site(object):
             self.azel_interp = [fA, fH]
 #        print _time()-tic
         
-    def LT_radec_bc(self, bcrs, tdb, JD, t_1, jpl_eph):
+    def LT_radec_bc(self, bcrs, tdb, JD_UTC, t_1_UTC, jpl_eph):
         """
         Calculate station-centric LTs and LT-corrected ra/decs
         
         input: 
             bcrs - eph.bcrs
             tdb  - eph.CT in decimal days
-            t_1  - obs epoch in decimal days, TDB scale
+            JD_UTC, t_1_UTC  - obs epoch in decimal days, TDB scale
         """
         const = constants()
         C = const.C  # m/s
@@ -1377,10 +1377,17 @@ class site(object):
         lag_order = 5
 
         # zero point
-        astropy_t_1 = Time(JD, t_1, format='jd', scale='tdb', precision=9)
+        astropy_t_1 = Time(JD_UTC, t_1_UTC, format='jd', scale='utc', precision=9).tdb
+        mjd_full = astropy_t_1.mjd
+        mjd = np.floor(mjd_full)
+        # t_1_coarse = mjd_full - mjd
+        JD = mjd + 2400000.5
+        astropy_t_1_day_start = Time(JD, format='jd', scale='tdb', precision=9)
+        t_1 = (astropy_t_1-astropy_t_1_day_start).jd
         t_start_day = datetime.datetime(*map(int, bcrs[0, :3]))
         dd = (astropy_t_1.datetime - t_start_day).total_seconds() // 86400
 
+        # print astropy_t_1.tdb.datetime, t_start_day, dd, JD, t_1
         # initial approximation:
         nn = 0
         lt_01_tmp = 0.0
@@ -1408,6 +1415,7 @@ class site(object):
         while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
             lt_01_tmp = lt_01
             t_0 = t_1 - lt_01/86400.0
+            # print t_0
 
             x, _ = lagint(lag_order, tdb, bcrs[:, 6], t_0+dd)
             y, _ = lagint(lag_order, tdb, bcrs[:, 7], t_0+dd)
@@ -1876,8 +1884,7 @@ class ephem(object):
         
         mjd = JD - 2400000.5
 #        print mjd, t_1, lt_01
-        astropy_t_0 = Time(mjd + (t_1 - lt_01)/86400.0, \
-                            format='mjd', scale='tdb', precision=9)
+        astropy_t_0 = Time(mjd + (t_1 - lt_01)/86400.0, format='mjd', scale='tdb', precision=9)
 #        print astropy_t_0.datetime
         ''' BCRS! state vectors of celestial bodies at JD+CT, [m, m/s]: '''
         state_ss = []
@@ -1890,8 +1897,7 @@ class ephem(object):
         while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
             lt_01_tmp = lt_01
             t_0 = t_1 - lt_01
-            astropy_t_0 = Time(mjd + t_0/86400.0, \
-                            format='mjd', scale='tdb', precision=9)
+            astropy_t_0 = Time(mjd + t_0/86400.0, format='mjd', scale='tdb', precision=9)
 #            print astropy_t_0.datetime
 #            dd = (astropy_t_0.datetime - eph_t_0).days
 #            print t_0, dd

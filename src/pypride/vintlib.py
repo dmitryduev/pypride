@@ -17387,14 +17387,14 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
 
     ''' actual pointings '''
     
-    pointingsJ2000 = [] # RA/Decs at J2000
+    pointingsJ2000 = []  # RA/Decs at J2000
     pointingsDate = []  # apparent RA/Decs (precessed and nutated to date)
-    azels = [] # azimuth/elevations
+    azels = []  # azimuth/elevations
     
     mjd_start = mjuliandate(ob.tstamps[0].year, ob.tstamps[0].month, ob.tstamps[0].day)
     
     for tstamp in ob.tstamps:
-        print tstamp
+        # print tstamp
         ''' set dates: '''
         mjd = mjuliandate(tstamp.year, tstamp.month, tstamp.day)
         # dd = mjd - mjd_start
@@ -17451,7 +17451,7 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
         for st in sta:
             # J2000 RA/Dec:
             # print eph.CT[0]<= CT + dd <= eph.CT[-1]
-            _, ra, dec = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, CT, inp['jpl_eph'])
+            _, ra, dec = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, UTC, inp['jpl_eph'])
             pnt_J2000_sta.append([ra, dec])
             # print st.name, ra, dec
             # RA/Dec to date:
@@ -17461,7 +17461,7 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
             dec, ra = cart2sph(xyzDate)[1:]
             if ra < 0:
                 ra += 2.0*np.pi
-            print st.name, ra, dec
+            # print st.name, ra, dec, '\n'
             pnt_Date_sta.append([ra, dec])
             if st.name == 'GEOCENTR' or st.name == 'RA':
                 azel_sta.append([0, 0])

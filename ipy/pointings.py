@@ -45,8 +45,9 @@ if __name__ == '__main__':
     # date_t_start = datetime.datetime(2016, 5, 29, 20, 0, 0)
     # date_t_stop = datetime.datetime(2016, 5, 29, 22, 10, 0)
     date_t_start = datetime.datetime(2016, 6, 4, 0, 5, 0)
+    # date_t_start = datetime.datetime(2016, 6, 4, 23, 58, 0)
     date_t_stop = datetime.datetime(2016, 6, 7, 23, 55, 0)
-    t_step = 600  # seconds
+    t_step = 10  # seconds
     
     # output txt dumps?
     output = True

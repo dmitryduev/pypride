@@ -233,7 +233,7 @@ def calctec(ins):
                 eph = load_sc_eph(sou_type, source, t, t, inp)
     #            print 'loading eph took', _time()-tic, ' s'
                 # lt to station in seconds at t_obs
-                lt, _, _ = st.LT_radec(eph.gcrs, eph.UT, UTC)
+                lt, _, _ = st.LT_radec_bc(eph.bcrs[0], eph.CT, JD, UTC, inp['jpl_eph'])
                 # az/el 2LT ago (another LT is accounted for internally)
                 r2000 = ter2cel(t, eop_int, dTAIdCT, 'iau2000')
                 az, el = st.AzEl2(eph.gtrs, eph.UT, JD, \
