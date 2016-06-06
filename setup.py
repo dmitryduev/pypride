@@ -25,6 +25,8 @@ if __name__ == '__main__':
     ls_bin = [os.path.join(BIN, l) for l in ls_bin if l[-3:] == '.py']
     
     from numpy.distutils.core import setup
+
+    # noinspection PyPackageRequirements
     setup(name = NAME,
           description   = 'Python Tools for Planetary Interferometry and Doppler Experiments',
           author        = 'Dmitry A. Duev',
@@ -40,13 +42,13 @@ if __name__ == '__main__':
           ext_modules   = [vintflib],
           scripts       = ls_bin,
           package_data  = {NAME : ['cats/*', 'jpl_eph/*', 'inp.cfg']},
-          # install_requires = [ 'numpy',
-          #                      'scipy',
-          #                      'matplotlib',
-          #                      'astropy',
-          #                      'paramiko',
-          #                      'numba',
-          #                      'sklearn'],
+          install_requires = [ 'numpy',
+                               'scipy',
+                               'matplotlib',
+                               'astropy',
+                               'paramiko',
+                               'numba',
+                               'sklearn'],
           classifiers   = ['Development Status :: 5 - Production/Stable',
                            'Environment :: Console',
                            'Framework :: IDLE',

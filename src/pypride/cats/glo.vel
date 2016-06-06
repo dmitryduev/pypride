@@ -31,10 +31,10 @@ $$  dad  2013.04.23  Added ARECIBO from re03fw.vex
 $$
     AIRA              -26.23           -9.25          -19.39    2005d_3.vel
     ALGOPARK          -16.10           -4.10            2.60    itrf2000.vel
+    ARECIBO             2.03            4.13            9.10  ! NNR-NUVEL1A
     ASKAP-29            0.0             0.0             0.0     out of blue
     ATCA-104          -33.94           -4.75           46.23    NNR-NUVEL1A
     ATCAPN5           -33.94           -4.75           46.23    NNR-NUVEL1A
-    ARECIBO             9.90            4.54           10.08    re03fw.vex
     AUSTINTX          -11.50           -0.10           -9.20    2005d_3.vel
     AZORES              0.40           16.20           11.11    2005d_3.vel
     BADARY            -24.11            2.27           -5.81    NNR-NUVEL1A
@@ -50,7 +50,7 @@ $$
     CHICHI10           25.16           25.65            7.63    2005d_3.vel
     CHLBOLTN          -11.77           18.50            9.92    2005d_3.vel
     CEBREROS           -9.90           20.00           11.10    from Trevor
-    CEDUNA            -41.73            2.67           49.90    NNR-NUVEL1A
+    CEDUNA            -31.88           -7.50           62.43    rfc_2013d
     CRIMEA            -20.17           16.69            8.36    2005d_3.vel
     CTVASBAY          -14.22           -1.27            2.20    2005d_3.vel
     CTVASTJ           -14.96           -0.29            8.11    2005d_3.vel
@@ -236,7 +236,7 @@ $$
     WSTRBORK          -13.53           17.04            8.73    raes05d.vex
     YAKATAGA          -21.78           22.81           25.55    2005d_3.vel
     YAMAGU32            0.00            0.00            0.00    m131229.vex
-    YARRA12M            0.00            0.00            0.00    vexade121205
+    YARRA12M          -47.45            9.12           51.76    NNR-NUVEL1A
     YEBES              -9.91           19.86            9.89    2005d_3.vel
     YEBES40M           -9.91           19.86            9.89    as YEBES
     YELLOWKN          -19.80           -4.09           -1.27    as YELLOWKN 

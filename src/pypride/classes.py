@@ -31,8 +31,9 @@ try:
     from pypride.vintflib import lagint, pleph#, iau_xys00a_fort, admint2
 except:
     # compile the Fortran code if necessary
-    import numpy.f2py as f2py
-    fid = open('vintflib.f')
+    from numpy import f2py
+    abs_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
+    fid = open(os.path.join(abs_path, 'vintflib.f'))
     source = fid.read()
     fid.close()
     f2py.compile(source, modulename='vintflib')
@@ -52,9 +53,9 @@ norm = np.linalg.norm
 class PolynomialRegression(BaseEstimator):
     def __init__(self, deg=None):
         self.deg = deg
-    
-    def fit(self, X, y, deg=None):
         self.model = LinearRegression(fit_intercept=False)
+    
+    def fit(self, X, y):
         # self.model.fit(np.vander(X, N=self.deg + 1), y, n_jobs=-1)
         self.model.fit(np.vander(X, N=self.deg + 1), y)
     
@@ -80,7 +81,7 @@ class ChebyshevRegression(BaseEstimator):
     def __init__(self, deg=None):
         self.deg = deg
     
-    def fit(self, X, y, deg=None):
+    def fit(self, X, y):
         self.chefit = cheb.chebfit(X, y, self.deg)
     
     def predict(self, x):
