@@ -570,8 +570,8 @@ class obs(object):
                     pointingsJ2000_scan = []
                     for ii in range(self.pointingsJ2000.shape[2]):
                         ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], np.unwrap(self.pointingsJ2000[ind, jj, ii]))
-                        if ii == 1:
+                        if ii == 0:
+                            cv_model.fit(time[:, 1], np.unwrap(self.pointingsJ2000[ind, jj, ii]))
                             # fix RA if necessary
                             # wrap back if necessary:
                             wrap = np.angle(np.exp(1j*cv_model.predict(t_dense)))
@@ -579,6 +579,7 @@ class obs(object):
                             wrap[negative] += 2*np.pi
                             pointingsJ2000_scan.append(wrap)
                         else:
+                            cv_model.fit(time[:, 1], self.pointingsJ2000[ind, jj, ii])
                             pointingsJ2000_scan.append(cv_model.predict(t_dense))
                     try:
                         pointingsJ2000[jj] = np.vstack((pointingsJ2000[jj],
@@ -590,14 +591,15 @@ class obs(object):
                     pointingsDate_scan = []
                     for ii in range(self.pointingsDate.shape[2]):
                         ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], np.unwrap(self.pointingsDate[ind, jj, ii]))
-                        if ii == 1:
+                        if ii == 0:
                             # fix RA if necessary
+                            cv_model.fit(time[:, 1], np.unwrap(self.pointingsDate[ind, jj, ii]))
                             wrap = np.angle(np.exp(1j * cv_model.predict(t_dense)))
                             negative = wrap < 0
                             wrap[negative] += 2 * np.pi
                             pointingsDate_scan.append(wrap)
                         else:
+                            cv_model.fit(time[:, 1], self.pointingsDate[ind, jj, ii])
                             pointingsDate_scan.append(cv_model.predict(t_dense))
                     try:
                         pointingsDate[jj] = np.vstack((pointingsDate[jj],
@@ -609,13 +611,14 @@ class obs(object):
                     azels_scan = []
                     for ii in range(self.azels.shape[2]):
                         ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], np.unwrap(self.azels[ind, jj, ii]*np.pi/180.0))
-                        if ii == 1:
+                        if ii == 0:
+                            cv_model.fit(time[:, 1], np.unwrap(self.azels[ind, jj, ii] * np.pi / 180.0))
                             wrap = np.angle(np.exp(1j * cv_model.predict(t_dense)))
                             negative = wrap < 0
                             wrap[negative] += 2 * np.pi
                             azels_scan.append(wrap)
                         else:
+                            cv_model.fit(time[:, 1], self.azels[ind, jj, ii] * np.pi / 180.0)
                             azels_scan.append(cv_model.predict(t_dense))
                     try:
                         azels[jj] = np.vstack((azels[jj], np.array(azels_scan).T*180.0/pi))
