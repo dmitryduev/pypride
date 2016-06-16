@@ -47,8 +47,9 @@ if __name__ == '__main__':
     # date_t_stop = datetime.datetime(2016, 6, 24, 5, 0, 0)
     t_step_in = 60  # seconds
 
-    scan_len = 600  # split time range into 'scans'
+    # interpolate to a denser frig if t_step_out < t_step_in:
     t_step_out = 1  # seconds
+    scan_len = 600  # split time range into 'scans'
     
     # output txt dumps?
     output = True

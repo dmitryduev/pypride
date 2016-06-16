@@ -17502,7 +17502,7 @@ def pointings(source, stations, date_t_start, date_t_stop,
                       date_string+'.'+stash.lower(),'w') as f:
                 for ii, tstamp in enumerate(ob.tstamps):
                     # skip duplicates:
-                    if ii > 0 and tstamp ==  ob.tstamps[ii-1]:
+                    if ii > 0 and tstamp == ob.tstamps[ii-1]:
                         continue
                     line = str(tstamp) + '  '
                     az = azels[ii, jj, 0]

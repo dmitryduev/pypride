@@ -571,11 +571,15 @@ class obs(object):
                     for ii in range(self.pointingsJ2000.shape[2]):
                         ind = map(int, time[:, 0])
                         cv_model.fit(time[:, 1], np.unwrap(self.pointingsJ2000[ind, jj, ii]))
-                        # wrap back if necessary:
-                        wrap = np.angle(np.exp(1j*cv_model.predict(t_dense)))
-                        negative = wrap < 0
-                        wrap[negative] += 2*np.pi
-                        pointingsJ2000_scan.append(wrap)
+                        if ii == 1:
+                            # fix RA if necessary
+                            # wrap back if necessary:
+                            wrap = np.angle(np.exp(1j*cv_model.predict(t_dense)))
+                            negative = wrap < 0
+                            wrap[negative] += 2*np.pi
+                            pointingsJ2000_scan.append(wrap)
+                        else:
+                            pointingsJ2000_scan.append(cv_model.predict(t_dense))
                     try:
                         pointingsJ2000[jj] = np.vstack((pointingsJ2000[jj],
                                                               np.array(pointingsJ2000_scan).T))
@@ -606,10 +610,13 @@ class obs(object):
                     for ii in range(self.azels.shape[2]):
                         ind = map(int, time[:, 0])
                         cv_model.fit(time[:, 1], np.unwrap(self.azels[ind, jj, ii]*np.pi/180.0))
-                        wrap = np.angle(np.exp(1j * cv_model.predict(t_dense)))
-                        negative = wrap < 0
-                        wrap[negative] += 2 * np.pi
-                        azels_scan.append(wrap)
+                        if ii == 1:
+                            wrap = np.angle(np.exp(1j * cv_model.predict(t_dense)))
+                            negative = wrap < 0
+                            wrap[negative] += 2 * np.pi
+                            azels_scan.append(wrap)
+                        else:
+                            azels_scan.append(cv_model.predict(t_dense))
                     try:
                         azels[jj] = np.vstack((azels[jj], np.array(azels_scan).T*180.0/pi))
                     except:
