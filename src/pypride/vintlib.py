@@ -17311,8 +17311,9 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 # 
 #==============================================================================
 '''
-def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
-              output=False):
+def pointings(source, stations, date_t_start, date_t_stop,
+              t_step_in=10, t_step_out=1, scan_len=None,
+              cfg='input.cfg', output=False):
     """
     Compute pointings on spacecraft for a list of stations
     
@@ -17347,11 +17348,11 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
     const = constants()
     
     # known spacecraft:
-    spacecraft = {'MEX':'S', 'VEX':'S', 'ROSETTA':'S', 'GAIA':'S', 'HER':'S',\
-                  'RA':'R'}
+    spacecraft = {'MEX': 'S', 'VEX': 'S', 'ROSETTA': 'S', 'GAIA': 'S', 'HER': 'S',
+                  'RA': 'R'}
     # GNSS (GLONASS)
-    spacecraft.update({'PR{:02d}'.format(i):'G' for i in range(40)})
-    spacecraft.update({'PG{:02d}'.format(i):'G' for i in range(40)})
+    spacecraft.update({'PR{:02d}'.format(i): 'G' for i in range(40)})
+    spacecraft.update({'PG{:02d}'.format(i): 'G' for i in range(40)})
 
     source = source.upper()
     sou_type = spacecraft[source]
@@ -17361,14 +17362,14 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
         stations = [stations]
     
     ''' fake obs '''
-    ob = obs(['DUMMY'],'DUMMY','C')
-    ob.addScan(date_t_start, t_step, stop=date_t_stop)
+    ob = obs(['DUMMY'], 'DUMMY', 'C')
+    ob.addScan(date_t_start, t_step_in, stop=date_t_stop)
     print ob
     ''' update/(down)load eops, meteo and iono data '''
     if internet_on(): # check internet connection
         try:
-            doup(inp['do_trp_calc'], inp['do_ion_calc'], \
-                 inp['cat_eop'], inp['meteo_cat'], inp['ion_cat'],\
+            doup(inp['do_trp_calc'], inp['do_ion_calc'],
+                 inp['cat_eop'], inp['meteo_cat'], inp['ion_cat'],
                  date_t_start, date_t_stop, inp['iono_model'])
         except Exception, err:
             print str(err)
@@ -17473,9 +17474,20 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
         pointingsDate.append(pnt_Date_sta)
         azels.append(azel_sta)
     
-    pointingsJ2000 = np.array(pointingsJ2000)
-    pointingsDate = np.array(pointingsDate)
-    azels = np.array(azels)
+    ob.pointingsJ2000 = np.array(pointingsJ2000)
+    ob.pointingsDate = np.array(pointingsDate)
+    ob.azels = np.array(azels)
+    # print(np.array(ob.pointingsJ2000).shape, np.array(ob.azels).shape, len(ob.tstamps))
+    # denser output wanted? interpolate that crap
+
+    if t_step_out < t_step_in and scan_len is not None:
+        ob.splitScans(duration=scan_len)
+        ob.smoothPointing(tstep=t_step_out, method='cheb')
+    # print(np.array(ob.pointingsJ2000).shape, np.array(ob.azels).shape, len(ob.tstamps))
+    # get back
+    pointingsJ2000 = ob.pointingsJ2000
+    pointingsDate = ob.pointingsDate
+    azels = ob.azels
 
     ''' save to files '''
     if output:
@@ -17489,9 +17501,12 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
             with open(inp['out_path']+'/azel.'+source.lower()+'.'+\
                       date_string+'.'+stash.lower(),'w') as f:
                 for ii, tstamp in enumerate(ob.tstamps):
-                    line = str(tstamp)+ '  '
-                    az = azels[ii,jj,0]
-                    el = azels[ii,jj,1]
+                    # skip duplicates:
+                    if ii > 0 and tstamp ==  ob.tstamps[ii-1]:
+                        continue
+                    line = str(tstamp) + '  '
+                    az = azels[ii, jj, 0]
+                    el = azels[ii, jj, 1]
                     azel = np.hstack((az, el))
                     azel_str = 'az = {:010.6f}  el = {:10.6f}\n'.format(*azel) # '{:06.2f} {:6.2f}\n'\
                     line += azel_str
@@ -17507,6 +17522,9 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
                     f.write('coordmode=azel\n')
                     f.write('head=date    utc        az          el\n')
                     for ii, tstamp in enumerate(ob.tstamps):
+                        # skip duplicates:
+                        if ii > 0 and tstamp == ob.tstamps[ii - 1]:
+                            continue
                         line = tstamp.strftime('%Y-%m-%d %H:%M:%S')+ '   '
                         az = azels[ii,jj,0]
                         el = azels[ii,jj,1]
@@ -17518,6 +17536,9 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
             with open(inp['out_path']+'/pointing.J2000.'+source.lower()+'.'+\
                       date_string+'.'+stash.lower(),'w') as f:
                 for ii, tstamp in enumerate(ob.tstamps):
+                    # skip duplicates:
+                    if ii > 0 and tstamp == ob.tstamps[ii - 1]:
+                        continue
                     line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
                     ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
                     dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
@@ -17533,6 +17554,9 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
                                            stash.lower(), '_', date_string, '.txt')) )
             with open(fout, 'w') as f:
                 for ii, tstamp in enumerate(ob.tstamps):
+                    # skip duplicates:
+                    if ii > 0 and tstamp == ob.tstamps[ii - 1]:
+                        continue
                     line = ''.join((' source=\'', tstamp.strftime("%H%M%S"), '\' \t '))
                     ra = Angle(pointingsJ2000[ii,jj,0], unit=units.rad)
                     dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
@@ -17547,6 +17571,9 @@ def pointings(source, stations, date_t_start, date_t_stop, t_step, cfg,
             with open(inp['out_path']+'/pointing.apparent.'+source.lower()+'.'+\
                       date_string+'.'+stash.lower(),'w') as f:
                 for ii, tstamp in enumerate(ob.tstamps):
+                    # skip duplicates:
+                    if ii > 0 and tstamp == ob.tstamps[ii - 1]:
+                        continue
                     line = tstamp.strftime('%Y-%m-%dT%H:%M:%S') + '    '
                     ra = Angle(pointingsDate[ii,jj,0], unit=units.rad)
                     dec = Angle(pointingsDate[ii,jj,1], unit=units.rad)

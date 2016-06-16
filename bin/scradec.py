@@ -3,7 +3,7 @@
 """
 Created on Mon Apr 13 16:29:02 2015
 
-@author: oasis
+@author: Dmitry A. Duev
 
 Calculate RA/Dec of a spacecraft given a vex-file with the schedule
 
@@ -21,17 +21,15 @@ import os
 import argparse
     
 
-#%%
-
 if __name__ == '__main__':
     # create parser
-    parser = argparse.ArgumentParser(prog='python scradec.py', \
-                formatter_class=argparse.RawDescriptionHelpFormatter,\
-                description='Calculate RA/Dec of a spacecraft.')
+    parser = argparse.ArgumentParser(prog='python scradec.py',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description='Calculate RA/Dec of a spacecraft.')
     # optional arguments
-    parser.add_argument('-e', '--epochs', type=str, default='middle',\
-                        help='epochs at which to ouput the RA/Dec\'s. '+\
-                             'could be \'middle\' (of each source scan) '+\
+    parser.add_argument('-e', '--epochs', type=str, default='middle',
+                        help='epochs at which to ouput the RA/Dec\'s. ' +
+                             'could be \'middle\' (of each source scan) ' +
                              'or \'all\'. defaults to \'middle\'')
 
     # positional argument
@@ -65,11 +63,8 @@ if __name__ == '__main__':
     t_start = times[0,0]
     t_end   = times[-1,0] + datetime.timedelta(seconds=times[-1,1])
                        
-    eph = load_sc_eph('S', source, t_start, t_end, inp, \
-                       uvw_calc=False, sc_rhophitheta=False, sc_xyz=False, \
-                       load=True)
-    
-    #%%
+    eph = load_sc_eph('S', source, t_start, t_end, inp,
+                      uvw_calc=False, sc_rhophitheta=False, sc_xyz=False, load=True)
     
     epochs = args.epochs # 'middle' or 'all'
 #    ra, dec, _ = eph.RaDec_bc_sec(2456655.5, 0.571571838630275593E+05, inp['jpl_eph'])
@@ -81,7 +76,7 @@ if __name__ == '__main__':
             for scan, (start, dur) in zip(scans, times):
                 for ii in range(dur+1):
                     
-                    astrot = Time(str(start + datetime.timedelta(seconds=ii)), \
+                    astrot = Time(str(start + datetime.timedelta(seconds=ii)),
                                     format='iso', scale='utc', precision=9)
                     
                     jd = astrot.tdb.jd1
@@ -99,7 +94,7 @@ if __name__ == '__main__':
                     ra = Angle(ra, unit=u.rad)
                     dec = Angle(dec, unit=u.rad)
                     
-                    radec = np.hstack((Angle(ra, unit=u.rad).hms, \
+                    radec = np.hstack((Angle(ra, unit=u.rad).hms,
                                         Angle(dec, unit=u.rad).dms))
                     print scan, 'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"'\
                             .format(*radec)
@@ -109,21 +104,21 @@ if __name__ == '__main__':
         #                    int(ra.hms[0]), int(ra.hms[1]), ra.hms[2], \
         #                    int(dec.dms[0]), np.abs(int(dec.dms[1])), np.abs(dec.dms[2])))
         
-                    f.write('{:s}   {:02.0f}h{:02.0f}m{:011.8f}s   {:-3.0f}d{:02.0f}\'{:09.6f}\"\n'.format(\
+                    f.write('{:s}   {:02.0f}h{:02.0f}m{:011.8f}s   {:-3.0f}d{:02.0f}\'{:09.6f}\"\n'.format(
                             datetime.datetime.strftime(start + \
-                                datetime.timedelta(seconds=ii),'%Y-%m-%dT%H:%M:%S'),\
-                            ra.hms[0], ra.hms[1], ra.hms[2], \
+                                datetime.timedelta(seconds=ii),'%Y-%m-%dT%H:%M:%S'),
+                            ra.hms[0], ra.hms[1], ra.hms[2],
                             dec.dms[0], np.abs(dec.dms[1]), np.abs(dec.dms[2])))
     
     elif epochs == 'middle':
         with open(os.path.join(inp['out_path'], '{:s}.{:s}.crd'.\
                         format(source.lower(), vex['GLOBAL']['EXPER'].lower())), 'w') as f:
             for scan, (start, dur) in zip(scans, times):
-                astrot = Time(str(start + datetime.timedelta(seconds=dur/2)), \
+                astrot = Time(str(start + datetime.timedelta(seconds=dur/2)),
                                 format='iso', scale='utc', precision=9)
     
                 # use barycentric approach - it agrees well with HORIZONS and old TASC.ESA.INT
-                astrot = Time(str(start + datetime.timedelta(seconds=dur/2)), \
+                astrot = Time(str(start + datetime.timedelta(seconds=dur/2)),
                                 format='iso', scale='utc', precision=9)
                 jd = astrot.tdb.jd1
                 ti = astrot.tdb.jd2
@@ -139,7 +134,7 @@ if __name__ == '__main__':
                 ra = Angle(ra, unit=u.rad)
                 dec = Angle(dec, unit=u.rad)
                 
-                radec = np.hstack((Angle(ra, unit=u.rad).hms, \
+                radec = np.hstack((Angle(ra, unit=u.rad).hms,
                                     Angle(dec, unit=u.rad).dms))
                 print scan, astrot.datetime, \
                         'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"'\
@@ -147,8 +142,8 @@ if __name__ == '__main__':
     #            print scan, astrot.datetime, 'ra = {:16.10f}  dec = {:16.10f}'\
     #                    .format(Angle(ra, unit=u.rad).deg, Angle(dec, unit=u.rad).deg)
                     
-                f.write('{:s}   {:02.0f}h{:02.0f}m{:011.8f}s   {:-3.0f}d{:02.0f}\'{:09.6f}\"\n'.format(\
-                        datetime.datetime.strftime(start + \
-                            datetime.timedelta(seconds=dur/2),'%Y-%m-%dT%H:%M:%S'),\
-                        ra.hms[0], ra.hms[1], ra.hms[2], \
+                f.write('{:s}   {:02.0f}h{:02.0f}m{:011.8f}s   {:-3.0f}d{:02.0f}\'{:09.6f}\"\n'.format(
+                        datetime.datetime.strftime(start +
+                            datetime.timedelta(seconds=dur/2),'%Y-%m-%dT%H:%M:%S'),
+                        ra.hms[0], ra.hms[1], ra.hms[2],
                         dec.dms[0], np.abs(dec.dms[1]), np.abs(dec.dms[2])))

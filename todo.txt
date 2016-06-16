@@ -1,0 +1,2 @@
+- add SpiceyPy support for SPICE kernels
+- Add support for L. Petrov's pathdelay.net (tropospheric delay) and earthrotation.net (r2000 matrix)
