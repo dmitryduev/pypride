@@ -12609,13 +12609,13 @@ def vint_s(ob):
 #                                  const.GM, const.TDB_TCB, \
 #                                  const.L_C, const.C, inp))
                 if inp['nf_model']=='Moyer':
-                    dtaus.append(delay_nf_moyer(JD, CT, dd, \
-                                    state_ss, eph_cut.CT_sec, bcrs, \
-                                    const, sta[0], sta[1],\
+                    dtaus.append(delay_nf_moyer(JD, CT, dd,
+                                    state_ss, eph_cut.CT_sec, bcrs,
+                                    const, sta[0], sta[1],
                                     inp, UTC))
                 elif inp['nf_model']=='Fukushima':
-                    dtaus.append(delay_nf_fukushima(JD, CT, dd, \
-                                    state_ss, eph_cut.CT_sec, bcrs, \
+                    dtaus.append(delay_nf_fukushima(JD, CT, dd,
+                                    state_ss, eph_cut.CT_sec, bcrs,
                                     const, sta[0], sta[1]))
 #            dtaus.append(dtau)
 #            dud.delay.append(dtaus)
@@ -16265,7 +16265,7 @@ def loname(staz, shnames_cat, shnames_cat_igs=None):
 #==============================================================================
 # 
 #==============================================================================
-def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,\
+def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                     sta1, sta2, inp, t_1_UTC):
     '''
     NF delay calculation

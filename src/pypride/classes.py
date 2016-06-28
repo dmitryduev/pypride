@@ -777,19 +777,21 @@ class constants(object):
         # Algemeene Physical constants
         self.C = 2.99792458e8
         self.C_km = 2.99792458e5
-#        self.F = 298.25765 # the tide-free value
-        self.F = 298.25642 # the tide-free value, IERS2010
-        self.AE = 6378136.3 # the tide-free value
-        self.J_2 = 1.0826e-3;
-        self.AU = 149597870691.0
+#        self.F = 298.25765  # the tide-free value
+        self.F = 298.25642  # the tide-free value, IERS2010
+        self.AE = 6378136.3  # the tide-free value
+        self.J_2 = 1.0826e-3
+        # self.AU = 149597870691.0
+        self.AU = 149597870700.0  # DE430
         self.TAUA = 499.0047838061
         self.G = 6.67428e-11
-        
-        self.L_B = 1.550519768e-8 #tn36
+
+        # from tn36; also see http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf
+        self.L_B = 1.550519768e-8
         self.L_C = 1.48082686741e-8
         self.L_G = 6.969290134e-10
         
-        ## DE/LE405 Header. TDB-compatible!!
+        # DE/LE405 Header. TDB-compatible!!
         if '403' in jpl_eph:
             AU_DE405 = 1.49597870691000015e+11 #m
             self.GSUN = 0.295912208285591095e-03*(AU_DE405)**3/(86400.0)**2
@@ -818,7 +820,7 @@ class constants(object):
                              0.129202491678196939e-07*(AU_DE405)**3/(86400.0)**2,
                              0.152435890078427628e-07*(AU_DE405)**3/(86400.0)**2,
                              0.218869976542596968e-11*(AU_DE405)**3/(86400.0)**2]
-        ## DE/LE421 Header. TDB-compatible!!
+        # DE/LE421 Header. TDB-compatible!!
         if '421' in jpl_eph:
             AU_DE421 = 1.49597870699626200e+11 #m
             self.GSUN = 0.295912208285591100e-03*(AU_DE421)**3/(86400.0)**2
@@ -833,7 +835,22 @@ class constants(object):
                              0.129202482579265000e-07*(AU_DE421)**3/(86400.0)**2,
                              0.152435910924974000e-07*(AU_DE421)**3/(86400.0)**2,
                              0.217844105199052000e-11*(AU_DE421)**3/(86400.0)**2]
-        ## INPOP13c Header. TDB-compatible!!
+        # DE/LE430 Header. TDB-compatible!!
+        if '430' in jpl_eph:
+            AU_DE430 = 1.49597870700000000e+11  # m
+            self.GSUN = 0.295912208285591100e-03 * AU_DE430 ** 3 / 86400.0 ** 2
+            self.MU = 0.813005690741906200e+02 ** (-1)
+            self.GEARTH = 0.899701139019987100e-09 * AU_DE430 ** 3 / 86400.0 ** 2 / (1 + self.MU)
+            self.GMOON = self.GEARTH * self.MU
+            self.GMPlanet = [0.491248045036476000e-10 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.724345233264412000e-09 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.954954869555077000e-10 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.282534584083387000e-06 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.845970607324503000e-07 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.129202482578296000e-07 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.152435734788511000e-07 * AU_DE430 ** 3 / 86400.0 ** 2,
+                             0.217844105197418000e-11 * AU_DE430 ** 3 / 86400.0 ** 2]
+        # INPOP13c Header. TDB-compatible!!
         if '13c' in jpl_eph:
             AU_13c = 1.495978707000000e+11
             self.GSUN = 0.2959122082912712e-03*(AU_13c)**3/(86400.0)**2
@@ -849,7 +866,6 @@ class constants(object):
                              0.1524357330444817e-07*(AU_13c)**3/(86400.0)**2,
                              0.2166807318808926e-11*(AU_13c)**3/(86400.0)**2]
 
-        
         self.TDB_TCB = (1.0+self.L_B) # F^-1
         # G*masses in TCB-frame!
         self.GM_TCB = np.hstack([self.GMPlanet[0:2], self.GEARTH,\
