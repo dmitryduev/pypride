@@ -42,9 +42,7 @@ if __name__ == '__main__':
     # date_t_start = datetime.datetime(2016, 6, 15, 10, 5, 0)
     # date_t_stop = datetime.datetime(2016, 6, 15, 16, 58, 0)
     date_t_start = datetime.datetime(2016, 6, 24, 0, 5, 0)
-    date_t_stop = datetime.datetime(2016, 6, 25, 20, 55, 0)
-    # date_t_start = datetime.datetime(2016, 6, 24, 4, 0, 0)
-    # date_t_stop = datetime.datetime(2016, 6, 24, 5, 0, 0)
+    date_t_stop = datetime.datetime(2016, 6, 24, 23, 55, 0)
     t_step_in = 60  # seconds
 
     # interpolate to a denser frig if t_step_out < t_step_in:

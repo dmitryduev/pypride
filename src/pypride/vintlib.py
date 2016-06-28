@@ -12338,7 +12338,7 @@ def vint_s(ob):
         ''' add up geophysical corrections and convert sta state to J2000 '''
         for st in sta:
 #            if 'eph' in locals():
-            if eph != None:
+            if eph is not None:
                 st.j2000gp(r2000, eph_cut.gcrs, eph_cut.UT, UTC+dd)
             else:
                 st.j2000gp(r2000)
@@ -12480,25 +12480,25 @@ def vint_s(ob):
         if inp['delay_calc']:
             ## Concensus model IERS Conventions 2010:
             if ob.sou_type=='C' and ('RA' not in ob.sta):
-                dtau = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS, \
-                                  sta[1].v_GCRS, earth, sun, sou.K_s, inp['jpl_eph'],\
+                dtau = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS,
+                                  sta[1].v_GCRS, earth, sun, sou.K_s, inp['jpl_eph'],
                                   const.GM, const.TDB_TCB, const.L_C, const.C)
             # this correction is rather small, thus neglected: [see tn36 11.10]
     #        print sta[1].dtau_tropo*dot(sou.K_s,sta[1].v_GCRS-sta[0].v_GCRS)/const.C
             
-            ## Vlasov/Zharov/Sazhin far-field for RadioAdtron:
+            ## Vlasov/Zharov/Sazhin far-field for RadioAstron:
             if ob.sou_type=='C' and ('RA' in ob.sta):
-                dtau, dtau_dt_min1, lt_downlink = delay_ra(JD, CT, UTC, \
-                                  sta[0].r_GCRS, sta[1].r_GCRS, \
-                                  sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS, \
-                                  earth, sun, \
-                                  sou.K_s, inp['jpl_eph'], const.GM, const.TDB_TCB, \
+                dtau, dtau_dt_min1, lt_downlink = delay_ra(JD, CT, UTC,
+                                  sta[0].r_GCRS, sta[1].r_GCRS,
+                                  sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS,
+                                  earth, sun,
+                                  sou.K_s, inp['jpl_eph'], const.GM, const.TDB_TCB,
                                   const.L_C, const.C, const.AE)
             
             ## Near-field Fukushima:
             if ob.sou_type!='C' and inp['nf_model']=='Fukushima':
-                dtau = delay_nf_fukushima(JD, CT, dd, \
-                                    state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
+                dtau = delay_nf_fukushima(JD, CT, dd,
+                                    state_ss, eph_cut.CT_sec, eph_cut.bcrs[0],
                                     const, sta[0], sta[1])
 #            dtau_ = dtau
 #            print 'dtau_ = {:.18f}'.format(dtau)

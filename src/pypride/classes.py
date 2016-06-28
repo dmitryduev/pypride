@@ -616,6 +616,8 @@ class obs(object):
                             wrap = np.angle(np.exp(1j * cv_model.predict(t_dense)))
                             negative = wrap < 0
                             wrap[negative] += 2 * np.pi
+                            # overwrapped = wrap > 2 * np.pi
+                            # wrap[overwrapped] -= 2 * np.pi
                             azels_scan.append(wrap)
                         else:
                             cv_model.fit(time[:, 1], self.azels[ind, jj, ii] * np.pi / 180.0)
