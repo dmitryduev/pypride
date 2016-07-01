@@ -12498,27 +12498,31 @@ def vint_s(ob):
             ## Near-field Fukushima:
             if ob.sou_type!='C' and inp['nf_model']=='Fukushima':
                 dtau = delay_nf_fukushima(JD, CT, dd,
-                                    state_ss, eph_cut.CT_sec, eph_cut.bcrs[0],
-                                    const, sta[0], sta[1])
-#            dtau_ = dtau
-#            print 'dtau_ = {:.18f}'.format(dtau)
+                                          state_ss, eph_cut.CT_sec, eph_cut.bcrs[0],
+                                          const, sta[0], sta[1])
+                # dtau_ = dtau
+                # print 'dtau_Fukushima = {:.18f}'.format(dtau)
 
             # Near-field Moyer/Duev aka LTea42:
             if ob.sou_type!='C' and inp['nf_model']=='Moyer':
-#                dtau = delay_moyer(JD, CT*86400.0, dd*86400.0, sta[0].r_GCRS, \
-#                                  sta[1].r_GCRS, sta[1].v_GCRS, sta[1].a_GCRS,\
-#                                  state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
-#                                  const.GM, const.TDB_TCB, \
-#                                  const.L_C, const.C, inp)
-#                print 'dtau__ = {:.18f}'.format(dtau)
-#                dtau__ = dtau
-                dtau = delay_nf_moyer(JD, CT, dd, \
-                                      state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
-                                      const, sta[0], sta[1], inp, UTC)
-#                print 'dtau = {:.18f}'.format(dtau)
-#                print tstamp, dtau_ - dtau, dtau_ - dtau__
-#            print dtau_, dtau
-#            raw_input()
+                # dtau = delay_moyer(JD, CT*86400.0, dd*86400.0, sta[0].r_GCRS, \
+                #                  sta[1].r_GCRS, sta[1].v_GCRS, sta[1].a_GCRS,\
+                #                  state_ss, eph_cut.CT_sec, eph_cut.bcrs[0], \
+                #                  const.GM, const.TDB_TCB, \
+                #                  const.L_C, const.C, inp)
+                # print 'dtau__ = {:.18f}'.format(dtau)
+                # dtau__ = dtau
+                # dtau = delay_nf_moyer_depricated(JD, CT, dd,
+                #                       state_ss, eph_cut.CT_sec, eph_cut.bcrs[0],
+                #                       const, sta[0], sta[1], inp, UTC)
+                # print 'dtau_Moyer = {:.18f}'.format(dtau)
+                # print tstamp, dtau_ - dtau, dtau_ - dtau__
+                dtau = delay_nf_moyer(JD, CT, dd,
+                                      state_ss, eph_cut.CT_sec, eph_cut.bcrs[0],
+                                      const, sta[0], sta[1], inp)
+                # print 'dtau_Duev = {:.18f}'.format(dtau)
+                # print tstamp, dtau_ - dtau, dtau_ - dtau__
+            # print dtau_, dtau
             
             ''' stack delays due to all effects together: '''
             # RadioAstron far-field:
@@ -12612,7 +12616,7 @@ def vint_s(ob):
                     dtaus.append(delay_nf_moyer(JD, CT, dd,
                                     state_ss, eph_cut.CT_sec, bcrs,
                                     const, sta[0], sta[1],
-                                    inp, UTC))
+                                    inp))
                 elif inp['nf_model']=='Fukushima':
                     dtaus.append(delay_nf_fukushima(JD, CT, dd,
                                     state_ss, eph_cut.CT_sec, bcrs,
@@ -16265,11 +16269,13 @@ def loname(staz, shnames_cat, shnames_cat_igs=None):
 #==============================================================================
 # 
 #==============================================================================
-def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
+def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                     sta1, sta2, inp, t_1_UTC):
-    '''
+    """
     NF delay calculation
-    '''
+
+    TODO: to be removed in the next release
+    """
     debug = False
     
     GM = const.GM
@@ -16345,14 +16351,14 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     #            print R_0_B, R_1_B, R_01_B
                 if debug: 
                     print 'rlt = {:.18f}'.format((2.0*GM[ii]/C**3) * \
-                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
+                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) / \
-                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
+                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) ))
                 RLT += (2.0*GM[ii]/C**3) * \
-                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
+                      log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) / \
-                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
+                            ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) )
         
         lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
@@ -16384,13 +16390,13 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     v_2 = sta2.v_GCRS
     a_2 = sta2.a_GCRS
     R_2_t_1 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_2 - \
-          dot(earth[:,1], r_2)*earth[:,1] / (2.0*C**2)
+              dot(earth[:,1], r_2)*earth[:,1] / (2.0*C**2)
     V_2_t_1 = earth[:,1] + \
-            (1.0 - 2.0*U/C**2 - 0.5*(norm(earth[:,1])/C)**2 - \
+            (1.0 - 2.0*U/C**2 - 0.5*(norm(earth[:,1])/C)**2 -
              dot(earth[:,1], v_2)/C**2) * v_2 - \
             0.5*dot(earth[:,1], v_2)*earth[:,1]/C**2
     A_2_t_1 = earth[:,2] + \
-            (1.0 - 3.0*U/C**2 - (norm(earth[:,1])/C)**2 + L_C - \
+            (1.0 - 3.0*U/C**2 - (norm(earth[:,1])/C)**2 + L_C -
              2.0*dot(earth[:,1], v_2)/C**2) * a_2 - \
             0.5*dot(earth[:,1], a_2)*(earth[:,1] + 2.0*v_2)/C**2
     
@@ -16406,7 +16412,7 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     ''' BCRS state vectors of celestial bodies at t_0, [m, m/s]: '''
     ## Earth:
     rrd = pleph(jd+t_0/86400.0, 3, 12, inp['jpl_eph'])
-    earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
+    earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
     # Earth's acceleration in m/s**2:
     v_plus = np.array(pleph(jd+t_0/86400.0+1.0/86400.0, 3, 12, inp['jpl_eph'])[3:])
     v_minus = np.array(pleph(jd+t_0/86400.0-1.0/86400.0, 3, 12, inp['jpl_eph'])[3:])
@@ -16415,13 +16421,13 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     earth = np.hstack((earth, a))
     ## Sun:
     rrd = pleph(jd+t_0/86400.0, 11, 12, inp['jpl_eph'])
-    sun = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
+    sun = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
     ## Moon:
     rrd = pleph(jd+t_0/86400.0, 10, 12, inp['jpl_eph'])
-    moon = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
+    moon = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
 
     state_ss_t0 = []
-    for jj in (1,2,4,5,6,7,8,9):
+    for jj in (1, 2, 4, 5, 6, 7, 8, 9):
         rrd = pleph(jd+t_0/86400.0, jj, 12, inp['jpl_eph'])
         state_ss_t0.append(np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3)
     state_ss_t0.insert(2,earth)
@@ -16439,8 +16445,8 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     
 #    while (abs(lt_02 - lt_02_tmp) > precision) and (nn < n_max):
     while (abs(t_2 - t_2_tmp) > precision) and (nn < n_max):
-#        if debug: print 'lt_02 - lt_02_tmp = {:.18f}'.format(lt_02 - lt_02_tmp)
-#        lt_02_tmp = deepcopy(lt_02)      
+        # if debug: print 'lt_02 - lt_02_tmp = {:.18f}'.format(lt_02 - lt_02_tmp)
+        # lt_02_tmp = deepcopy(lt_02)
         if debug: print 't_2 - t_2_tmp = {:.18f}'.format(t_2 - t_2_tmp)
         t_2_tmp = deepcopy(t_2)
             
@@ -16528,14 +16534,12 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                        (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) ))    
     
 #    raw_input()
-#    astropy_t_2 = Time(jd - 2400000.5, t_2/86400.0, \
-#                format='mjd', scale='tdb', precision=9, \
-#                 location=EarthLocation.from_geocentric(*sta2.r_GTRS, \
-#                                                         unit=units.m))
-    astropy_t_2 = Time(jd - 2400000.5, (t_2+T_g_21)/86400.0, \
-                format='mjd', scale='tdb', precision=9, \
-                 location=EarthLocation.from_geocentric(*sta2.r_GTRS, \
-                                                         unit=units.m))
+#     astropy_t_2 = Time(jd - 2400000.5, t_2/86400.0,
+#                format='mjd', scale='tdb', precision=9,
+#                 location=EarthLocation.from_geocentric(*sta2.r_GTRS, unit=units.m))
+    astropy_t_2 = Time(jd - 2400000.5, (t_2+T_g_21)/86400.0,
+                format='mjd', scale='tdb', precision=9,
+                 location=EarthLocation.from_geocentric(*sta2.r_GTRS, unit=units.m))
 #    print 't_1 = {:.18f}'.format(t_1)
 #    astropy_t_1 = Time(jd - 2400000.5, t_1/86400.0, \
 #                format='mjd', scale='tdb', precision=9, \
@@ -16562,14 +16566,366 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
 #    if debug: print 't_2_UTC = {:.18f}'.format(t_2_UTC*86400.0)
     return (t_2_UTC-t_1_UTC)*86400.0
 
+
+def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
+                   sta1, sta2, inp):
+    """
+    NF delay calculation following Moyer/Duev
+
+    Signal transmission time t_0 and signal reception time at station 2 t_2
+     are solved for simultaneously using a 2D Newton-Raphson method
+    """
+    debug = False
+
+    GM = const.GM
+    C = const.C
+    L_C = const.L_C
+    r_1 = sta1.r_GCRS
+
+    earth = state_ss_t1[2]
+    sun = state_ss_t1[-1]
+
+    # Find potential U:
+    U = GM[10] / norm(sun[:, 0] - earth[:, 0])
+    if debug: print 'U = {:.18f}'.format(U)
+
+    # BCRS radius vectors of the first reception site at t_1:
+    R_1 = earth[:, 0] + (1.0 - U / (C ** 2) - L_C) * r_1 - \
+          dot(earth[:, 1], r_1) * earth[:, 1] / (2.0 * C ** 2)
+
+    ''' B/GCRS state of second reception station at t_1'''
+    # BCRS radius vectors of the transmitting site at t_1:
+    r_2 = sta2.r_GCRS
+    v_2 = sta2.v_GCRS
+    a_2 = sta2.a_GCRS
+    R_2_t_1 = earth[:, 0] + (1.0 - U / (C ** 2) - L_C) * r_2 - \
+              dot(earth[:, 1], r_2) * earth[:, 1] / (2.0 * C ** 2)
+    V_2_t_1 = earth[:, 1] + \
+              (1.0 - 2.0 * U / C ** 2 - 0.5 * (norm(earth[:, 1]) / C) ** 2 -
+               dot(earth[:, 1], v_2) / C ** 2) * v_2 - \
+              0.5 * dot(earth[:, 1], v_2) * earth[:, 1] / C ** 2
+    A_2_t_1 = earth[:, 2] + \
+              (1.0 - 3.0 * U / C ** 2 - (norm(earth[:, 1]) / C) ** 2 + L_C -
+               2.0 * dot(earth[:, 1], v_2) / C ** 2) * a_2 - \
+              0.5 * dot(earth[:, 1], a_2) * (earth[:, 1] + 2.0 * v_2) / C ** 2
+
+    #    print 'R2_t1 = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*R_2_t_1)
+
+    if debug:
+        print R_2_t_1
+        print V_2_t_1
+        print A_2_t_1
+        print 'lalala\n'
+        ##############
+
+    ''' simultaneously solve for light-time from S/C to Receiver 1 and 2
+        to find signal transmission time t_0 from S/C and signal reception time
+        at station 2 t_2 given the reception time t_1 at station 1
+    '''
+    precision = 1e-16
+    n_max = 5
+    lag_order = 5
+
+    # initial approximation:
+    nn = 0
+    t_0_tmp = 0.0
+    t_2_tmp = 0.0
+
+    # s/c:
+    t_1, dd = t_1_days * 86400, dd_days * 86400
+    x, _ = lagint(lag_order, tdb, bcrs[:, 6], dd + t_1)
+    y, _ = lagint(lag_order, tdb, bcrs[:, 7], dd + t_1)
+    z, _ = lagint(lag_order, tdb, bcrs[:, 8], dd + t_1)
+    # vx, _ = lagint(lag_order, tdb, bcrs[:, 9], dd + t_1)
+    # vy, _ = lagint(lag_order, tdb, bcrs[:, 10], dd + t_1)
+    # vz, _ = lagint(lag_order, tdb, bcrs[:, 11], dd + t_1)
+    R_0 = np.hstack((x, y, z))
+    # V_0 = np.hstack((vx, vy, vz))
+
+    if debug: print 't_1 = {:.18f}'.format(t_1)
+    lt_01 = norm(R_1 - R_0) / C
+    if debug: print 'lt_01 = {:.18f}'.format(lt_01)
+    t_0 = t_1 - lt_01
+    if debug: print 't_0_0 = {:.18f}'.format(t_0)
+    lt_02 = norm(R_2_t_1 - R_0) / C
+    if debug: print 'lt_02 = {:.18f}'.format(lt_02)
+    t_2 = t_0 + lt_02
+    if debug: print 't_2_0 = {:.18f}'.format(t_2)
+
+    while (abs(t_0 - t_0_tmp) > precision) and (abs(t_2 - t_2_tmp) > precision) \
+            and (nn < n_max):
+        t_0_tmp = deepcopy(t_0)
+        t_2_tmp = deepcopy(t_2)
+
+        x, _ = lagint(lag_order, tdb, bcrs[:, 6], dd + t_0)
+        y, _ = lagint(lag_order, tdb, bcrs[:, 7], dd + t_0)
+        z, _ = lagint(lag_order, tdb, bcrs[:, 8], dd + t_0)
+        vx, _ = lagint(lag_order, tdb, bcrs[:, 9], dd + t_0)
+        vy, _ = lagint(lag_order, tdb, bcrs[:, 10], dd + t_0)
+        vz, _ = lagint(lag_order, tdb, bcrs[:, 11], dd + t_0)
+        R_0 = np.hstack((x, y, z))
+        V_0 = np.hstack((vx, vy, vz))
+
+        R_01 = R_1 - R_0
+
+        ''' BCRS state vectors of celestial bodies at t_0, [m, m/s]: '''
+        ## Earth:
+        rrd = pleph(jd + t_0 / 86400.0, 3, 12, inp['jpl_eph'])
+        earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+        # Earth's acceleration in m/s**2:
+        v_plus = np.array(pleph(jd + t_0 / 86400.0 + 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+        v_minus = np.array(pleph(jd + t_0 / 86400.0 - 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+        a = (v_plus - v_minus) * 1e3 / 2.0
+        a = np.array(np.matrix(a).T)
+        earth = np.hstack((earth, a))
+        ## Sun:
+        rrd = pleph(jd + t_0 / 86400.0, 11, 12, inp['jpl_eph'])
+        sun = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+        ## Moon:
+        rrd = pleph(jd + t_0 / 86400.0, 10, 12, inp['jpl_eph'])
+        moon = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+
+        state_ss_t0 = []
+        for jj in (1, 2, 4, 5, 6, 7, 8, 9):
+            rrd = pleph(jd + t_0 / 86400.0, jj, 12, inp['jpl_eph'])
+            state_ss_t0.append(np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3)
+        state_ss_t0.insert(2, earth)
+        state_ss_t0.append(moon)
+        state_ss_t0.append(sun)
+
+        ''' RLT '''
+        RLT_01 = 0.0
+        for ii, (state_t0, state_t1) in enumerate(zip(state_ss_t0, state_ss_t1)):
+            if not (ii == 2 and norm(r_1) < 1e-3):
+                rb_t0 = state_t0[:, 0]
+                rb_t1 = state_t1[:, 0]
+                R_0_B = R_0 - rb_t0
+                R_1_B = R_1 - rb_t1
+                R_01_B = R_1_B - R_0_B
+                if debug:
+                    print 'rlt_01_{:d} = {:.18f}'.format(ii, (2.0 * GM[ii] / C ** 3) * \
+                                                 log((norm(R_1_B) + norm(R_0_B) + norm(R_01_B) +
+                                                      2.0 * GM[ii] / C ** 2) / \
+                                                     (norm(R_1_B) + norm(R_0_B) - norm(R_01_B) +
+                                                      2.0 * GM[ii] / C ** 2)))
+                RLT_01 += (2.0 * GM[ii] / C ** 3) * \
+                       log((norm(R_1_B) + norm(R_0_B) + norm(R_01_B) +
+                            2.0 * GM[ii] / C ** 2) / \
+                           (norm(R_1_B) + norm(R_0_B) - norm(R_01_B) +
+                            2.0 * GM[ii] / C ** 2))
+
+        R_2 = R_2_t_1 + V_2_t_1 * (t_2 - t_1) + 0.5 * A_2_t_1 * (t_2 - t_1) ** 2
+        V_2 = V_2_t_1 + A_2_t_1 * (t_2 - t_1)
+
+        R_02 = R_2 - R_0
+
+        ''' BCRS state vectors of celestial bodies at t_2, [m, m/s]: '''
+        ## Earth:
+        rrd = pleph(jd + t_2 / 86400.0, 3, 12, inp['jpl_eph'])
+        earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+        ## Sun:
+        rrd = pleph(jd + t_2 / 86400.0, 11, 12, inp['jpl_eph'])
+        sun = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+        ## Moon:
+        rrd = pleph(jd + t_2 / 86400.0, 10, 12, inp['jpl_eph'])
+        moon = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+
+        state_ss_t2 = []
+        for jj in (1, 2, 4, 5, 6, 7, 8, 9):
+            rrd = pleph(jd + t_2 / 86400.0, jj, 12, inp['jpl_eph'])
+            state_ss_t2.append(np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3)
+        state_ss_t2.insert(2, earth)
+        state_ss_t2.append(moon)
+        state_ss_t2.append(sun)
+
+        RLT_02 = 0.0
+        for ii, (state_t0, state_t2) in enumerate(zip(state_ss_t0, state_ss_t2)):
+            if not (ii == 2 and norm(r_2) < 1e-3):
+                rb_t0 = state_t0[:, 0]
+                rb_t2 = state_t2[:, 0]
+                R_0_B = R_0 - rb_t0
+                R_2_B = R_2 - rb_t2
+                R_02_B = R_2_B - R_0_B
+                if debug:
+                    print 'rlt_02_{:d} = {:.18f}'.format(ii, (2.0 * GM[ii] / C ** 3) * \
+                                                 log((norm(R_2_B) + norm(R_0_B) + norm(R_02_B) +
+                                                      2.0 * GM[ii] / C ** 2) / \
+                                                     (norm(R_2_B) + norm(R_0_B) - norm(R_02_B) +
+                                                      2.0 * GM[ii] / C ** 2)))
+                RLT_02 += (2.0 * GM[ii] / C ** 3) * \
+                       log((norm(R_2_B) + norm(R_0_B) + norm(R_02_B) +
+                            2.0 * GM[ii] / C ** 2) / \
+                           (norm(R_2_B) + norm(R_0_B) - norm(R_02_B) +
+                            2.0 * GM[ii] / C ** 2))
+
+        # update t_0 and t_2 using multi-dimentional Newton-Raphson method
+        # t_2 - t_0 - norm(R_02) / C - RLT) / \
+        #         (1.0 + dot(R_02, V_2) / (C * norm(R_02)
+        # Jacobian:
+        J = np.matrix([[-1.0 + dot(R_01, V_0) / (C * norm(R_01)), 0],
+                       [-1.0 + dot(R_02, V_0) / (C * norm(R_02)), 1.0 - dot(R_02, V_2) / (C * norm(R_02))]])
+        f = np.array([[t_1 - t_0 - norm(R_01) / C - RLT_01],
+                      [t_2 - t_0 - norm(R_02) / C - RLT_02]])
+        if debug: print 'J = ', J
+        if debug: print 'J^-1 = ', np.linalg.pinv(J)
+        if debug: print 'f = ', f
+        upd = np.array([[t_0], [t_2]]) - dot(np.linalg.pinv(J), f)
+        t_0 = upd[0, 0]
+        t_2 = upd[1, 0]
+
+        if debug: print 't_0 = {:.18f} (updated)'.format(t_0)
+        if debug: print 't_2 = {:.18f} (updated)'.format(t_2)
+        nn += 1
+        if debug: print 'delta_t_0 = {:.18f}'.format(abs(t_0 - t_0_tmp))
+        if debug: print 'delta_t_2 = {:.18f}'.format(abs(t_2 - t_2_tmp))
+
+    x, _ = lagint(lag_order, tdb, bcrs[:, 6], dd + t_0)
+    y, _ = lagint(lag_order, tdb, bcrs[:, 7], dd + t_0)
+    z, _ = lagint(lag_order, tdb, bcrs[:, 8], dd + t_0)
+    # vx, _ = lagint(lag_order, tdb, bcrs[:, 9], dd + t_0)
+    # vy, _ = lagint(lag_order, tdb, bcrs[:, 10], dd + t_0)
+    # vz, _ = lagint(lag_order, tdb, bcrs[:, 11], dd + t_0)
+    R_0 = np.hstack((x, y, z))
+    # V_0 = np.hstack((vx, vy, vz))
+
+    if debug:
+        print '\nsummary:'
+        print 't_1 = {:.18f}'.format(t_1)
+        print 'dd = {:.18f}'.format(dd)
+        print 't_0 = {:.18f}'.format(t_0)
+        print 't_2 = {:.18f}'.format(t_2)
+        print 'RLT_01 = {:.18f}'.format(RLT_01)
+        print 'RLT_02 = {:.18f}'.format(RLT_02)
+        print 'tau_bc = {:.18f}'.format(t_2-t_1)
+
+    if debug: print 'f(x)=0?: {:.18f}'.format(t_1 - t_0 - norm(R_01) / C - RLT_01)
+    if debug: print 'f(x)=0?: {:.18f}'.format(t_2 - t_0 - norm(R_02) / C - RLT_02)
+
+    R_2 = R_2_t_1 + V_2_t_1 * (t_2 - t_1) + 0.5 * A_2_t_1 * (t_2 - t_1) ** 2
+    # V_2 = V_2_t_1 + A_2_t_1 * (t_2 - t_1)
+
+    ''' gravitational effect on the ray path from Fukushima '''
+    # BCRS state vectors of celestial bodies at t_0, [m, m/s]:
+    ## Earth:
+    rrd = pleph(jd + t_0 / 86400.0, 3, 12, inp['jpl_eph'])
+    earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+    # Earth's acceleration in m/s**2:
+    v_plus = np.array(pleph(jd + t_0 / 86400.0 + 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+    v_minus = np.array(pleph(jd + t_0 / 86400.0 - 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+    a = (v_plus - v_minus) * 1e3 / 2.0
+    a = np.array(np.matrix(a).T)
+    earth = np.hstack((earth, a))
+    ## Sun:
+    rrd = pleph(jd + t_0 / 86400.0, 11, 12, inp['jpl_eph'])
+    sun = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+    ## Moon:
+    rrd = pleph(jd + t_0 / 86400.0, 10, 12, inp['jpl_eph'])
+    moon = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+
+    state_ss_t0 = []
+    for jj in (1, 2, 4, 5, 6, 7, 8, 9):
+        rrd = pleph(jd + t_0 / 86400.0, jj, 12, inp['jpl_eph'])
+        state_ss_t0.append(np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3)
+    state_ss_t0.insert(2, earth)
+    state_ss_t0.append(moon)
+    state_ss_t0.append(sun)
+
+    # BCRS state vectors of celestial bodies at t_0, [m, m/s]:
+    ## Earth:
+    rrd = pleph(jd + t_0 / 86400.0, 3, 12, inp['jpl_eph'])
+    earth = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+    # Earth's acceleration in m/s**2:
+    v_plus = np.array(pleph(jd + t_0 / 86400.0 + 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+    v_minus = np.array(pleph(jd + t_0 / 86400.0 - 1.0 / 86400.0, 3, 12, inp['jpl_eph'])[3:])
+    a = (v_plus - v_minus) * 1e3 / 2.0
+    a = np.array(np.matrix(a).T)
+    earth = np.hstack((earth, a))
+    ## Sun:
+    rrd = pleph(jd + t_0 / 86400.0, 11, 12, inp['jpl_eph'])
+    sun = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+    ## Moon:
+    rrd = pleph(jd + t_0 / 86400.0, 10, 12, inp['jpl_eph'])
+    moon = np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3
+
+    state_ss_t0 = []
+    for jj in (1, 2, 4, 5, 6, 7, 8, 9):
+        rrd = pleph(jd + t_0 / 86400.0, jj, 12, inp['jpl_eph'])
+        state_ss_t0.append(np.reshape(np.asarray(rrd), (3, 2), 'F') * 1e3)
+    state_ss_t0.insert(2, earth)
+    state_ss_t0.append(moon)
+    state_ss_t0.append(sun)
+
+    R_0_1 = R_0 - R_1
+    R_0_2 = R_0 - R_2
+    T_g_21 = 0.0
+    for ii, (state_t0, state_t1, state_t2) in \
+            enumerate(zip(state_ss_t0, state_ss_t1, state_ss_t2)):
+        if ii != 2:
+            rb_t0 = state_t0[:, 0]
+            rb_t1 = state_t1[:, 0]
+            rb_t2 = state_t2[:, 0]
+            R_0_B = R_0 - rb_t0
+            R_1_B = R_1 - rb_t1
+            R_2_B = R_2 - rb_t2
+            T_g_21 += (2.0 * GM[ii] / C ** 3) * \
+                      log((norm(R_2_B) + norm(R_0_B) + norm(R_0_2)) * \
+                          (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) / \
+                          (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
+                          (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)))
+            if debug:
+                print 'i={:d}, T_g_21_i = {:.18f}'.format(ii, (2.0 * GM[ii] / C ** 3) * \
+                                                          log((norm(R_2_B) + norm(R_0_B) + norm(R_0_2)) * \
+                                                              (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) / \
+                                                              (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
+                                                              (norm(R_1_B) + norm(R_0_B) + norm(R_0_1))))
+    if debug: print 'T_g_21 = {:.18f}'.format(T_g_21)
+
+    ''' TDB -> TAI '''
+    earth = state_ss_t1[2]
+
+    # transformation from Sekido and Fukushima:
+    dtau = (t_2 - t_1 + T_g_21) * \
+           (1.0 - (U + norm(earth[:, 1])**2/2.0 + dot(earth[:, 1], v_2))/C**2)/(1-L_C) - \
+           dot(r_2 - r_1, earth[:, 1])/C**2
+    if debug: print 'tau_gc = {:.18f} (Fukushima)'.format(dtau)
+
+    # transformation from Duev: [difference is < 10^-16 sec]
+    if True is False:
+        dtau = ((t_2 - t_1 + T_g_21) *
+               (1 - ((norm(earth[:, 1]) ** 2) / 2.0 + U) / C ** 2) / (1.0 - L_C) -
+                dot(earth[:, 1], r_2 - r_1) / C ** 2) / \
+                    (1 + dot(earth[:, 1], v_2) / C ** 2)
+        if debug: print 'tau_gc = {:.18f} (Duev)'.format(dtau)
+
+    # transformation from Petrov:
+    if True is False:
+        dtau = (1.0 - U/C**2 + norm(earth[:, 1])**2/2.0/C**2 + const.L_C - const.L_G) * \
+               (t_2 - t_1 + T_g_21) - \
+               dot(R_2 - R_1, earth[:, 1])/C**2
+        if debug: print 'tau_gc = {:.18f} (Petrov)'.format(dtau)
+
+    # astropy.time time difference:
+    if True is False:
+        astropy_t_1 = Time(jd - 2400000.5, t_1 / 86400.0,
+                           format='mjd', scale='tdb', precision=9,
+                           location=EarthLocation.from_geocentric(*sta1.r_GTRS, unit=units.m))
+        astropy_t_2 = Time(jd - 2400000.5, (t_2 + T_g_21) / 86400.0,
+                           format='mjd', scale='tdb', precision=9,
+                           location=EarthLocation.from_geocentric(*sta2.r_GTRS, unit=units.m))
+        dtau = (astropy_t_2.tai - astropy_t_1.tai).sec
+        if debug: print 'tau_gc = {:.18f} (astropy)'.format(dtau)
+
+    return dtau
+
+
 #==============================================================================
 # 
 #==============================================================================
-def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,\
-                    sta1, sta2):
-    '''
-    NF delay calculation
-    '''
+def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
+                       sta1, sta2):
+    """
+    NF delay calculation following Sekido and Fukushima
+    """
     debug = False
     
     GM = const.GM
@@ -16674,11 +17030,11 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,\
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
-    vx, _ = lagint(lag_order, tdb, bcrs[:,9], dd+t_0)
-    vy, _ = lagint(lag_order, tdb, bcrs[:,10], dd+t_0)
-    vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
+    # vx, _ = lagint(lag_order, tdb, bcrs[:,9], dd+t_0)
+    # vy, _ = lagint(lag_order, tdb, bcrs[:,10], dd+t_0)
+    # vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
     R_0 = np.hstack((x,y,z))
-    V_0 = np.hstack((vx,vy,vz))
+    # V_0 = np.hstack((vx,vy,vz))
     
     if debug: 
         print 't_0 = {:.18f}'.format(t_0)
@@ -16730,8 +17086,8 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,\
     # delay in the TT-frame
     V_E = earth[:,1]
     dtau = (-(1 - 2*U/C**2 - \
-            (norm(V_E)**2 + 2*dot(V_E,v_2))/(2*C**2))*dot(K,b)/C  \
-            - dot(V_E, b)/C**2 * (1 + dot(R_2_hat, V_2)/C - \
+            (norm(V_E)**2 + 2*dot(V_E,v_2))/(2*C**2))*dot(K,b)/C
+            - dot(V_E, b)/C**2 * (1 + dot(R_2_hat, V_2)/C -
             dot(V_E+2*v_2, K)/(2*C)) + T_g_21) \
             / ((1 + dot(R_2_hat, V_2)/C)*(1 + H))
     if debug: print 'dtau = {:.18f}'.format(dtau)
@@ -16747,18 +17103,18 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
                 ut1, sta1, sta2=None, L_G=None, AE=None, J_2=None,
                 utc=None, gcrs=None, t_utc=None, eops=None, inp=None):
 #                r_1, v_1, r_2=None, v_2=None, a_2=None):
-    '''
+    """
     Doppler calculation following Moyer/Duev
     For reference see Duev PhD thesis, MSU 2012.
     
     dd - number of days since the start epoch of the ephemeris * 86400
     state_ss_t1  - Solar system bodies r, v (and a for Earth) at t_1 wrt SSBC
-    '''
+    """
     debug = False
     
     r_1 = sta1.r_GCRS
     v_1 = sta1.v_GCRS
-    if sta2!=None:
+    if sta2 is not None:
         r_2 = sta2.r_GCRS
         v_2 = sta2.v_GCRS
         a_2 = sta2.a_GCRS
