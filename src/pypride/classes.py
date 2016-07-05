@@ -635,92 +635,92 @@ class obs(object):
         # resample tstamps and freqs:
         self.resample(tstep=tstep)
 
-        def smoothDude(self, tstep=1, method='cheb'):
-            """
-            Scan-based smoothing of DUDE data
-            """
-            if method == 'poly':
-                # initialise optimal polinomial estimator:
-                estimator = PolynomialRegression()
-                _degrees = np.arange(0, 8)
-                cv_model = GridSearchCV(estimator,
-                                        param_grid={'deg': _degrees},
-                                        scoring='mean_squared_error')
-            elif method == 'cheb':
-                # initialise optimal polinomial estimator:
-                estimator = ChebyshevRegression()
-                _degrees = np.arange(0, 10)
-                cv_model = GridSearchCV(estimator,
-                                        param_grid={'deg': _degrees},
-                                        scoring='mean_squared_error')
-            else:
-                raise Exception('Unknown smoothing method. Use \'poly\' or \'cheb\'')
-            # iterate over scans, as fits must be scan-based
-            delay_smooth = []
-            uvw_smooth = []
-            doppler_smooth = []
+    def smoothDude(self, tstep=1, method='cheb'):
+        """
+        Scan-based smoothing of DUDE data
+        """
+        if method == 'poly':
+            # initialise optimal polinomial estimator:
+            estimator = PolynomialRegression()
+            _degrees = np.arange(0, 8)
+            cv_model = GridSearchCV(estimator,
+                                    param_grid={'deg': _degrees},
+                                    scoring='mean_squared_error')
+        elif method == 'cheb':
+            # initialise optimal polinomial estimator:
+            estimator = ChebyshevRegression()
+            _degrees = np.arange(0, 10)
+            cv_model = GridSearchCV(estimator,
+                                    param_grid={'deg': _degrees},
+                                    scoring='mean_squared_error')
+        else:
+            raise Exception('Unknown smoothing method. Use \'poly\' or \'cheb\'')
+        # iterate over scans, as fits must be scan-based
+        delay_smooth = []
+        uvw_smooth = []
+        doppler_smooth = []
 
-            for start, stop in zip(self.scanStartTimes, self.scanStopTimes):
-                dd0 = datetime.datetime(start.year, start.month, start.day)
-                # time scale and proper indices to make fit
-                time = np.array([
-                                    (ii, t.hour * 3600 + t.minute * 60.0 + t.second +
-                                     (t - dd0).days * 86400.0)
-                                    for ii, t in enumerate(self.tstamps)
-                                    if start <= t <= stop])
+        for start, stop in zip(self.scanStartTimes, self.scanStopTimes):
+            dd0 = datetime.datetime(start.year, start.month, start.day)
+            # time scale and proper indices to make fit
+            time = np.array([
+                                (ii, t.hour * 3600 + t.minute * 60.0 + t.second +
+                                 (t - dd0).days * 86400.0)
+                                for ii, t in enumerate(self.tstamps)
+                                if start <= t <= stop])
 
-                # time scale used for smoothing:
-                t_dense = np.arange(time[0, 1], time[-1, 1] + tstep, tstep)
+            # time scale used for smoothing:
+            t_dense = np.arange(time[0, 1], time[-1, 1] + tstep, tstep)
 
-                # renorm
-                time[:, 1] = 24.0 * time[:, 1] / 86400.0
-                t_dense = 24.0 * t_dense / 86400.0
+            # renorm
+            time[:, 1] = 24.0 * time[:, 1] / 86400.0
+            t_dense = 24.0 * t_dense / 86400.0
 
-                if len(self.dude.delay) > 0:
-                    # make optimal fit to each of delay 'components'
-                    delay_smooth_scan = []
-                    for ii in range(self.dude.delay.shape[1]):
-                        # time[:,0] - indices of current scan in full-len tstamps
-                        # time[:,1] - time stamps in the flesh
-                        ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], self.dude.delay[ind, ii])
-                        # print [grid_score.mean_validation_score for \
-                        #        grid_score in cv_model.grid_scores_]
-                        delay_smooth_scan.append(cv_model.predict(t_dense))
-                    try:
-                        delay_smooth = np.vstack((delay_smooth,
-                                                  np.array(delay_smooth_scan).T))
-                    except:
-                        delay_smooth = np.array(delay_smooth_scan).T
+            if len(self.dude.delay) > 0:
+                # make optimal fit to each of delay 'components'
+                delay_smooth_scan = []
+                for ii in range(self.dude.delay.shape[1]):
+                    # time[:,0] - indices of current scan in full-len tstamps
+                    # time[:,1] - time stamps in the flesh
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.delay[ind, ii])
+                    # print [grid_score.mean_validation_score for \
+                    #        grid_score in cv_model.grid_scores_]
+                    delay_smooth_scan.append(cv_model.predict(t_dense))
+                try:
+                    delay_smooth = np.vstack((delay_smooth,
+                                              np.array(delay_smooth_scan).T))
+                except:
+                    delay_smooth = np.array(delay_smooth_scan).T
 
-                if len(self.dude.uvw) > 0:
-                    uvw_smooth_scan = []
-                    for ii in range(self.dude.uvw.shape[1]):
-                        ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
-                        uvw_smooth_scan.append(cv_model.predict(t_dense))
-                    try:
-                        uvw_smooth = np.vstack((uvw_smooth, np.array(uvw_smooth_scan).T))
-                    except:
-                        uvw_smooth = np.array(uvw_smooth_scan).T
+            if len(self.dude.uvw) > 0:
+                uvw_smooth_scan = []
+                for ii in range(self.dude.uvw.shape[1]):
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
+                    uvw_smooth_scan.append(cv_model.predict(t_dense))
+                try:
+                    uvw_smooth = np.vstack((uvw_smooth, np.array(uvw_smooth_scan).T))
+                except:
+                    uvw_smooth = np.array(uvw_smooth_scan).T
 
-                if len(self.dude.doppler) > 0:
-                    doppler_smooth_scan = []
-                    for ii in range(self.dude.doppler.shape[1]):
-                        ind = map(int, time[:, 0])
-                        cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
-                        doppler_smooth_scan.append(cv_model.predict(t_dense))
-                    try:
-                        doppler_smooth = np.vstack((doppler_smooth, np.array(doppler_smooth_scan).T))
-                    except:
-                        doppler_smooth = np.array(doppler_smooth_scan).T
-                        #            print '___'
-            self.dude.delay = delay_smooth
-            self.dude.uvw = uvw_smooth
-            self.dude.doppler = doppler_smooth
+            if len(self.dude.doppler) > 0:
+                doppler_smooth_scan = []
+                for ii in range(self.dude.doppler.shape[1]):
+                    ind = map(int, time[:, 0])
+                    cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
+                    doppler_smooth_scan.append(cv_model.predict(t_dense))
+                try:
+                    doppler_smooth = np.vstack((doppler_smooth, np.array(doppler_smooth_scan).T))
+                except:
+                    doppler_smooth = np.array(doppler_smooth_scan).T
+                    #            print '___'
+        self.dude.delay = delay_smooth
+        self.dude.uvw = uvw_smooth
+        self.dude.doppler = doppler_smooth
 
-            # resample tstamps and freqs:
-            self.resample(tstep=tstep)
+        # resample tstamps and freqs:
+        self.resample(tstep=tstep)
 
 '''
 #==============================================================================
