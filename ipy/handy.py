@@ -36,13 +36,15 @@ inp = inp_set('/Users/dmitryduev/_jive/pypride/src/pypride/inp.cfg')
 #ob.addScan(t_start, t_step, nobs=10)
 #print ob
 
-#t_start = datetime(2013,3,9,10,5,0)
-#t_stop  = datetime(2013,3,10,1,0,0)
-#t_step = 10 # seconds
-#inp_swchs = inp.get_section('all') #default input switches (all False)
-#inp_swchs['doppler_calc'] = True
-#ob = obs(['MEDICINA','GEOCENTR'],'RA','R', inp=inp_swchs) # freq in Hz!!
-#ob.addScan(t_start, t_step, stop=t_stop, freq=8.4e9 + 0.2827155)
+# t_start = datetime(2013, 3, 9, 10, 5, 0)
+# t_stop  = datetime(2013, 3, 10, 1, 0, 0)
+# t_step = 10 # seconds
+# inp_swchs = inp.get_section('all')
+# # inp_swchs['doppler_calc'] = True
+# inp_swchs['delay_calc'] = True
+# ob = obs(['GEOCENTR', 'WETTZELL'], 'RA', 'R', inp=inp_swchs)
+# # ob = obs(['GEOCENTR'], 'RA', 'R', inp=inp_swchs)
+# ob.addScan(t_start, t_step, stop=t_stop, freq=8.4e9 + 0.2827155)
            
 #t_start = datetime(2014,9,21,5,0,0)
 #t_stop  = datetime(2014,9,21,6,0,0)
@@ -67,6 +69,14 @@ inp = inp_set('/Users/dmitryduev/_jive/pypride/src/pypride/inp.cfg')
 #inp_swchs['doppler_calc'] = True
 #ob = obs(['METSAHOV'],'MEX','S', inp=inp_swchs)
 #ob.addScan(t_start, t_step, stop=t_stop)
+
+t_start = datetime(2012, 4, 2, 9, 20, 0)
+t_stop  = datetime(2012, 4, 2, 12, 41, 0)
+t_step = 10  # seconds
+inp_swchs = inp.get_section('all')  # default input switches all False
+inp_swchs['delay_calc'] = True
+ob = obs(['GEOCENTR', 'MEDICINA'], 'PR12', 'G', inp=inp_swchs)
+ob.addScan(t_start, t_step, stop=t_stop, freq=1.3e9)
 
 #t_start = datetime(2013,12,28,22,30,0)
 #t_stop  = datetime(2013,12,29,11,40,0)
@@ -96,13 +106,13 @@ inp = inp_set('/Users/dmitryduev/_jive/pypride/src/pypride/inp.cfg')
 #ob = obs(['HART15M'], 'VEX', 'S', inp=inp_swchs) # freq in Hz!!
 #ob.addScan(t_start, t_step, stop=t_stop)
 
-t_start = datetime(2013,12,29,2,41,30)
-t_stop  = datetime(2013,12,29,2,43,30)
-t_step = 1 # seconds
-inp_swchs = inp.get_section('all') #default input switches all False
-inp_swchs['delay_calc'] = True
-ob = obs(['GEOCENTR', 'ONSALA60'], 'MEX', 'S', inp=inp_swchs) # freq in Hz!!
-ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
+# t_start = datetime(2013,12,29,2,41,30)
+# t_stop  = datetime(2013,12,29,2,43,30)
+# t_step = 1 # seconds
+# inp_swchs = inp.get_section('all') #default input switches all False
+# inp_swchs['delay_calc'] = True
+# ob = obs(['GEOCENTR', 'ONSALA60'], 'MEX', 'S', inp=inp_swchs) # freq in Hz!!
+# ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
 
 # t_start = datetime(2013,12,28,23,59,30)
 # t_stop  = datetime(2013,12,29,0,1,00)
@@ -154,6 +164,14 @@ ob.addScan(t_start, t_step, stop=t_stop, freq=8.42e9)
 #inp_swchs['doppler_calc'] = True
 #ob = obs(['GEOCENTR','WETTZELL'],'VEX','S',inp_swchs)
 #ob.addScan(t_start, t_step, stop=t_stop, freq=8.4e9) # freq in Hz!!
+
+# t_start = datetime(2015, 1, 22, 5, 0, 6)
+# t_stop = datetime(2015, 1, 22, 7, 58, 39)
+# t_step = 1  # seconds
+# inp_swchs = inp.get_section('all')
+# inp_swchs['doppler_calc'] = True
+# ob = obs(['SESHAN25'], 'MEX', 'S', inp=inp_swchs)
+# ob.addScan(t_start, t_step, stop=t_stop, freq=8.4e9)  # freq in Hz!!
 
 ob.dude = vint_s(ob)
 

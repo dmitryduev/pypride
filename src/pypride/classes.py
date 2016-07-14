@@ -116,6 +116,40 @@ def optimalFit(x, y, min_order=0, max_order=8, fit_type='poly'):
 
 '''
 #==============================================================================
+# Interpolate using polyfit
+#==============================================================================
+'''
+def localfit(x, y, xn, points=5, poly=2):
+    """
+    interpolate at each xn
+    Don't forget to normalise output
+    """
+    if isinstance(xn, float) or isinstance(xn, int):
+        xn = np.array([xn], dtype=np.float)
+    yn = []
+    for nn, xi in enumerate(xn):
+        n0 = np.searchsorted(x, xi)
+        # number of points to cut from the left-hand side
+        nl = int(np.floor(points / 2.0))
+        # number of points to cut from the right-hand side
+        nr = int(np.ceil(points / 2.0))
+        # check/correct bounds:
+        if len(x[:n0]) < nl:
+            nr = nr + nl - len(x[:n0])
+            nl = len(x[:n0])
+        if len(x[n0:]) < nr:
+            nl = nl + nr - len(x[n0:])
+            nr = len(x[n0:])
+
+        # make a fit
+        yfit = np.polyfit(x[n0 - nl:n0 + nr], y[n0 - nl:n0 + nr], poly)
+        yn.append(np.polyval(yfit, xi))
+
+    return np.array(yn, dtype=np.float) if len(yn) > 1 else float(yn[0])
+
+
+'''
+#==============================================================================
 # Input settings
 #==============================================================================
 '''
@@ -543,9 +577,9 @@ class obs(object):
         # pointingsJ2000 = np.empty(shape=(len(self.sta), 0, 2))
         # pointingsDate = np.empty(shape=(len(self.sta), 0, 2))
         # azels = np.empty(shape=(len(self.sta), 0, 2))
-        pointingsJ2000 = [[]*len(self.sta)]
-        pointingsDate = [[]*len(self.sta)]
-        azels = [[]*len(self.sta)]
+        pointingsJ2000 = [[] for _, _ in enumerate(self.sta)]
+        pointingsDate = [[] for _, _ in enumerate(self.sta)]
+        azels = [[] for _, _ in enumerate(self.sta)]
 
         # iterate over scans, as fits must be scan-based
         for start, stop in zip(self.scanStartTimes, self.scanStopTimes):
@@ -568,11 +602,12 @@ class obs(object):
             for jj, _ in enumerate(self.sta):
                 if len(self.pointingsJ2000) > 0:
                     pointingsJ2000_scan = []
+                    # iterate over coordinates
                     for ii in range(self.pointingsJ2000.shape[2]):
                         ind = map(int, time[:, 0])
+                        # treat RA separately (fix if necessary)
                         if ii == 0:
                             cv_model.fit(time[:, 1], np.unwrap(self.pointingsJ2000[ind, jj, ii]))
-                            # fix RA if necessary
                             # wrap back if necessary:
                             wrap = np.angle(np.exp(1j*cv_model.predict(t_dense)))
                             negative = wrap < 0
@@ -635,7 +670,7 @@ class obs(object):
         # resample tstamps and freqs:
         self.resample(tstep=tstep)
 
-    def smoothDude(self, tstep=1, method='cheb'):
+    def smoothDude(self, tstep=1, method='polyLocal'):
         """
         Scan-based smoothing of DUDE data
         """
@@ -653,6 +688,10 @@ class obs(object):
             cv_model = GridSearchCV(estimator,
                                     param_grid={'deg': _degrees},
                                     scoring='mean_squared_error')
+        elif method == 'polyLocal':
+            # number of point to use
+            points = 3
+            poly = 2
         else:
             raise Exception('Unknown smoothing method. Use \'poly\' or \'cheb\'')
         # iterate over scans, as fits must be scan-based
@@ -683,10 +722,15 @@ class obs(object):
                     # time[:,0] - indices of current scan in full-len tstamps
                     # time[:,1] - time stamps in the flesh
                     ind = map(int, time[:, 0])
-                    cv_model.fit(time[:, 1], self.dude.delay[ind, ii])
-                    # print [grid_score.mean_validation_score for \
-                    #        grid_score in cv_model.grid_scores_]
-                    delay_smooth_scan.append(cv_model.predict(t_dense))
+                    if method != 'polyLocal':
+                        cv_model.fit(time[:, 1], self.dude.delay[ind, ii])
+                        # print [grid_score.mean_validation_score for \
+                        #        grid_score in cv_model.grid_scores_]
+                        delay_smooth_scan.append(cv_model.predict(t_dense))
+                    else:
+                        local_fit = localfit(time[:, 1], self.dude.delay[ind, ii], t_dense,
+                                                points=points, poly=poly)
+                        delay_smooth_scan.append(local_fit)
                 try:
                     delay_smooth = np.vstack((delay_smooth,
                                               np.array(delay_smooth_scan).T))
@@ -697,8 +741,13 @@ class obs(object):
                 uvw_smooth_scan = []
                 for ii in range(self.dude.uvw.shape[1]):
                     ind = map(int, time[:, 0])
-                    cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
-                    uvw_smooth_scan.append(cv_model.predict(t_dense))
+                    if method != 'polyLocal':
+                        cv_model.fit(time[:, 1], self.dude.uvw[ind, ii])
+                        uvw_smooth_scan.append(cv_model.predict(t_dense))
+                    else:
+                        local_fit = localfit(time[:, 1], self.dude.uvw[ind, ii], t_dense,
+                                                points=points, poly=poly)
+                        uvw_smooth_scan.append(local_fit)
                 try:
                     uvw_smooth = np.vstack((uvw_smooth, np.array(uvw_smooth_scan).T))
                 except:
@@ -708,8 +757,13 @@ class obs(object):
                 doppler_smooth_scan = []
                 for ii in range(self.dude.doppler.shape[1]):
                     ind = map(int, time[:, 0])
-                    cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
-                    doppler_smooth_scan.append(cv_model.predict(t_dense))
+                    if method != 'polyLocal':
+                        cv_model.fit(time[:, 1], self.dude.doppler[ind, ii])
+                        doppler_smooth_scan.append(cv_model.predict(t_dense))
+                    else:
+                        local_fit = localfit(time[:, 1], self.dude.doppler[ind, ii], t_dense,
+                                                points=points, poly=poly)
+                        doppler_smooth_scan.append(local_fit)
                 try:
                     doppler_smooth = np.vstack((doppler_smooth, np.array(doppler_smooth_scan).T))
                 except:

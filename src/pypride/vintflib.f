@@ -75,6 +75,105 @@ C Aitken method. y: interpolated value. dy: error estimated.
       return
       end
 
+C lagrange interpolation + derivative computation
+      subroutine lagintd(y, dery, x, x2, x3, xo, m, n, l)
+      integer m, n, l, i, j, k
+      real*8 x2(m,n), x3(m,n), xo(l), y(l), dery(l)
+      real*8 xi(m*n), yi(m*n)
+      integer x, n0, nl, nr
+      real*8 xin(x), yin(x), dyin(x), xi1,xi2,fi1,fi2
+      real*8 Q(x,x), dQ(x,x)
+
+Cf2py intent(in) x, x2, x3, xo
+Cf2py intent(out) y(l), dery(l)
+
+C x - number of points = order + 1
+C order of the interpolant must be <= max(m,n)
+      if(x>max(m,n)) then
+         x = max(m,n)
+      endif
+
+      do k=1,l
+
+      do i=1,m*n
+        if(m.eq.1) then
+           xi(i) = x2(1,i)
+           yi(i) = x3(1,i)
+         else
+           xi(i) = x2(i,1)
+           yi(i) = x3(i,1)
+         endif
+      enddo
+C
+
+C nearest nod in the grid right to xo
+      do i=1,m*n
+        if(xo(k).le.xi(i)) then
+           n0 = i;
+           exit
+         endif
+      enddo
+C number of elements left to xo
+      nl = n0 - 1
+C number of elements right to xo
+      nr = m*n - n0 + 1
+C      nr = m*n - n0
+C cut x points around xo
+      if(floor(dble(x)/2)>nl) then
+        xin = xi(1:x)
+        yin = yi(1:x)
+      endif
+      if(ceiling(dble(x)/2)>nr) then
+        xin = xi(m*n-x+1:m*n)
+        yin = yi(m*n-x+1:m*n)
+      endif
+      if((floor(dble(x)/2)<=nl).and.(ceiling(dble(x)/2)<=nr)) then
+        xin = xi(n0-floor(dble(x)/2):n0+ceiling(dble(x)/2)-1)
+        yin = yi(n0-floor(dble(x)/2):n0+ceiling(dble(x)/2)-1)
+      endif
+
+C Subroutine performing the Lagrange interpolation with the
+C Aitken method. y: interpolated value. dy: error estimated.
+
+C init:
+      Q(:, 1) = yin
+
+      do i = 1, x-1
+        do j = 1, i
+            xi1 = xin(i-j+1)
+            xi2 = xin(i+1)
+            fi1 = Q(i+1, j)
+            fi2 = Q(i, j)
+            Q(i+1,j+1) = ((xo(k)-xi1)*fi1 - (xo(k)-xi2)*fi2)/(xi2-xi1)
+        enddo
+      enddo
+
+      do j = 1, x-1
+        dQ(j+1, 2) = (Q(j+1, 1) - Q(j, 1)) / (xin(j+1) - xin(j))
+      enddo
+
+      do i = 2, x-1
+        do j = 2, i
+            xi1 = xin(i-j+1)
+            xi2 = xin(i+1)
+            fi1 = dQ(i+1, j)
+            fi2 = dQ(i, j)
+            dQ(i+1,j+1) = ((xo(k)-xi1)*fi1 - (xo(k)-xi2)*fi2)/(xi2-xi1)
+            fi1 = Q(i+1, j)
+            fi2 = Q(i, j)
+            dQ(i+1,j+1) = dQ(i+1,j+1) + (fi1 - fi2)/(xi2-xi1)
+        enddo
+      enddo
+
+
+      y(k) = Q(x,x)
+      dery(k) = dQ(x,x)
+
+      enddo
+
+      return
+      end
+
 
       subroutine lagintt(y, dy, x, x2, x3, xo, m, n, l)
       integer m, n, l, i, j, k

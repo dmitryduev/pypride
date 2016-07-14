@@ -16,8 +16,6 @@ from collections import Counter
 #import os
 
 import sys
-##sys.path.append('/Users/oasis/_jive/python/vex')
-#sys.path.append('../vex')
 
 from pypride.vex import Vex
 
@@ -31,8 +29,7 @@ class vispy(object):
         Class for parsing vex-files and running delay generation for SFXC
     '''
     
-    def __init__(self, vex_file, inp_file, \
-                    parallel=True, showTiming=True):
+    def __init__(self, vex_file, inp_file, parallel=True, showTiming=True):
         '''
         Parse main info contained in the vex-file
         '''
@@ -63,7 +60,6 @@ class vispy(object):
             print str(err)
             raise Exception('Failed to read the vex-file')
 
-        
         ''' parse vex-file '''
         vex = Vex(vex_file)
         self.vex = vex
@@ -114,7 +110,7 @@ class vispy(object):
         ''' get sources:'''
         self.sources = {}
         for s in vex['SOURCE']:
-            c = SkyCoord(vex['SOURCE'][s]['ra'], \
+            c = SkyCoord(vex['SOURCE'][s]['ra'],
                          vex['SOURCE'][s]['dec'], frame='icrs')
 #            self.sources[s] = [c.ra.hms, c.dec.dms]
             self.sources[s] = [c.ra.rad, c.dec.rad]
@@ -204,7 +200,7 @@ class vispy(object):
                 # source type:
                 if sou.lower()=='ra':
                     obs_type = 'R' # radioastron observations
-                elif sou.lower()[0:2]=='pr' or sou.lower()[0:2]=='pg':
+                elif sou.lower()[0:2] == 'pr' or sou.lower()[0:2]=='pg':
                     obs_type = 'G' # gnss observations
                 elif sou.lower() in spacecraft:
                     obs_type = 'S' # vex/mex/rosetta/herschel/gaia/ce3 observations
@@ -213,14 +209,14 @@ class vispy(object):
                     continue # no correction applies
                 # append
                 # phase center = 'GEOCENTR'
-                obsz.append( obs([self.inp.phase_center], sou, obs_type, \
-                                     self.exp_name, sou_radec, inp=inp_swchs) )
+                obsz.append( obs([self.inp.phase_center], sou, obs_type,
+                                  self.exp_name, sou_radec, inp=inp_swchs) )
     
         ''' parse scans '''
         for s in self.vex['SCHED']:
             scan = self.vex['SCHED'][s].getall('station')
             t_scan_start = \
-                datetime.datetime.strptime(self.vex['SCHED'][s]['start'], \
+                datetime.datetime.strptime(self.vex['SCHED'][s]['start'],
                                                       '%Yy%jd%Hh%Mm%Ss')
             mode = self.mods[self.vex['SCHED'][s]['mode']]
             # multiple sources per scan are possible (mult.ph.cen, off-beamGNSS)
@@ -281,8 +277,7 @@ class vispy(object):
         if self.showTiming: 
             toc = _time()
             print 'Creating obs-objects took {:.1f} seconds.'.format(toc-tic)
- 
-           
+
     def eop2vex(self, cat_eop):
         """
             Add EOP section to a vex-file, if it's not there 
@@ -537,8 +532,8 @@ class vispy(object):
                 toc = _time()
                 print 'Calculation took {:.1f} seconds.'.format(toc-tic)
 
-    def packDelays(self, delay_type = 'group', \
-                   smoothing=True, ionPhaseCor=False, dopplerPhaseCor=False,\
+    def packDelays(self, delay_type='group',
+                   smoothing=True, ionPhaseCor=False, dopplerPhaseCor=False,
                    noIonDelay=False):
         """
             Pack dudes into binary SFXC del-files and human-readable txt-files
@@ -665,7 +660,7 @@ class vispy(object):
                     # create mask using using current scan t_start, t_stop
                     maska = np.ma.masked_outside(dpc[sc][:,1], scan[0], scan[1]).mask
                     # mask t [sec] -> masked np.ma.array
-                    t = np.ma.array(dpc[sc][:,0], mask=maska, dtype=float)
+                    t = np.ma.array(dpc[sc][:, 0], mask=maska, dtype=float)
                     # -> np.array
                     t = np.ma.compressed(t)
                     # scale t for a more robust fit:
@@ -696,9 +691,9 @@ class vispy(object):
             # create pool
             pool = multiprocessing.Pool(n_cpu)
             # asyncronously apply packie to each of inps
-            inps = [(st, st_sh, self.obsz, phase_center_short, out_path, \
-                     exp_name, sou_scans, ionPhaseCor, dopplerPhaseCor, \
-                     noIonDelay, delay_type, clock, self.vex) \
+            inps = [(st, st_sh, self.obsz, phase_center_short, out_path,
+                     exp_name, sou_scans, ionPhaseCor, dopplerPhaseCor,
+                     noIonDelay, delay_type, clock, self.vex)
                      for (st, st_sh) in zip(stations, stations_short)]
             pool.map_async(packie, inps)
             # close bassejn
@@ -707,8 +702,8 @@ class vispy(object):
 
         else: # serial way
             # for each station stick all the data together, then sort it by datetime
-            inps = [(st, st_sh, self.obsz, phase_center_short, out_path, \
-                     exp_name, sou_scans, ionPhaseCor, dopplerPhaseCor, \
+            inps = [(st, st_sh, self.obsz, phase_center_short, out_path,
+                     exp_name, sou_scans, ionPhaseCor, dopplerPhaseCor,
                      noIonDelay, delay_type, clock, self.vex) \
                      for (st, st_sh) in zip(stations, stations_short)]
             for inpu in inps:
@@ -738,7 +733,7 @@ def packie(inps):
 
     # L_G for Ra observations
     if station_short.title() == 'Ra':
-        const = constants('421')
+        const = constants('430')
         L_G = const.L_G
     
     # dump everything to files:
@@ -837,19 +832,18 @@ def packie(inps):
                     pz = np.squeeze(pz)
                     
                     # freqs for iono phase correction:
-                    fz = np.array([ob.freqs for ob in obsz \
-                          if ob.sta[1]==sta and len(ob.tstamps)>0 \
-                          and ob.source==sou])
+                    fz = np.array([ob.freqs for ob in obsz
+                                   if ob.sta[1] == sta and len(ob.tstamps)>0
+                                   and ob.source == sou])
                                         
                     # mask the current scan:
                     maska = np.ma.masked_inside(tz, t_start, t_stop).mask
                     tz = tz[maska]
-                    dz = dz[maska,:]
+                    dz = dz[maska, :]
                     if noIonDelay: # don' wan' ion'?
-                        dz[:,4] = np.zeros_like(dz[:,4])
-                    pz = pz[maska,:]
-                    fz = np.array([f for f in fz[0] \
-                                    if f[0]>=t_start and f[1]<=t_stop])
+                        dz[:, 4] = np.zeros_like(dz[:, 4])
+                    pz = pz[maska, :]
+                    fz = np.array([f for f in fz[0] if f[0] >= t_start and f[1] <= t_stop])
                     
                     ## go-go-go
                     # this is for trapz integration step:
@@ -907,9 +901,9 @@ def packie(inps):
                         phs = 0.0
                         amp = 1.0
                         # ionosphere:
-                        if ionPhaseCor and delay_type=='group':
+                        if ionPhaseCor and delay_type == 'group':
                             # get proper freq value:
-                            _f = [x[2] for x in fz if x[0]<=_t<=x[1]][0]
+                            _f = [x[2] for x in fz if x[0] <= _t <= x[1]][0]
                             # -2 * 2pi * tau_iono * f (subtract what's already there 
                             # and change sign)
                             phs += -2.0 * 2.0*pi*dz[jj,4]*_f
@@ -947,7 +941,7 @@ def packie(inps):
                         # delay offset+rate at epoch
                         # check that vex-file had $CLOCK section and there's
                         # entry for the current station
-                        if len(clock)>0 and (station_short in clock.keys()):
+                        if len(clock) > 0 and (station_short in clock.keys()):
                             t_lo = clock[station_short][0]
                             offset = clock[station_short][1]
                             rate = clock[station_short][2]
@@ -967,7 +961,8 @@ def packie(inps):
                     # scan stop - write trailing zeros
                     line = struct.pack('<7d', *list(np.zeros(7)))
                     f_del.write(line)
-    
+
+
 # helper function to perform parallel smoothing
 def smoothie(ob):
     # .. to apply class method on list of objects in parallel
@@ -1048,8 +1043,8 @@ def main():
         v.makeObs(t_step=t_step, dopplerPhaseCor=dopplerPhaseCor, staz=staz)
         v.updates()
         v.calcDelays()
-        v.packDelays(delay_type = 'group', smoothing=True, \
-                     ionPhaseCor=ionPhaseCor, dopplerPhaseCor=dopplerPhaseCor,\
+        v.packDelays(delay_type='group', smoothing=True,
+                     ionPhaseCor=ionPhaseCor, dopplerPhaseCor=dopplerPhaseCor,
                      noIonDelay=noIonDelay)
         # a happy end
         sys.exit(1)

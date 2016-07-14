@@ -9,7 +9,7 @@ Convert RadioAstron's blt-file to scf-file(s).
 ##########################################################################################
 classes.py
 
-Definitions of classes used in pyp.
+Definitions of classes used in pypride.
 
 ##########################################################################################
 ftpnme.py
@@ -34,7 +34,7 @@ Finds GNSS (GPS and GLONASS) satellites near-by sources from each scan in a vex-
 ##########################################################################################
 handy.py
 
-Runs the pyp software for calculation VLBI delay and Doppler predictions manually. Contains a number of examples.
+Manually compute VLBI delay and Doppler predictions with pypride. Contains a number of examples.
 
 ##########################################################################################
 inp.py
@@ -44,7 +44,7 @@ Generates inp.cfg file. Note that inp.cfg could be edited manually.
 ##########################################################################################
 pointings.py
 
-Produces telescope spacecraft pointings in various formats/flavours. Useful for observations planning.
+Produces telescope spacecraft pointings in various formats/flavours. Useful for planning observations.
 
 ##########################################################################################
 ra2vex.py
@@ -59,7 +59,7 @@ Outputs names of raw RadioAstron OD files suitable for an experiment in question
 ##########################################################################################
 ramp1w_esa2pyp.py
 
-Convert ESA deep space s/c 1-way ramp table to pyp format.
+Converts ESA deep space s/c 1-way ramp table to pypride format.
 
 ##########################################################################################
 raod.py
@@ -104,6 +104,6 @@ Libraries with most of the computational routines and subroutines used in VLBI d
 ##########################################################################################
 vispy.py
 
-Produces SFXC-compatible .del-files containing VLBI delay predictions.
+Produces SFXC-compatible .del-files containing VLBI delay predictions given a vex-file.
 
 ##########################################################################################
