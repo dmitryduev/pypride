@@ -15199,29 +15199,16 @@ def tropo_petrov(st, el, az, dmjd):
             delay_tropo = st.spd['delay_dry'][n0](el_deg, az_deg) + \
                           st.spd['delay_wet'][n0](el_deg, az_deg)
         else:
-            # print('__')
-            # print(st.spd['elv_cutoff'][n0])
-            print(st.spd['tai'], dmjd, n0, el_deg, az_deg)
-            left = st.spd['delay_dry'][n0 - 1](el_deg, az_deg) + \
-                   st.spd['delay_wet'][n0 - 1](el_deg, az_deg)
-            right = st.spd['delay_dry'][n0](el_deg, az_deg) + \
-                   st.spd['delay_wet'][n0](el_deg, az_deg)
-            print(left, right)
-            # print(dmjd, np.array(st.spd['tai'])[n0-1: n0+1])
-            delay_tropo = np.interp(dmjd, np.array(st.spd['tai'])[n0-1: n0+1], [left, right])
-            print(delay_tropo)
-
             time_grid = np.array(st.spd['tai'])[nearest_cut_ind[0]: nearest_cut_ind[-1] + 1]
             delay_tropo_grid = [st.spd['delay_dry'][ind](el_deg, az_deg) + \
                                 st.spd['delay_wet'][ind](el_deg, az_deg) for ind in nearest_cut_ind]
             # linear interp:
-            delay_tropo = np.interp(dmjd, time_grid, delay_tropo_grid)
-            print(delay_tropo)
+            # delay_tropo = np.interp(dmjd, time_grid, delay_tropo_grid)
+            # print(delay_tropo)
             # spline interp:
             tck = sp.interpolate.splrep(time_grid, delay_tropo_grid, s=0)
             delay_tropo = sp.interpolate.splev(dmjd, tck, der=0)
-            print(delay_tropo)
-            raw_input()
+            # print(delay_tropo)
 
     st.dtau_tropo = delay_tropo
 
