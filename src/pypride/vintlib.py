@@ -15179,6 +15179,12 @@ def tropo_petrov(st, el, az, dmjd):
     Returns:
 
     """
+    # kostyl':
+    # FIXME: could be out-of-bounds for uplink stations in 3-way Doppler
+    # case if near midnight on the first day
+    if dmjd < st.spd['tai'][0]:
+        dmjd = st.spd['tai'][0]
+
     el_deg, az_deg = el * 180.0 / pi, az * 180.0 / pi
 
     n0 = np.searchsorted(st.spd['tai'], dmjd)
@@ -15218,9 +15224,9 @@ def tropo_petrov(st, el, az, dmjd):
 # 
 #==============================================================================
 def tropo_wien(st, el, az, dmjd, const, do_trp_grad_calc=False):
-    '''
+    """
     Tropospheric delay caclulation using VMF1 mapping functions
-    '''
+    """
     # kostyl':
     # FIXME: could be out-of-bounds for uplink stations in 3-way Doppler
     # case if near midnight on the first day
