@@ -31,17 +31,18 @@ if __name__ == '__main__':
     # stations = ['WETTZELL', 'WETTZ13N']
     # stations = ['EFLSBERG', 'WETTZELL', 'ZELENCHK', 'SVETLOE']
     # stations = ['ONSALA60']
-    stations = ['MATERA', 'WETTZELL']
+    # stations = ['MATERA', 'WETTZELL']
     # stations = ['YARRA12M']
     # stations = ['EFLSBERG', 'HARTRAO', 'WETTZELL', 'ZELENCHK', 'SVETLOE']
+    stations = ['HARTRAO']
     
     ''' time slot '''
-    date_t_start = datetime.datetime(2016, 7, 11, 5, 2, 0)
-    date_t_stop = datetime.datetime(2016, 7, 11, 10, 58, 0)
+    date_t_start = datetime.datetime(2016, 8, 6, 12, 32, 0)
+    date_t_stop = datetime.datetime(2016, 8, 6, 14, 28, 0)
     t_step_in = 10  # seconds
 
     # interpolate to a denser frig if t_step_out < t_step_in:
-    t_step_out = 1  # seconds
+    t_step_out = 10  # seconds
     scan_len = 300  # split time range into 'scans'
     
     # output txt dumps?

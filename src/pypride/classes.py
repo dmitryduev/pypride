@@ -20,6 +20,7 @@ from math import *
 from sklearn.base import BaseEstimator
 from sklearn.grid_search import GridSearchCV
 from sklearn.linear_model import LinearRegression
+from astropy.time import Time
 
 import struct
 import os
@@ -1006,9 +1007,13 @@ class site(object):
         # azimuth/elevation of a S/C or a source
 #        self.azel = np.zeros(2)
         self.azel_interp = []
-        # meteo data, stored in a dictionary:
-        self.met = {'mjd':[],'ahz':[], 'awz':[], 'zhz':[], 'zwz':[], 'TC':[], \
-                   'pres':[], 'hum':[], 'gnh':[], 'geh':[], 'gnw':[], 'gew':[]}
+        # meteo data:
+        # Petrov:
+        # self.spd = {'tai': [], 'grid': [], 'delay_dry': [], 'delay_wet': []}
+        self.spd = {'tai': [], 'elv_cutoff': [], 'delay_dry': [], 'delay_wet': []}
+        # Vienna:
+        self.met = {'mjd': [], 'ahz': [], 'awz': [], 'zhz': [], 'zwz': [], 'TC': [],
+                   'pres': [], 'hum': [], 'gnh': [], 'geh': [], 'gnw': [], 'gew': []}
 #        print self.met
         # interpolants for meteo data:
         self.fMet = {'fT':[], 'fP':[], 'fH':[],\
@@ -1036,7 +1041,6 @@ class site(object):
         self.dtau_tropo = 0.0
         # ionosphere:
         self.dtau_iono = 0.0
-
 
     def geodetic(self, const):
         
@@ -1662,187 +1666,252 @@ class site(object):
 
         return lt_01, ra, dec
 
-
     def addMet(self, date_start, date_stop, inp):
-        '''
-        Load VMF1 site/gridded meteo data. Files with these should
-        be pre-downloaded with doup() function.
+        """
+        Load Petrov site and VMF1 site/gridded meteo data.
+        Files with these should be pre-downloaded with doup() function.
         
          input:
              date_start - datetime object with start date
              date_stop - datetime object with start date
              inp        - input settings (cats etc.)
-        '''
-        if self.name=='GEOCENTR' or self.name=='RA':
+        """
+        if self.name == 'GEOCENTR' or self.name == 'RA':
             return
         
-        day_start = datetime.datetime(date_start.year,date_start.month,\
-                                      date_start.day)
-        day_stop = datetime.datetime(date_stop.year,date_stop.month,\
-                                    date_stop.day) + datetime.timedelta(days=1)
+        day_start = datetime.datetime(date_start.year, date_start.month, date_start.day)
+        day_stop = datetime.datetime(date_stop.year, date_stop.month, date_stop.day) + datetime.timedelta(days=1)
         dd = (day_stop - day_start).days
         
         # make list with datetime objects ranging from 1st day to last+1
         dates = [day_start]
-        for d in range(1,dd+1):
+        for d in range(1, dd+1):
             dates.append(day_start + datetime.timedelta(days=d))
 
-        for day in dates:
+        for di, day in enumerate(dates):
             year = day.year
-            doy = day.timetuple().tm_yday # day of year
-            vmf_file = '{:4d}{:03d}.vmf1_r'.format(year, doy)
-            # vmf1 site files:
-            with open(inp['meteo_cat']+'/'+vmf_file,'r') as f:
-                f_lines = f.readlines()
-            
-            # if met data are present in the vmf1 site file, load 'em
-            if any(self.name in s.split() for s in f_lines):
-                noSiteData = False
-                for f_line in f_lines:                    
-#                    if self.name in f_line.split(' '):
-                    if self.name in f_line.split():
-                        tmp = [float(i) for i in f_line[10:].split()]
-                        self.met['mjd'].append(tmp[0])
-                        self.met['ahz'].append(tmp[1])
-                        self.met['awz'].append(tmp[2])
-                        self.met['zhz'].append(tmp[3])
-                        self.met['zwz'].append(tmp[4])
-                        self.met['pres'].append(tmp[6])
-                        self.met['TC'].append(tmp[7])
-                        wvp = tmp[8]
-                        TK = tmp[7] + 273.15
-                        ew = 10**(10.79574*(1-273.16/TK) - \
-                             5.028*np.log10(TK/273.16) + \
-                             1.50475e-4*(1-10**(8.2969*(1-TK/273.16))) + \
-                             0.42873e-3*(10**(4.76955*(1-TK/273.16))-1) + 0.78614)
-                        self.met['hum'].append(100.0*wvp/ew)
+            doy = day.timetuple().tm_yday  # day of year
 
-            # if met data are not there, load gridded data
-            else:
-                noSiteData = True
-                
-        if noSiteData: # if met data are not there, load gridded data
-            print 'Meteo data for '+self.name+\
-                  ' not found. Using VMF1 grids instead.'
+            ''' try Petrov first: '''
+            try:
+                for hh in range(0, 24, 3):
+                    spd_file = 'spd_geosfpit_{:s}_{:02d}00.spd'.format(day.strftime('%Y%m%d'), hh)
 
-            lat = np.arange(90,-92,-2)
-            lon = np.arange(0,359,2.5)
-#                grid_lat, grid_lon = np.meshgrid(lat,lon)
-            
-            # for each day load data
-            for day in dates:
-                # mjd:
-                yy = day.year
-                mm = day.month
-                dd = day.day
-                if mm <= 2: #January & February
-                    yy  = yy - 1.0
-                    mm = mm + 12.0
-                jd = floor( 365.25*(yy + 4716.0)) + \
-                     floor( 30.6001*( mm + 1.0)) + 2.0 - \
-                     floor( yy/100.0 ) + \
-                     floor( floor( yy/100.0 )/4.0 ) + dd - 1524.5
-                mjd = jd - 2400000.5
-                
-                for hh in (0.0, 6.0, 12.0, 18.0):
-                    self.met['mjd'].append(mjd + hh/24.0)
-
-                vmf_grid_file = 'VMFG_{:4d}{:02d}{:02d}.H'.\
-                                 format(day.year, day.month, day.day)
-                
-                # load gridded data
-                for hh in ('00','06','12','18'):
-                    # vmf1 grid files:
-                    with open(inp['meteo_cat']+'/'+vmf_grid_file+hh,'r') as f:
+                    with open(os.path.join(inp['meteo_cat'], spd_file), 'r') as f:
                         f_lines = f.readlines()
-                        f_lines = [line for line in f_lines if line[0]!='!']
-                    
-                    ahz_grid = []
-                    awz_grid = []
-                    zhz_grid = []
-                    zwz_grid = []
-                    grid = []
-                    
+                    # get stations:
+                    spd_stations = {int(ss.split()[1]): ss.split()[2] for ss in f_lines if
+                                    ss[0] == 'S' and ss.split()[0] == 'S'}
+                    if self.name not in spd_stations.values():
+                        raise Exception('Station {:s} not in spd-file'.format(self.name))
+
+                    # get grid:
+                    spd_elv = {int(ss.split()[1]): float(ss.split()[2]) for ss in f_lines if
+                               ss[0] == 'E' and ss.split()[0] == 'E'}
+                    spd_azi = {int(ss.split()[1]): float(ss.split()[2]) for ss in f_lines if
+                               ss[0] == 'A' and ss.split()[0] == 'A'}
+                    # make 2d grid for interpolation:
+                    spd_elv_grid, spd_azi_grid = sorted(spd_elv.values())[::-1], sorted(spd_azi.values())
+
+                    # get relevant entries:
+                    d_f_lines = [map(int, l.split()[2:4]) + map(float, l.replace('D-', 'e-').split()[4:])
+                                 for l in f_lines if l[0] == 'D' and l.split()[0] == 'D' and
+                                 spd_stations[int(l.split()[1])] == self.name]
+
+                    # different grid:
+                    spd_grid = [[spd_elv_grid[entry[0] - 1], spd_azi_grid[entry[1] - 1]] for entry in d_f_lines]
+                    spd_grid_delay_dry = [entry[2] for entry in d_f_lines]
+                    spd_grid_delay_wet = [entry[3] for entry in d_f_lines]
+
+                    # load into self:
+                    self.spd['tai'].append(Time(str(day + datetime.timedelta(hours=hh)),
+                                                format='iso', scale='tai').mjd)
+                    # self.spd['grid'].append(spd_grid)
+                    self.spd['elv_cutoff'].append(np.min(np.array(spd_grid)[:, 0]))
+                    # linear 2d interpolation:
+                    # dry_interp = sp.interpolate.LinearNDInterpolator(spd_grid, spd_grid_delay_dry)
+                    # wet_interp = sp.interpolate.LinearNDInterpolator(spd_grid, spd_grid_delay_wet)
+                    # piecewise cubic 2d interpolation:
+                    dry_interp = sp.interpolate.CloughTocher2DInterpolator(spd_grid, spd_grid_delay_dry)
+                    wet_interp = sp.interpolate.CloughTocher2DInterpolator(spd_grid, spd_grid_delay_wet)
+                    self.spd['delay_dry'].append(dry_interp)
+                    self.spd['delay_wet'].append(wet_interp)
+
+                    # for the last 'day', get the first file only:
+                    if di == len(dates) - 1:
+                        break
+            except Exception as _e:
+                print(_e)
+
+            ''' VMF1: '''
+            try:
+                vmf_file = '{:4d}{:03d}.vmf1_r'.format(year, doy)
+                # vmf1 site files:
+                with open(os.path.join(inp['meteo_cat'], vmf_file), 'r') as f:
+                    f_lines = f.readlines()
+
+                # if met data are present in the vmf1 site file, load 'em
+                if any(self.name in s.split() for s in f_lines):
+                    noSiteData = False
                     for f_line in f_lines:
-                        tmp = [float(i) for i in f_line.split()]
-                        grid.append([tmp[0], tmp[1]])
-                        ahz_grid.append(tmp[2])
-                        awz_grid.append(tmp[3])
-                        zhz_grid.append(tmp[4])
-                        zwz_grid.append(tmp[5])
-                    
-                    ahz_grid = np.array(ahz_grid)
-                    awz_grid = np.array(awz_grid)
-                    zhz_grid = np.array(zhz_grid)
-                    zwz_grid = np.array(zwz_grid)
-                    
-                    f = sp.interpolate.interp2d(lon, lat, \
-                                                ahz_grid.reshape((91,144)))
-                    ahz = f(self.lon_gcen, self.lat_geod)[0]
-                    f = sp.interpolate.interp2d(lon, lat, \
-                                                awz_grid.reshape((91,144)))
-                    awz = f(self.lon_gcen, self.lat_geod)[0]
-                    f = sp.interpolate.interp2d(lon, lat, \
-                                                zhz_grid.reshape((91,144)))
-                    zhz = f(self.lon_gcen, self.lat_geod)[0]
-                    f = sp.interpolate.interp2d(lon, lat, \
-                                                zwz_grid.reshape((91,144)))
-                    zwz = f(self.lon_gcen, self.lat_geod)[0]
-                    self.met['ahz'].append(ahz)
-                    self.met['awz'].append(awz)
-                    self.met['zhz'].append(zhz)
-                    self.met['zwz'].append(zwz)
-            # convert lists of one-valued array into arrays
-            self.met['ahz'] = np.array(self.met['ahz'])
-            self.met['awz'] = np.array(self.met['awz'])
-            self.met['zhz'] = np.array(self.met['zhz'])
-            self.met['zwz'] = np.array(self.met['zwz'])
+                        if self.name in f_line.split():
+                            tmp = [float(i) for i in f_line[10:].split()]
+                            self.met['mjd'].append(tmp[0])
+                            self.met['ahz'].append(tmp[1])
+                            self.met['awz'].append(tmp[2])
+                            self.met['zhz'].append(tmp[3])
+                            self.met['zwz'].append(tmp[4])
+                            self.met['pres'].append(tmp[6])
+                            self.met['TC'].append(tmp[7])
+                            wvp = tmp[8]
+                            TK = tmp[7] + 273.15
+                            ew = 10**(10.79574*(1-273.16/TK) -
+                                      5.028*np.log10(TK/273.16) +
+                                      1.50475e-4*(1-10**(8.2969*(1-TK/273.16))) +
+                                      0.42873e-3*(10**(4.76955*(1-TK/273.16))-1) + 0.78614)
+                            self.met['hum'].append(100.0*wvp/ew)
+
+                # if met data are not there, load gridded data
+                else:
+                    noSiteData = True
+
+            except Exception as _e:
+                noSiteData = False
+                print(_e)
+                
+        if noSiteData:  # if met data are not there, load gridded data
+            try:
+                print 'Meteo data for '+self.name+\
+                      ' not found. Using VMF1 grids instead.'
+
+                lat = np.arange(90,-92,-2)
+                lon = np.arange(0,359,2.5)
+    #                grid_lat, grid_lon = np.meshgrid(lat,lon)
+
+                # for each day load data
+                for day in dates:
+                    # mjd:
+                    yy = day.year
+                    mm = day.month
+                    dd = day.day
+                    if mm <= 2: #January & February
+                        yy  = yy - 1.0
+                        mm = mm + 12.0
+                    jd = floor( 365.25*(yy + 4716.0)) + \
+                         floor( 30.6001*( mm + 1.0)) + 2.0 - \
+                         floor( yy/100.0 ) + \
+                         floor( floor( yy/100.0 )/4.0 ) + dd - 1524.5
+                    mjd = jd - 2400000.5
+
+                    for hh in (0.0, 6.0, 12.0, 18.0):
+                        self.met['mjd'].append(mjd + hh/24.0)
+
+                    vmf_grid_file = 'VMFG_{:4d}{:02d}{:02d}.H'.\
+                                     format(day.year, day.month, day.day)
+
+                    # load gridded data
+                    for hh in ('00', '06', '12', '18'):
+                        # vmf1 grid files:
+                        with open(os.path.join(inp['meteo_cat'], vmf_grid_file+hh), 'r') as f:
+                            f_lines = f.readlines()
+                            f_lines = [line for line in f_lines if line[0]!='!']
+
+                        ahz_grid = []
+                        awz_grid = []
+                        zhz_grid = []
+                        zwz_grid = []
+                        grid = []
+
+                        for f_line in f_lines:
+                            tmp = [float(i) for i in f_line.split()]
+                            grid.append([tmp[0], tmp[1]])
+                            ahz_grid.append(tmp[2])
+                            awz_grid.append(tmp[3])
+                            zhz_grid.append(tmp[4])
+                            zwz_grid.append(tmp[5])
+
+                        ahz_grid = np.array(ahz_grid)
+                        awz_grid = np.array(awz_grid)
+                        zhz_grid = np.array(zhz_grid)
+                        zwz_grid = np.array(zwz_grid)
+
+                        f = sp.interpolate.interp2d(lon, lat, \
+                                                    ahz_grid.reshape((91,144)))
+                        ahz = f(self.lon_gcen, self.lat_geod)[0]
+                        f = sp.interpolate.interp2d(lon, lat, \
+                                                    awz_grid.reshape((91,144)))
+                        awz = f(self.lon_gcen, self.lat_geod)[0]
+                        f = sp.interpolate.interp2d(lon, lat, \
+                                                    zhz_grid.reshape((91,144)))
+                        zhz = f(self.lon_gcen, self.lat_geod)[0]
+                        f = sp.interpolate.interp2d(lon, lat, \
+                                                    zwz_grid.reshape((91,144)))
+                        zwz = f(self.lon_gcen, self.lat_geod)[0]
+                        self.met['ahz'].append(ahz)
+                        self.met['awz'].append(awz)
+                        self.met['zhz'].append(zhz)
+                        self.met['zwz'].append(zwz)
+                # convert lists of one-valued array into arrays
+                self.met['ahz'] = np.array(self.met['ahz'])
+                self.met['awz'] = np.array(self.met['awz'])
+                self.met['zhz'] = np.array(self.met['zhz'])
+                self.met['zwz'] = np.array(self.met['zwz'])
+            except Exception as _e:
+                print(_e)
             
         ## lhg files with precomputed site-specific data (tropo gradients):
         for day in dates:
             year = day.year
             doy = day.timetuple().tm_yday # day of year
-            # lhg site files:
-            lhg_file = '{:4d}{:03d}.lhg_r'.format(year, doy)
-            with open(inp['meteo_cat']+'/'+lhg_file,'r') as f:
-                f_lines = f.readlines()
-            
-            # if met data are present in the lhg site file, load 'em
-            if any(self.name in s for s in f_lines):
-                for f_line in f_lines:
-#                    if self.name in f_line.split(' '):
-                    if self.name in f_line.split():
-                        tmp = [float(i) for i in f_line[10:].split()]
-                        self.met['gnh'].append(tmp[1])
-                        self.met['geh'].append(tmp[2])
-                        self.met['gnw'].append(tmp[3])
-                        self.met['gew'].append(tmp[4])
+
+            try:
+                # lhg site files:
+                lhg_file = '{:4d}{:03d}.lhg_r'.format(year, doy)
+                with open(inp['meteo_cat']+'/'+lhg_file,'r') as f:
+                    f_lines = f.readlines()
+
+                # if met data are present in the lhg site file, load 'em
+                if any(self.name in s for s in f_lines):
+                    for f_line in f_lines:
+    #                    if self.name in f_line.split(' '):
+                        if self.name in f_line.split():
+                            tmp = [float(i) for i in f_line[10:].split()]
+                            self.met['gnh'].append(tmp[1])
+                            self.met['geh'].append(tmp[2])
+                            self.met['gnw'].append(tmp[3])
+                            self.met['gew'].append(tmp[4])
+
+            except Exception as _e:
+                print(_e)
 
         ## now make interpolants for a faster access:
-        self.fMet['fAhz'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['ahz'], kind='cubic')
-        self.fMet['fAwz'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['awz'], kind='cubic')
-        self.fMet['fZhz'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['zhz'], kind='cubic')
-        self.fMet['fZwz'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['zwz'], kind='cubic')
-        if len(self.met['TC'])>0:
-            self.fMet['fT'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                                      self.met['TC'])
-            self.fMet['fP'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                                      self.met['pres'])
-            self.fMet['fH'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                                      self.met['hum'])
-        if len(self.met['gnh'])>0:
-            self.fMet['fGnh'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['gnh'], kind='cubic')
-            self.fMet['fGeh'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['geh'], kind='cubic')
-            self.fMet['fGnw'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['gnw'], kind='cubic')
-            self.fMet['fGew'] = sp.interpolate.interp1d(self.met['mjd'],\
-                                            self.met['gew'], kind='cubic')
+        try:
+            self.fMet['fAhz'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['ahz'], kind='cubic')
+            self.fMet['fAwz'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['awz'], kind='cubic')
+            self.fMet['fZhz'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['zhz'], kind='cubic')
+            self.fMet['fZwz'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['zwz'], kind='cubic')
+            if len(self.met['TC'])>0:
+                self.fMet['fT'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                          self.met['TC'])
+                self.fMet['fP'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                          self.met['pres'])
+                self.fMet['fH'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                          self.met['hum'])
+            if len(self.met['gnh'])>0:
+                self.fMet['fGnh'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['gnh'], kind='cubic')
+                self.fMet['fGeh'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['geh'], kind='cubic')
+                self.fMet['fGnw'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['gnw'], kind='cubic')
+                self.fMet['fGew'] = sp.interpolate.interp1d(self.met['mjd'],
+                                                self.met['gew'], kind='cubic')
+        except Exception as _e:
+            print(_e)
 #        print self.met
         
     def j2000gp(self, r2000, gcrs=None, utc=None, t=None):
@@ -2154,19 +2223,19 @@ class ephem(object):
             return ra, dec, lt_01
         else:
             return ra, dec, lt_01, r
-        
+
 '''  
 #==============================================================================
 # 
 #==============================================================================
 '''
 class ion(object):
-    '''
+    """
     Class containing ionospheric TEC-maps
-    '''    
+    """
     def __init__(self, date_start, date_stop, inp):
-        self.lat = np.arange(87.5,-90.0,-2.5) # len = 71
-        self.lon = np.arange(-180.0,185.0,5.0) # len = 73
+        self.lat = np.arange(87.5, -90.0, -2.5)  # len = 71
+        self.lon = np.arange(-180.0, 185.0, 5.0)  # len = 73
         self.date_tec = []
         vTEC_grid = []
         

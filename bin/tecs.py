@@ -78,7 +78,7 @@ def ion_tec(sta, iono, elv, azi, UT, f_0=None):
         elif n0==N_epoch-2 or n0==N_epoch-1:
             nl = N_epoch-4; nr = N_epoch
         else:
-            nl = n0-2; nr = n0+2;
+            nl = n0-2; nr = n0+2
         TEC_z = []
         for nn in range(nl,nr):
             TEC_z.append(float(fVTEC[nn](lon, lat)))

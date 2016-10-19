@@ -531,17 +531,17 @@ def nsec(mjd):
 #     Calculate Modified Julian Date
 #==============================================================================
 '''
-def mjuliandate(year,month,day,hour=0.0,minu=0.0,sec=0.0):
-    '''
+def mjuliandate(year, month, day, hour=0.0, minu=0.0, sec=0.0):
+    """
     Calculate Modified Julian Date
-    '''
-    if month <= 2: #January & February
-        year  = year - 1.0
-        month = month + 12.0
+    """
+    if month <= 2:  # January & February
+        year -= 1.0
+        month += 12.0
     jd = floor( 365.25*(year + 4716.0)) + floor( 30.6001*( month + 1.0)) + 2.0 - \
          floor( year/100.0 ) + floor( floor( year/100.0 )/4.0 ) + day - 1524.5 + \
-         (hour + minu/60.0 + sec/3600.0)/24.0;
-    mjd = jd - 2400000.5;
+         (hour + minu/60.0 + sec/3600.0)/24.0
+    mjd = jd - 2400000.5
     return mjd
 
 
@@ -11738,7 +11738,8 @@ def iau_S00 ( DATE1, DATE2, X, Y ):
 #==============================================================================
 '''
 def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
-         date_start, date_stop, iono_model='igs'):
+         date_start, date_stop, iono_model='igs',
+         petrov_server='http://pathdelay.net/spd/asc/geosfpit/'):
     """
     Download/update EOP, meteo and iono data
 
@@ -11779,10 +11780,31 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
     ''' meteo data '''
     if do_trp_calc:
         # for each day
-        for day in dates:
+        for di, day in enumerate(dates):
             year = day.year
             doy = day.timetuple().tm_yday # day of year
-            
+
+            ''' spd files from L. Petrov '''
+            for hh in range(0, 24, 3):
+                spd_file = 'spd_geosfpit_{:s}_{:02d}00.spd'.format(day.strftime('%Y%m%d'), hh)
+
+                if not os.path.exists(os.path.join(meteo_cat, spd_file)):
+                    print('spd file {:s} not found, downloading...'.format(spd_file))
+                    try:
+                        met_url = os.path.join(petrov_server, spd_file)
+                        response = urllib2.urlopen(met_url)
+                        met_file = response.read()
+                        # print it to file:
+                        with open(os.path.join(meteo_cat, spd_file), 'w') as out:
+                            for line in met_file:
+                                out.write(line)
+                    except Exception as err:
+                        print(err)
+
+                # for the last 'day', get the first file only:
+                if di == len(dates) - 1:
+                    break
+
             ''' vmf1 files with precomputed site-specific data: '''
             # check file existance and download if necessary:
             vmf_file = '{:4d}{:03d}.vmf1_r'.format(year, doy)
@@ -11800,7 +11822,6 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                 except Exception, err:
                     print str(err)
                     print 'no troposphere available this time.'
-                    
             
             ''' tropospheric gradient files: '''
             # check file existance and download if necessary:
@@ -12394,8 +12415,15 @@ def vint_s(ob):
             ## axis offset:
             sta[si] = mount_tel(st, r2000[:,:,0], el, az, T_site, P_site, H_site, const)
             ## tropospheric delay:
-            if inp['do_trp_calc'] and len(st.met['ahz'])>0:
-                sta[si] = tropo_wien(st, el, az, mjd+UTC, const, inp['do_trp_grad_calc'])
+            if inp['do_trp_calc']:
+                if inp['tropo_model'] == 'petrov':
+                    if len(st.spd['tai']) > 0:
+                        sta[si] = tropo_petrov(st, el, az, mjd + TAI)
+                    else:
+                        # try wien:
+                        inp['tropo_model'] = 'wien'
+                elif inp['tropo_model'] == 'wien' and len(st.met['ahz']) > 0:
+                    sta[si] = tropo_wien(st, el, az, mjd+UTC, const, inp['do_trp_grad_calc'])
             ## ionospheric delay:
             if inp['do_ion_calc'] and len(iono.fVTEC)>0:
                 if ob.sou_type=='C' and ((st.name == 'PUSHCHIN') \
@@ -12699,9 +12727,17 @@ def vint_s(ob):
                 sta[cus] = mount_tel(sta[cus], r2000[:,:,0]-lt_tr*r2000[:,:,1],
                                      el, az, T_site, P_site, H_site, const)
                 ## tropospheric delay:
-                if inp['do_trp_calc'] and len(sta[cus].met['ahz'])>0:
-                    sta[cus] = tropo_wien(sta[cus], el, az, t_tr.mjd, const,
-                                          inp['do_trp_grad_calc'])
+                if inp['do_trp_calc']:
+                    if inp['tropo_model'] == 'petrov':
+                        if len(sta[cus].spd['tai']) > 0:
+                            # TODO:
+                            sta[si] = tropo_petrov(sta[cus], el, az, t_tr.tai.mjd)
+                        else:
+                            # try wien:
+                            inp['tropo_model'] = 'wien'
+                    if inp['tropo_model'] == 'wien' and len(sta[cus].met['ahz']) > 0:
+                        sta[cus] = tropo_wien(sta[cus], el, az, t_tr.mjd, const,
+                                              inp['do_trp_grad_calc'])
                 ## ionospheric delay:
                 if inp['do_ion_calc'] and len(iono.fVTEC)>0:
                     f_0 = rampTslot[2] # use uplink freq for 3-way Doppler, upsta
@@ -12947,8 +12983,7 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
     # get the relevant eop entries from the catalogue:
     with open(inp['cat_eop'], 'r') as fc:
         fc_lines = fc.readlines()
-    mjd_start = mjuliandate(date_t_start.year, \
-                            date_t_start.month, date_t_start.day)
+    mjd_start = mjuliandate(date_t_start.year, date_t_start.month, date_t_start.day)
     eops = np.zeros((7,7)) # +/- 3 days
     for jj in range(len(fc_lines)):
         if fc_lines[jj][0]!=' ' and fc_lines[jj][0]!='*':
@@ -15132,6 +15167,66 @@ def sbend(El_Rad, Temp_K, Humid_F, Press_Hg):
     return bend_ang
     
     
+def tropo_petrov(st, el, az, dmjd):
+    """
+        Petrov's tropo model
+    Args:
+        st:
+        el:
+        az:
+        dmjd:
+
+    Returns:
+
+    """
+    el_deg, az_deg = el * 180.0 / pi, az * 180.0 / pi
+
+    n0 = np.searchsorted(st.spd['tai'], dmjd)
+    deltas = np.array(st.spd['tai']) - dmjd
+    # print(deltas)
+
+    n_points_to_cut = 4
+    nearest_cut_ind = sorted(np.argsort(np.abs(deltas))[:n_points_to_cut])
+    # print(nearest_cut_ind)
+
+    # below elevation cutoff? return zeros:
+    if el_deg < st.spd['elv_cutoff'][n0]:
+        delay_tropo = 0.0
+    else:
+        # t happens to be in the grid?
+        if dmjd in st.spd['tai']:
+            # only need to interpolate to Az/El
+            delay_tropo = st.spd['delay_dry'][n0](el_deg, az_deg) + \
+                          st.spd['delay_wet'][n0](el_deg, az_deg)
+        else:
+            # print('__')
+            # print(st.spd['elv_cutoff'][n0])
+            print(st.spd['tai'], dmjd, n0, el_deg, az_deg)
+            left = st.spd['delay_dry'][n0 - 1](el_deg, az_deg) + \
+                   st.spd['delay_wet'][n0 - 1](el_deg, az_deg)
+            right = st.spd['delay_dry'][n0](el_deg, az_deg) + \
+                   st.spd['delay_wet'][n0](el_deg, az_deg)
+            print(left, right)
+            # print(dmjd, np.array(st.spd['tai'])[n0-1: n0+1])
+            delay_tropo = np.interp(dmjd, np.array(st.spd['tai'])[n0-1: n0+1], [left, right])
+            print(delay_tropo)
+
+            time_grid = np.array(st.spd['tai'])[nearest_cut_ind[0]: nearest_cut_ind[-1] + 1]
+            delay_tropo_grid = [st.spd['delay_dry'][ind](el_deg, az_deg) + \
+                                st.spd['delay_wet'][ind](el_deg, az_deg) for ind in nearest_cut_ind]
+            # linear interp:
+            delay_tropo = np.interp(dmjd, time_grid, delay_tropo_grid)
+            print(delay_tropo)
+            # spline interp:
+            tck = sp.interpolate.splrep(time_grid, delay_tropo_grid, s=0)
+            delay_tropo = sp.interpolate.splev(dmjd, tck, der=0)
+            print(delay_tropo)
+            raw_input()
+
+    st.dtau_tropo = delay_tropo
+
+    return st
+
 #==============================================================================
 # 
 #==============================================================================
@@ -15431,7 +15526,7 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
         elif n0==N_epoch-2 or n0==N_epoch-1:
             nl = N_epoch-4; nr = N_epoch
         else:
-            nl = n0-2; nr = n0+2;
+            nl = n0-2; nr = n0+2
         TEC_z = []
         for nn in range(nl,nr):
             TEC_z.append(float(fVTEC[nn](lon, lat)))
