@@ -15169,12 +15169,12 @@ def sbend(El_Rad, Temp_K, Humid_F, Press_Hg):
     
 def tropo_petrov(st, el, az, dmjd):
     """
-        Petrov's tropo model
+        Petrov's tropospheric delay model based on numerical ray-tracing
     Args:
-        st:
-        el:
-        az:
-        dmjd:
+        st: station object
+        el: source elevation [rad]
+        az: source azimuth [rad]
+        dmjd: time stamp in mjd [TAI]
 
     Returns:
 
