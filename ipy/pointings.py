@@ -23,7 +23,7 @@ import datetime
 #==============================================================================
 '''
 if __name__ == '__main__':
-    cfg = '/Users/dmitryduev/anaconda/lib/python2.7/site-packages/pypride/inp.cfg'
+    cfg = '/Users/dmitryduev/anaconda2/lib/python2.7/site-packages/pypride/inp.cfg'
     
     source = 'RA'
     
@@ -35,10 +35,11 @@ if __name__ == '__main__':
     # stations = ['YARRA12M']
     # stations = ['EFLSBERG', 'HARTRAO', 'WETTZELL', 'ZELENCHK', 'SVETLOE']
     stations = ['HARTRAO']
+    # stations = ['YEBES40M']
     
     ''' time slot '''
-    date_t_start = datetime.datetime(2016, 8, 6, 12, 32, 0)
-    date_t_stop = datetime.datetime(2016, 8, 6, 14, 28, 0)
+    date_t_start = datetime.datetime(2017, 1, 21, 17, 2, 0)
+    date_t_stop = datetime.datetime(2017, 1, 21, 21, 58, 0)
     t_step_in = 10  # seconds
 
     # interpolate to a denser frig if t_step_out < t_step_in:

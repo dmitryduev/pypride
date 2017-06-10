@@ -12986,7 +12986,7 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
     mjd_start = mjuliandate(date_t_start.year, date_t_start.month, date_t_start.day)
     eops = np.zeros((7,7)) # +/- 3 days
     for jj in range(len(fc_lines)):
-        if fc_lines[jj][0]!=' ' and fc_lines[jj][0]!='*':
+        if fc_lines[jj][0] != ' ' and (fc_lines[jj][0] not in ('*', '#')):
             entry = [float(x) for x in fc_lines[jj].split()]
             if len(entry) > 0 and entry[3] == np.floor(mjd_start) - 3:
                 for kk in range(7):
