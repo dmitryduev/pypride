@@ -88,7 +88,7 @@ if not os.path.isdir(os.path.join(abs_path, 'meteo')):
     os.makedirs(os.path.join(abs_path, 'meteo'))
 if not os.path.isdir(os.path.join(abs_path, 'sc_eph')):
     os.makedirs(os.path.join(abs_path, 'sc_eph'))
-for sc_name in ('mex', 'vex', 'rosetta', 'radioastron', 'gnss', 'gaia'):
+for sc_name in ('mex', 'vex', 'rosetta', 'radioastron', 'gnss', 'gaia', 'mro'):
     pth = os.path.join(abs_path, 'sc_eph','raw_'+sc_name)
     if not os.path.isdir(pth):
         os.makedirs(pth)

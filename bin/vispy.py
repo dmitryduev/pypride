@@ -31,8 +31,7 @@ class vispy(object):
         Class for parsing vex-files and running delay generation for SFXC
     '''
     
-    def __init__(self, vex_file, inp_file, \
-                    parallel=True, showTiming=True):
+    def __init__(self, vex_file, inp_file, parallel=True, showTiming=True):
         '''
         Parse main info contained in the vex-file
         '''
@@ -168,7 +167,7 @@ class vispy(object):
                 sta_ra_ts = 'PUSHCHIN'
         
         # known (deep space) spacecraft:
-        spacecraft = ['vex', 'mex', 'rosetta', 'her', 'gaia', 'ce3']
+        spacecraft = ['vex', 'mex', 'rosetta', 'her', 'gaia', 'ce3', 'mro']
         
         # obs-objects for delay calculation:
         for staSh, sta in self.stations.iteritems():
@@ -413,8 +412,8 @@ class vispy(object):
                              beg+datetime.timedelta(days=d), load=False)
         
         # spacecraft ephs, if they were observed:
-        sou = ['VEX', 'MEX', 'HER', 'ROSETTA', 'RA', 'GAIA', 'CE3']
-        soutyp = ['S', 'S', 'S', 'S', 'R', 'S', 'S']
+        sou = ['VEX', 'MEX', 'HER', 'ROSETTA', 'RA', 'GAIA', 'CE3', 'MRO']
+        soutyp = ['S', 'S', 'S', 'S', 'R', 'S', 'S', 'S']
         # gnss
         # make a list with GLONASS/GPS satellite names (with a margin, up to 40)
         for gg in range(1,41):
@@ -1043,7 +1042,7 @@ def main():
         
         # only some specific stations wanted?
         staz = 'all'
-        if args.stations=='all':
+        if args.stations == 'all':
             staz = args.stations
         else:
             staz = args.stations.split(',')
@@ -1058,8 +1057,8 @@ def main():
         v.makeObs(t_step=t_step, dopplerPhaseCor=dopplerPhaseCor, staz=staz)
         v.updates()
         v.calcDelays()
-        v.packDelays(delay_type = 'group', smoothing=True, \
-                     ionPhaseCor=ionPhaseCor, dopplerPhaseCor=dopplerPhaseCor,\
+        v.packDelays(delay_type='group', smoothing=True,
+                     ionPhaseCor=ionPhaseCor, dopplerPhaseCor=dopplerPhaseCor,
                      noIonDelay=noIonDelay)
         # a happy end
         sys.exit(1)
