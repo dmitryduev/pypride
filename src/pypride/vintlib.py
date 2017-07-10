@@ -13196,7 +13196,7 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
     if forcePaddLeft is None:
         if sou_type == 'S' and \
                 (source.lower()[0] != 'p' and source.lower() != 'gaia' and source.lower() != 'ce3'):
-            if source.lower() == 'mex':
+            if source.lower() == 'mex' or source.lower() == 'mro':
                 paddLeft = 50
             if source.lower() == 'vex':
                 paddLeft = 30
