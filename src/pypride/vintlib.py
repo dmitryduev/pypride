@@ -12542,31 +12542,34 @@ def vint_s(ob):
         # compute numerically as c*(cos(dec)*dtau/dra,dtau/ddec,tau)
         if inp['uvw_calc'] and ob.sou_type=='C':
             # u, v
-            K_plus_ra = sph2cart([1.0, dec, ra + 1e-5]) # u
-            K_plus_dec = sph2cart([1.0, dec + 1e-4, ra]) # v
+            # delta_ra = 1e-5
+            delta_ra = 1e-4
+            delta_dec = 1e-4
+            K_plus_ra = sph2cart([1.0, dec, ra + delta_ra]) # u
+            K_plus_dec = sph2cart([1.0, dec + delta_dec, ra]) # v
             if 'RA' not in ob.sta:
-                dtau_plus_ra = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS, \
-                              sta[1].v_GCRS, earth, sun, K_plus_ra, inp['jpl_eph'],\
+                dtau_plus_ra = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS,
+                              sta[1].v_GCRS, earth, sun, K_plus_ra, inp['jpl_eph'],
                               const.GM, const.TDB_TCB, const.L_C, const.C)
-                dtau_plus_dec = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS, \
-                              sta[1].v_GCRS, earth, sun, K_plus_dec, inp['jpl_eph'],\
+                dtau_plus_dec = delay_iers(JD, CT, sta[0].r_GCRS, sta[1].r_GCRS,
+                              sta[1].v_GCRS, earth, sun, K_plus_dec, inp['jpl_eph'],
                               const.GM, const.TDB_TCB, const.L_C, const.C)
             else:
-                dtau_plus_ra  = delay_ra(JD, CT, UTC, \
-                              sta[0].r_GCRS, sta[1].r_GCRS, \
-                              sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS, \
-                              earth, sun, \
-                              K_plus_ra, inp['jpl_eph'], const.GM, const.TDB_TCB, \
+                dtau_plus_ra  = delay_ra(JD, CT, UTC,
+                              sta[0].r_GCRS, sta[1].r_GCRS,
+                              sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS,
+                              earth, sun,
+                              K_plus_ra, inp['jpl_eph'], const.GM, const.TDB_TCB,
                               const.L_C, const.C, const.AE, uv=True)
-                dtau_plus_dec  = delay_ra(JD, CT, UTC, \
-                              sta[0].r_GCRS, sta[1].r_GCRS, \
-                              sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS, \
-                              earth, sun, \
-                              K_plus_dec, inp['jpl_eph'], const.GM, const.TDB_TCB, \
+                dtau_plus_dec  = delay_ra(JD, CT, UTC,
+                              sta[0].r_GCRS, sta[1].r_GCRS,
+                              sta[1].v_GCRS, sta[1].a_GCRS, sta[2].r_GCRS,
+                              earth, sun,
+                              K_plus_dec, inp['jpl_eph'], const.GM, const.TDB_TCB,
                               const.L_C, const.C, const.AE, uv=True)
 
-            u = const.C * (dtau_plus_ra - dtau)/(1e-5) / cos(dec)
-            v = const.C * (dtau_plus_dec - dtau)/(1e-4)
+            u = const.C * (dtau_plus_ra - dtau)/(delta_ra) / cos(dec)
+            v = const.C * (dtau_plus_dec - dtau)/(delta_dec)
             # w
             w = dtau*const.C
 
