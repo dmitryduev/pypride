@@ -105,7 +105,7 @@ def flatten_generator(l):
                 yield sub
         else:
             yield el
-            
+
 def flatten(x):
     result = []
     for el in x:
@@ -122,8 +122,8 @@ def flatten(x):
 # Factorise a number
 #==============================================================================
 '''
-def factors(n):    
-    facs = set(reduce(list.__add__, 
+def factors(n):
+    facs = set(reduce(list.__add__,
                 ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0)))
     return sorted(list(facs))
 
@@ -188,7 +188,7 @@ def memoize(f):
         if x not in memf.cache:
             memf.cache[x] = f(*x)
         return memf.cache[x]
-    
+
     memf.cache = {}
     return memf
 
@@ -250,35 +250,35 @@ def optimalFit(x, y, min_order=0, max_order=8, fit_type='poly'):
 '''
 def smooth(x, window_len=11, window='hanning'):
     """smooth the data using a window with requested size.
-    
+
     This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal 
+    The signal is prepared by introducing reflected copies of the signal
     (with the window size) in both ends so that transient parts are minimized
     in the begining and end part of the output signal.
-    
+
     input:
-        x: the input signal 
+        x: the input signal
         window_len: the dimension of the smoothing window; should be an odd integer
         window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
             flat window will produce a moving average smoothing.
 
     output:
         the smoothed signal
-        
+
     example:
 
     t=linspace(-2,2,0.1)
     x=sin(t)+randn(len(t))*0.1
     y=smooth(x)
-    
-    see also: 
-    
+
+    see also:
+
     numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
     scipy.signal.lfilter
- 
-    TO DO: the window parameter could be the window itself if an array 
+
+    TO DO: the window parameter could be the window itself if an array
           instead of a string
-    NOTE: length(output) != length(input), to correct this: 
+    NOTE: length(output) != length(input), to correct this:
        return y[(window_len/2-1):-(window_len/2)] instead of just y.
     """
 
@@ -347,7 +347,7 @@ def weighted_avg_and_var(values, weights):
 
     values, weights -- Numpy ndarrays with the same shape.
     """
-    average = np.average(values, weights=weights)   
+    average = np.average(values, weights=weights)
     variance = np.average((values-average)**2, weights=weights)  # Fast and numerically precise
 #    std = sqrt(variance)
     return (average, variance)
@@ -356,15 +356,15 @@ def GetSNR(data, lmax, spread, void):
 
     dx = data[lmax-spread:lmax+spread+1]
     kx = np.arange(lmax-spread,lmax+spread+1)
-    
+
     weights = (np.abs(kx - lmax)) > void
-    
+
 #    fit = cheb.chebfit(kx, dx, 6, w=weights)
 #    print fit
 #    dx -= cheb.chebval(kx, fit)
-    
+
 #    np.ma.masked_inside() - instead of using weights? hm..
-    
+
 #    fit = np.polyfit(kx, dx, 6, w=weights)
     fitC = np.polynomial.Chebyshev.fit(kx, dx, 6, w=weights)
 #    figa = plt.figure()
@@ -377,7 +377,7 @@ def GetSNR(data, lmax, spread, void):
     dx -= fitC(kx)
 #    ax2 = figa.add_subplot(212)
 #    ax2.plot(kx, dx)
-    
+
 #    print weighted_avg_and_var(dx, weights)
     rd = np.sqrt(weighted_avg_and_var(dx, weights)[1])
     pa = max(dx)
@@ -402,12 +402,12 @@ def FindMax(Spec, Fmin, Fmax):
     sp_masked = np.ma.array(Spec, mask=mask)
     mx = np.max(sp_masked)
     jmax = np.argmax(sp_masked)
-    
+
     a2 = 0.5*(Spec[jmax-1] + Spec[jmax+1] - 2.0*Spec[jmax])
     a1 = 0.5*(Spec[jmax+1] - Spec[jmax-1])
     djx = -a1/(2.0*a2)
     xmax = jmax + djx
-    
+
     return jmax, xmax, mx
 
 '''
@@ -417,7 +417,7 @@ def FindMax(Spec, Fmin, Fmax):
 '''
 def factorise(n):
     # factorise a number
-    facs = set(reduce(list.__add__, 
+    facs = set(reduce(list.__add__,
                 ([i, n//i] for i in range(1, int(n**0.5) + 1) if n % i == 0)))
     return sorted(list(facs))
 
@@ -444,13 +444,13 @@ def derivative(x, y, points=5, poly=2):
         if len(x[n0:]) < nr:
             nl = nl + nr - len(x[n0:])
             nr = len(x[n0:])
-        
+
         # make a fit
         yfit = np.polyfit(x[n0-nl:n0+nr], y[n0-nl:n0+nr], poly)
         dydx[n0] = np.polyval(np.polyder(yfit), xi)
-    
+
     return dydx
-    
+
 '''
 #==============================================================================
 # Interpolate using polyfit
@@ -477,13 +477,13 @@ def interpolate(x, y, xn, points=5, poly=2):
         if len(x[n0:]) < nr:
             nl = nl + nr - len(x[n0:])
             nr = len(x[n0:])
-        
+
         # make a fit
         yfit = np.polyfit(x[n0-nl:n0+nr], y[n0-nl:n0+nr], poly)
         yn.append(np.polyval(yfit, xi))
 
     return np.array(yn, dtype=np.float) if len(yn) > 1 else float(yn[0])
-    
+
 '''
 #==============================================================================
 # leap seconds
@@ -491,9 +491,9 @@ def interpolate(x, y, xn, points=5, poly=2):
 '''
 #@jit
 def nsec(mjd):
-    ''' 
+    '''
     This routine determines the number of leap seconds or
-    difference TAI - UTC_iers starting from 1972 January 1 
+    difference TAI - UTC_iers starting from 1972 January 1
     '''
     idelt = 0
     if (mjd >= 41317.0 and mjd < 41499.0): idelt = 10 # 1972 JAN 1
@@ -504,7 +504,7 @@ def nsec(mjd):
     elif (mjd >= 42778.0 and mjd < 43144.0): idelt = 15 # 1976 JAN 1
     elif (mjd >= 43144.0 and mjd < 43509.0): idelt = 16 # 1977 JAN 1
     elif (mjd >= 43509.0 and mjd < 43874.0): idelt = 17 # 1978 JAN 1
-    elif (mjd >= 43874.0 and mjd < 44239.0): idelt = 18 # 1979 JAN 1     
+    elif (mjd >= 43874.0 and mjd < 44239.0): idelt = 18 # 1979 JAN 1
     elif (mjd >= 44239.0 and mjd < 44786.0): idelt = 19 # 1980 JAN 1
     elif (mjd >= 44786.0 and mjd < 45151.0): idelt = 20 # 1981 JUL 1
     elif (mjd >= 45151.0 and mjd < 45516.0): idelt = 21 # 1982 JUL 1
@@ -523,7 +523,7 @@ def nsec(mjd):
     elif (mjd >= 54832.0 and mjd < 56109.0): idelt = 34 # 2009 JAN 1
     elif (mjd >= 56109.0 and mjd < 57204.0): idelt = 35 # 2012 JUL 1
     elif (mjd >= 57204.0):                   idelt = 36 # 2015 JUL 1
-    
+
     return float(idelt)
 
 '''
@@ -579,7 +579,7 @@ def freqRamp(cat_dir=None, sc=None, tx_type=None):
                                                       "%Y-%m-%d %H:%M:%S.%f"), \
                                     float(line[4]), float(line[5]), line[6] ])
                 return ramp
-                
+
             elif tx_type=='1way':
                 # for ESA s/c time is in TDB!!
                 with open(rampFile, 'r') as f:
@@ -601,7 +601,7 @@ def freqRamp(cat_dir=None, sc=None, tx_type=None):
         except Exception, err:
             print str(err)
             raise Exception('Could not load ramp params for ' + sc + '.')
-            
+
 '''
 #==============================================================================
 # Load frequency value for a S/C for 1-way Doppler
@@ -615,10 +615,10 @@ def freqConst(cat_file='cats/sc.freq', sc=None):
         try:
             with open(cat_file, 'r') as f:
                 f_lines = f.readlines()
-                
+
             return [(float(x.split()[1]), x.split()[2]) for x in f_lines \
                     if x[0]!='#' and x.split()[0].lower()==sc.lower()][0]
-                        
+
         except Exception, err:
             print str(err)
             raise Exception('Could not load frequency settings for '+sc+'.')
@@ -853,7 +853,7 @@ def checkbound(source, orb_path='.', n=7):
 #    if os.path.isfile(path):
 #        age = datetime.datetime.now() - \
 #              datetime.datetime.utcfromtimestamp(os.path.getmtime(path))
-    
+
     updates = getESAraweph(source, orb_path=orb_path, replaceDE=True)
 
     def sc_condition(sc):
@@ -873,11 +873,11 @@ def checkbound(source, orb_path='.', n=7):
                         data = f.readlines()
                     starts = [i for i, v in enumerate(data) if 'START_TIME' in v]
                     stops = [i for i, v in enumerate(data) if 'STOP_TIME' in v]
-                    eq = data[starts[0]].index('=')            
+                    eq = data[starts[0]].index('=')
                     t = r.split(data[starts[0]][eq+1:].strip())
                     t_start = map(int,t[:-1])
                     t_start.append(float(t[-1]))
-                    eq = data[stops[-1]].index('=')            
+                    eq = data[stops[-1]].index('=')
                     t = r.split(data[stops[-1]][eq+1:].strip())
                     t_stop = map(int, t[:-1])
                     t_stop.append(float(t[-1]))
@@ -903,7 +903,7 @@ def checkbound(source, orb_path='.', n=7):
             bounds.append([lns[0], list(lns[1:7]), list(lns[7:])])
 #        print bounds
     return bounds
- 
+
 
 '''
 #==============================================================================
@@ -915,7 +915,7 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
     The orbital data proper are just lines providing at discrete time steps the
     epoch of the state, the state (position in km, velocity in km/s) and, if
     applicable, the state derivative (w.r.t time scale in days).
-    
+
     cbody = 'venus' for VEX, 'mars' for MEX
     """
     with open(orb_files[0], 'r') as f:
@@ -925,23 +925,23 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
         with open(orb_files[1], 'r') as f:
             # append second file:
             f_lines += f.readlines()[1:]
-    
+
     slots = [ii for ii, v in enumerate(f_lines) if 'START_TIME' in v]
-    
+
     slotData = []
     r = re.compile('[-T:]+')
-    
+
     for slot in slots:
         out = [slot]
         for jj in (0, 1):
-            eq = f_lines[slot+jj].index('=')            
+            eq = f_lines[slot+jj].index('=')
             t = r.split(f_lines[slot+jj][eq+1:].strip())
             ttag = map(int, t[:-1])
             ttag.append(float(t[-1]))
             out.append(ttag)
 #            slot_start = datetime(*map(int,ttag))
         slotData.append(out)
-    
+
     # line number of 'start_time', start_time, stop_time
     s = [x for x in slotData if (mjuliandate(*t_start)>=mjuliandate(*x[1]) and\
                                 mjuliandate(*t_start)<=mjuliandate(*x[2])) or\
@@ -977,14 +977,14 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
     date_t_start = datetime.datetime(*t_start)
     date_t_stop = datetime.datetime(*t_stop)
     ob.addScan(date_t_start, t_step, stop=date_t_stop)
-    
+
     ''' load input sittings: '''
     if inp is None:
         # inp = inp_set('inp.cfg')
         raise Exception('inp-file not provided')
     jpl_eph = inp['jpl_eph']
     cat_eop = inp['cat_eop']
-    
+
     # load eops
     ''' get the relevant eop entries from the catalogue: '''
     mjd_start = mjuliandate(date_t_start.year, date_t_start.month,
@@ -994,7 +994,7 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
         fc_lines = fc.readlines()
     eops = np.zeros((7, 7)) # +/- 3 days
     for jj in range(len(fc_lines)):
-        if fc_lines[jj][0] != ' ' and fc_lines[jj][0] != '*':
+        if fc_lines[jj][0] != ' ' and fc_lines[jj][0] != '*' and fc_lines[jj][0] != '#':
             entry = [float(x) for x in fc_lines[jj].split()]
             if len(entry) > 0 and entry[3] == np.floor(mjd_start) - 3:
                 for kk in range(7):
@@ -1007,7 +1007,7 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
                     eops[kk,6] = entry[9] # dY
                     entry = [float(x) for x in fc_lines[jj+kk+1].split()]
                 break  # exit loop
-    
+
     ''' stack relevant eph blocks together and cut relevant peace '''
     # raw cut
     mjd_end = mjuliandate(date_t_stop.year, date_t_stop.month,
@@ -1027,14 +1027,14 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
     s = s[ii_start:ii_end+1]
     # print eph_blocks
     # print s
-    
+
     # stack
 #    tmp = eph_blocks[0]
 #    for b in eph_blocks[1:]:
 #        # last entry of block n = first entry of block n+1. skip duplicates
 #        tmp = np.vstack((tmp, b[1:]))
 #    eph_blocks = tmp
-    
+
     # tailored cut of each of the first and the last blocks
     # start and stop t in h to compare with eph_blocks
     th_start = date_t_start.hour + date_t_start.minute/60.0 + date_t_start.second/3600.0
@@ -1047,7 +1047,7 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
         eph_blocks[0] = eph_blocks[0][th_start_ii-1:, :]
     if th_end_ii != len(eph_blocks[-1]):
         eph_blocks[-1] = eph_blocks[-1][:th_end_ii+1, :]
-    
+
     # print eph_blocks, len(eph_blocks)
     # print s
     # raw_input('bugagaga')
@@ -1069,9 +1069,9 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
             # full mjd:
             mjd = mjd0 + state[0]/24.0
             jd = mjd + 2400000.5
-            
+
             rv = state[1:]
-            
+
             # add barycentric r/v of cbody at CT:
             if source.lower()=='vex':
                 cbodyState = pleph(jd, 2, 12, jpl_eph)
@@ -1084,13 +1084,13 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
             # append line to output SS barycentric ephemeris of VEX:
             rv_bcrs = rv + cbodyState
             eph_bcrs.append(rv_bcrs)
-            
+
             # calculate geocentric orbits
             # GCRS first:
             earth = pleph(jd, 3, 12, jpl_eph)
             rv_gcrs = rv_bcrs - earth
             eph_gcrs.append(rv_gcrs)
-            
+
             # then GTRS
             astrotime = Time(mjd, format='mjd', scale='tdb', precision=9)
             UTCdatetime = astrotime.utc.datetime
@@ -1101,7 +1101,7 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
             ''' interpolate eops to t_obs '''
 #            UT1, eop_int = eop_iers(mjd, UTC, eops)
             UT1, eop_int = eop_iers(np.floor(mjd0+state[0]), UTC, eops)
-            
+
             ''' rotation matrix IERS '''
             r2000 = ter2cel(UTCdatetime, eop_int, mode='der')
             rv_gtrs = np.zeros(6)
@@ -1117,18 +1117,18 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
 
 #    print _time()-tic
 #    raw_input('bugagaga')
-    
+
     # interpolate to 1 s grid
     t0 = datetime.datetime(*t_start[0:3])
     th = []
     for t in ob.tstamps:
         th.append(t.hour + t.minute/60.0 + t.second/3600.0 + 24.0*(t-t0).days)
     th = np.array(th)
-    
+
 #    print eph_bcrs_blocks
 #    print len(eph_bcrs_blocks)
 #    print th
-    
+
 #    print eph_blocks
 #    raw_input('bugagaga')
 #    tic = _time()
@@ -1169,10 +1169,10 @@ def load_slots(orb_files, t_start, t_stop, t_step, source, inp=None):
 #            gtrs[:,jj], _ = lagint(9, eph_blocks[:,0], eph_gtrs[:,jj], th)
 
     astrotime_out = Time(map(str, ob.tstamps), format='iso', scale='tdb')
-#    print _time()-tic  
+#    print _time()-tic
 #    print bcrs
 #    raw_input('bugagaga')
-    return astrotime_out, bcrs, gcrs, gtrs 
+    return astrotime_out, bcrs, gcrs, gtrs
 
 
 '''
@@ -1398,7 +1398,7 @@ def esa_sc_eph_make_tasc(sc_name, start, stop, inp, paddLeft=30, paddRight=2, pa
 def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRight=0):
     """
     Make vispy eph-files from ESA orb file parsed/loaded with load_slots(*args)
-    
+
     padding - in minutes for each side
 
     NOTE from 03/05/2016: these raw files are not available anymore from the TASC server
@@ -1413,11 +1413,11 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
     # date string:
     date_string = date_t_start.strftime("%y%m%d")
 
-    # file names    
+    # file names
     sc_bcrs_eph = ''.join((source.lower(), '.bcrs.tdb.', date_string, '.eph'))
     sc_gcrs_eph = ''.join((source.lower(), '.gcrs.utc.', date_string, '.eph'))
     sc_gtrs_eph = ''.join((source.lower(), '.gtrs.utc.', date_string, '.eph'))
-    
+
     # check whether the file with BCRS eph exists
     if os.path.isfile(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph)):
         eph_bc_exist = True
@@ -1434,8 +1434,8 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
         eph_start = datetime.datetime(*firstLine)
         eph_end = datetime.datetime(*lastLine)
         if (t_start < eph_start) or (t_end > eph_end):
-            t_obs_out_of_eph_boundary = True            
-    
+            t_obs_out_of_eph_boundary = True
+
     # force update requested?
     if eph_bc_exist and inp['sc_eph_force_update']:
         print 'Precalculated S/C ephs forced update requested.'
@@ -1445,7 +1445,7 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
         os.remove(os.path.join(inp['sc_eph_cat'], sc_gcrs_eph))
         print 'removing {:s}'.format(sc_gtrs_eph)
         os.remove(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph))
-    
+
     # now make/update the eph
     if not eph_bc_exist or t_obs_out_of_eph_boundary:
         if not eph_bc_exist:
@@ -1454,21 +1454,21 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
             # print t_start, t_end, eph_start, eph_end
             print 'T_obs not within existing BCRS ephemeris time range. Updating '\
                   +sc_bcrs_eph+'...'
-        
+
         # start time is in the future? notify the user!
         if t_start > datetime.datetime.now():
             print 'Note that start date is in the future! ' + \
                   'Using planning ephs. \n' + \
                   'Force update computed ephs when final version is available!'
-        
+
         # time slot
         t_start = [t_start.year, t_start.month, t_start.day,
                    t_start.hour, t_start.minute, t_start.second]
         t_stop  = [t_end.year, t_end.month, t_end.day,
                    t_end.hour, t_end.minute, t_end.second]
-        
+
         t_step = 1  # seconds
-    
+
         path = os.path.join(inp['sc_eph_cat'], 'raw_'+source.lower())
         # downlaod fresh ephs from ftp://ssols01.esac.esa.int/pub/data/ESOC/
         boundaries = checkbound(source, orb_path=path)
@@ -1508,10 +1508,10 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
 #            eph_gtrs[:,jj] = np.interp(ct, ut, eph_gtrs[:,jj])
 #            eph_gcrs[:,jj], _ = lagint(9, ut, eph_gcrs[:,jj], ct)
 #            eph_gtrs[:,jj], _ = lagint(9, ut, eph_gtrs[:,jj], ct)
-        
+
         ''' output to files '''
         tstamps = astrotime.tdb.datetime  # t stamps look the same in utc and tdb
-    
+
         ''' BCRS '''
         with open(os.path.join(inp['sc_eph_cat'], sc_bcrs_eph),'w') as f:
             for ii, t in enumerate(tstamps):
@@ -1521,7 +1521,7 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
                 line += '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f}\n'\
                         .format(*eph_bcrs[ii,0:6])
                 f.write(line)
-                
+
         ''' GCRS '''
         with open(os.path.join(inp['sc_eph_cat'], sc_gcrs_eph),'w') as f:
             for ii, t in enumerate(tstamps):
@@ -1532,7 +1532,7 @@ def esa_sc_eph_make(source, date_t_start, date_t_stop, inp, paddLeft=30, paddRig
                 line += '{:16.10f} {:15.10f} {:15.10f}\n'\
                          .format(*np.zeros(3))
                 f.write(line)
-        
+
         ''' GTRS '''
         with open(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph),'w') as f:
             for ii, t in enumerate(tstamps):
@@ -1557,19 +1557,19 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
     if source=='HER': staobj='Herschel'
 
     sc_eph_cat = inp['sc_eph_cat'] # location of the dir with s/c eph cat
-    
-    ''' Barycentric ephemeris '''    
+
+    ''' Barycentric ephemeris '''
     # 30 min beidseitig padding:
     t_start = date_t_start - datetime.timedelta(seconds=30*60)
     t_end = date_t_end + datetime.timedelta(seconds=30*60)
-    
+
     # because of a stupid limitation on the website of 10000 maximum epochs
     # in one go...:
-    if source=='MEX' or source=='HER': 
+    if source=='MEX' or source=='HER':
         t_step_bc=5
     else:
         t_step_bc=1
-    
+
     sc_bcrs_eph = source.lower()+'.bcrs.tdb.'+str(t_start.year)[2:]+\
                 '%02d'%date_t_start.month+'%02d'%date_t_start.day+'.eph'
     # check whether the file with eph exists
@@ -1592,15 +1592,15 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         eph_start = datetime.datetime(*eph[0][0:6])
         eph_end = datetime.datetime(*eph[-1][0:6])
         if (t_start<eph_start) or (t_end>eph_end):
-            t_obs_out_of_eph_boundary = 1            
-            
+            t_obs_out_of_eph_boundary = 1
+
     #now download/update the eph
     if eph_bc_exist!=1 or t_obs_out_of_eph_boundary==1:
         if eph_bc_exist!=1:
             print 'S/C bc ephemeris file: '+sc_bcrs_eph+' not found, downloading...'
         if t_obs_out_of_eph_boundary==1:
             print 'T_obs is not within the existing bc ephemeris time range. Updating '+sc_bcrs_eph+'...'
-        
+
         eph_url = 'http://tasc.esa.int/cgi-bin/query.html?'+\
                 'mission='+source+'&'+\
                 'querytyp=data&'+\
@@ -1629,7 +1629,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                             '%06.3f'%t_end.second+'&'+\
                 'tstp=000+00%3A00%3A'+'%06.3f'%t_step_bc+'&orbtyp='+\
                 orbtyp
-        #print eph_url                
+        #print eph_url
         response = urllib2.urlopen(eph_url)
         html = response.read()
         #print html
@@ -1637,30 +1637,30 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         html_copy = []
         for line in html:
             if len(line)>5 and (line.strip()[0]!='#' and line.strip()[0]!='<'):
-                for char in (':','T','/'):             
+                for char in (':','T','/'):
                     line = line.replace(char,' ')
                 html_copy.append(line)
         # print it to file:
         with open(os.path.join(sc_eph_cat,sc_bcrs_eph),'w') as out:
             for line in html_copy:
                 out.write(line+'\n')
-        
-        
+
+
     ''' Geocentric ephemeris without lt-correction '''
     # if no need for padding:
     #t_start = date_t_start
     #t_end = date_t_end
     # if 30 min beidseitig padding - keep the same t_start and t_end
-    
+
     #t_step_gc = 10 #seconds
-    
+
     # because of a stupid limitation on the website of 10000 maximum epochs
     # in one go...:
-    if source=='MEX' or source=='HER': 
+    if source=='MEX' or source=='HER':
         t_step_gc=5
     else:
         t_step_gc=1
-    
+
     #sc_gtrs_eph = source.lower()+'.gc.ut.ltcorr'+str(t_start.year)[2:]+\
     sc_gtrs_eph = source.lower()+'.gtrs.utc.'+str(t_start.year)[2:]+\
                 '%02d'%date_t_start.month+'%02d'%date_t_start.day+'.eph'
@@ -1686,8 +1686,8 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         eph_end = datetime.datetime(eph[-1][0],eph[-1][1],\
                                     eph[-1][2],eph[-1][3],eph[-1][4],eph[-1][5])
         if (t_start<eph_start) or (t_end>eph_end):
-            t_obs_out_of_eph_boundary = 1            
-            
+            t_obs_out_of_eph_boundary = 1
+
     #now download/update the GTRS eph
     if eph_gc_exist!=1 or t_obs_out_of_eph_boundary==1:
         if eph_gc_exist!=1:
@@ -1724,7 +1724,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                             '%06.3f'%t_end.second+'&'+\
                 'tstp=000+00%3A00%3A'+'%06.3f'%t_step_gc+'&orbtyp='+\
                 orbtyp
-        #print eph_url                
+        #print eph_url
         response = urllib2.urlopen(eph_url)
         html = response.read()
         #print html
@@ -1733,25 +1733,25 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         for line in html:
 #            print len(line)
             if len(line)>2 and (line.strip()[0]!='#' and line.strip()[0]!='<'):
-                for char in (':','T','/'):             
+                for char in (':','T','/'):
                     line = line.replace(char,' ')
                 html_copy.append(line[0:75])
-        
+
         eph = []
         # do what the matlab function load does (convert strings to floats):
         for line in html_copy:
             line = [float(x) for x in line.split()]
             line[0:5] = map(int,line[0:5])
             eph.append(line)
-        
+
         UT_eph = [(ep[3] + ep[4]/60.0 + ep[5]/3600.0)/24.0 for ep in eph]
         # allow for 'overnighters':
         dd = mjuliandate(*eph[-1][0:3])-mjuliandate(*eph[0][0:3])
         for cr in range(1,int(dd)+1):
             for nn in range(1,len(UT_eph)):
                  if UT_eph[nn]<UT_eph[nn-1]:
-                      UT_eph[nn] = UT_eph[nn] + 1        
-        
+                      UT_eph[nn] = UT_eph[nn] + 1
+
         ''' calculate v and a using a nth-order Chebyshёv poly '''
         eph = np.array(eph)
         nth = 7
@@ -1769,7 +1769,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                 # went well? exit loop then
                 break
         eph = np.hstack((eph,v))
-        
+
         nth = 7
         a = np.zeros((len(UT_eph),3))
         while nth<12:
@@ -1785,8 +1785,8 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                 # went well? exit loop then
                 break
         eph = np.hstack((eph,a))
-        
-        
+
+
         # print it to file:
         f = open(sc_eph_cat+'/'+sc_gtrs_eph,'w')
         for ep in eph:
@@ -1800,7 +1800,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                 .format(*ep[12:15])
             f.write(s)
         f.close()
-        
+
     # make a GCRS ephemeris:
     sc_gcrs_eph = source.lower()+'.gcrs.utc.'+str(t_start.year)[2:]+\
                   '%02d'%date_t_start.month+'%02d'%date_t_start.day+'.eph'
@@ -1824,8 +1824,8 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         eph_start = datetime.datetime(*eph[0][0:6])
         eph_end = datetime.datetime(*eph[-1][0:6])
         if (t_start<eph_start) or (t_end>eph_end):
-            t_obs_out_of_eph_boundary = 1            
-            
+            t_obs_out_of_eph_boundary = 1
+
     # now make/update the GCRS eph in UTC time stamps
     # this is used to calculate ra/dec's
     if eph_gcrs_exist!=1 or t_obs_out_of_eph_boundary==1:
@@ -1833,7 +1833,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
             print 'S/C gcrs ephemeris file: '+sc_gcrs_eph+' not found, calculating...'
         if t_obs_out_of_eph_boundary==1:
             print 'T_obs is not within the existing gtrs ephemeris time range. Updating '+sc_gcrs_eph+'...'
-            
+
         # load BCRS eph in UTC time stamps:
         eph_url = 'http://tasc.esa.int/cgi-bin/query.html?'+\
                 'mission='+source+'&'+\
@@ -1863,7 +1863,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                             '%06.3f'%t_end.second+'&'+\
                 'tstp=000+00%3A00%3A'+'%06.3f'%t_step_bc+'&orbtyp='+\
                 orbtyp
-        #print eph_url                
+        #print eph_url
         response = urllib2.urlopen(eph_url)
         html = response.read()
         #print html
@@ -1871,21 +1871,21 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
         eph = []
         for line in html:
             if len(line)>2 and (line.strip()[0]!='#' and line.strip()[0]!='<'):
-                for char in (':','T','/'):             
+                for char in (':','T','/'):
                     line = line.replace(char,' ')
                 eph.append(line)
-        
+
         # save to file:
         f = open(sc_eph_cat+'/'+sc_gcrs_eph,'w')
         for ep in eph:
             ep = [float(x) for x in ep.split()]
-            ep[0:5] = map(int,ep[0:5])                                             
+            ep[0:5] = map(int,ep[0:5])
 #            mjd = mjuliandate(ep[0],ep[1],ep[2])
 #            JD = mjd + 2400000.5
 #            CT = (ep[3] + ep[4]/60.0 + ep[5]/3600.0)/24.0
             ''' calculate state vector of the Earth at JD+CT, in [km, km/s] '''
 #            earth = pleph(JD+CT, 3, 12, inp['jpl_eph'])
-#                .format(*(ep[6:12]-earth))+\ 
+#                .format(*(ep[6:12]-earth))+\
             s = '{:5d} {:02d} {:02d} {:02d} {:02d} {:06.3f} '\
                  .format(*ep[0:6])+\
                 '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f} '\
@@ -1894,7 +1894,7 @@ def esa_sc_eph_down(source, date_t_start, date_t_end, inp):
                 .format(*np.zeros(3))
             f.write(s)
         f.close()
-        
+
     return (sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph)
 
 
@@ -1908,21 +1908,21 @@ def load_slots_gaia(eph_file, t_start, t_stop, t_step):
         f_lines = f.readlines()
 
     slots = [ii for ii,v in enumerate(f_lines) if 'START_TIME' in f_lines[ii]]
-    
+
     slotData = []
     r = re.compile('[-T:]+')
-    
+
     for slot in slots:
         out = [slot]
         for jj in (0,1):
-            eq = f_lines[slot+jj].index('=')            
+            eq = f_lines[slot+jj].index('=')
             t = r.split(f_lines[slot+jj][eq+1:].strip())
             ttag = map(int,t[:-1])
             ttag.append(float(t[-1]))
             out.append(ttag)
 #            slot_start = datetime(*map(int,ttag))
         slotData.append(out)
-    
+
     # line number of 'start_time', start_time, stop_time
     s = [x for x in slotData if (mjuliandate(*t_start)>=mjuliandate(*x[1]) and\
                                 mjuliandate(*t_start)<=mjuliandate(*x[2])) or\
@@ -1957,14 +1957,14 @@ def load_slots_gaia(eph_file, t_start, t_stop, t_step):
     date_t_start = datetime.datetime(*t_start)
     date_t_stop = datetime.datetime(*t_stop)
     ob.addScan(date_t_start, t_step, stop=date_t_stop)
-    
+
     eph = []
     for t in ob.tstamps:
         # dd is counted from 0h of date_t_start
         dd = (t - date_t_start).days
         ut = t.hour + t.minute/60.0 + t.second/3600.0 + dd*24.0
         mjd = mjuliandate(t.year,t.month,t.day,t.hour,t.minute,t.second)
-        
+
         # choose proper eph block
         ii_cur = [ii for ii,v in enumerate(s) if \
                             mjuliandate(*v[1]) <= mjd < mjuliandate(*v[2])][0]
@@ -1978,9 +1978,9 @@ def load_slots_gaia(eph_file, t_start, t_stop, t_step):
         n_left = int(floor((n+1)/2.0))
         # number of points to cut from the right-hand side
         n_right = int(ceil((n+1)/2.0))
-    
+
 #        print n_left, n_right
-        
+
         # check/correct bounds:
 #        print len(utz[:position])
         if len(utz[:position]) < n_left:
@@ -1992,7 +1992,7 @@ def load_slots_gaia(eph_file, t_start, t_stop, t_step):
             n_right = len(utz[position:])
 
 #        print n_left, n_right
-        
+
         # cut the proper piece:
         utz = utz[position-n_left:position+n_right]
         # cut proper pieces of r/v/a:
@@ -2006,14 +2006,14 @@ def load_slots_gaia(eph_file, t_start, t_stop, t_step):
         eph.append(rva)
     # turn it into numpy array
     eph = np.array(eph)
-    
+
     tstamps = [[x.year, x.month, x.day, x.hour, x.minute, x.second] \
                 for x in ob.tstamps]
     tstamps = np.array(tstamps)
-    
+
     # return the same thing as load_scf
     return np.hstack((tstamps, eph))
-    
+
 '''
 #==============================================================================
 # Freshest Gaia ephemeris
@@ -2033,9 +2033,9 @@ def gaia_fresh(cat_gaia):
             user = 'rgbot'
             pwd = ''
             port = 22
-            
+
             eph_path = '/home/dpce/dpceInterface/OUT/ORBIT/current/'
-            
+
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname=host, username=user, password=pwd, port=port)
@@ -2058,9 +2058,9 @@ def gaia_fresh(cat_gaia):
         except Exception, err:
             print str(err)
             print 'Could not check fresh Gaia ephemeris.'
-        
+
     return os.path.join(cat_gaia, fresh), updated
-    
+
 '''
 #==============================================================================
 # Make ephemeris for RA and GAIA and CE3
@@ -2073,9 +2073,9 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
     sc_eph_cat = inp['sc_eph_cat']
     cat_eop = inp['cat_eop']
     jpl_eph = inp['jpl_eph']
-    
+
     const = constants()
-    
+
     date_str = str(date_t_start.year)[2:]+\
                 '%02d'%date_t_start.month+'%02d'%date_t_start.day
     sc_bcrs_eph = source.lower()+'.bcrs.tdb.'+date_str+'.eph'
@@ -2099,8 +2099,8 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
         stop = [float(x) for x in tmp[-1].split()]
         eph_end = datetime.datetime(*map(int,stop[0:6]))
         if (date_t_start<eph_start) or (date_t_end>eph_end):
-            t_obs_out_of_eph_boundary = True            
-    
+            t_obs_out_of_eph_boundary = True
+
     # force update requested?
     if eph_bc_exist and inp['sc_eph_force_update']:
         print 'Precalculated S/C ephs forced update requested.'
@@ -2111,7 +2111,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
         print 'removing {:s}'.format(sc_gtrs_eph)
         os.remove(os.path.join(inp['sc_eph_cat'], sc_gtrs_eph))
         eph_bc_exist = False
-    
+
     # check Gaia eph updates from ESA
     gaia_updated = False
     if source.lower()=='gaia':
@@ -2126,10 +2126,10 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                     +sc_bcrs_eph+'...'
         if gaia_updated:
             print 'Found Gaia orbit update'
-        
+
         # set eph file manually:
         #org_eph = load_scf(sc_eph_cat+'/raw_radioastron/RA121031-121101jj.scf')
-        
+
         # default orbit storage:
         if 'org_eph' not in locals(): # var org_eph doesn't exist:
             if source.lower()=='ra':
@@ -2182,7 +2182,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                 except IOError:
                     raise Exception('Input orbit for CE3 was not specified by hand and not \
                            found in the /raw_ce3 directory. Fail!')
-        
+
         # now, if there were no errors, org_eph exists for sure
 
         # convert to metres
@@ -2198,7 +2198,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
         # for GNSS, first point is always in the previous day, fix this:
         if source.lower()[0] == 'p':
             t_eph_utc -= 1
-        
+
         t_step = 10.0 #seconds
         mjd_start = mjuliandate(date_t_start.year,date_t_start.month,date_t_start.day,
                                 date_t_start.hour,date_t_start.minute,date_t_start.second)
@@ -2207,7 +2207,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
         N_obs = int(round(86400.0*(mjd_end-mjd_start)/t_step) + 1.0)
         ob = obs(['DUMMY'],'DUMMY','C')
         ob.addScan(date_t_start, t_step, nobs=N_obs)
-        
+
         # if obss go overnight, t_end will be 23:59:59 (see load_eph), which
         # will result in last t_stamp being 00:00:00, given the 10 s step
         # shouldn't be so, as the next day's file will have the same
@@ -2218,7 +2218,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
             # another way: (not so good, involves extrapolation)
 #            ob.tstamps = ob.tstamps[:-1]
 #            N_obs -= 1
-        
+
         #allocate memory:
         sc_bcrs = np.zeros((N_obs, 12))  # allocate BCRS state
         sc_gcrs = np.zeros((N_obs, 15))  # allocate GCRS state + acceleration
@@ -2234,7 +2234,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
             fc_lines = fc.readlines()
         eops = np.zeros((7,7)) # +/- 3 days
         for jj in range(len(fc_lines)):
-            if fc_lines[jj][0]!=' ' and fc_lines[jj][0]!='*':
+            if fc_lines[jj][0]!=' ' and (fc_lines[jj][0]!='*' and fc_lines[jj][0]!='#'):
                 entry = [float(x) for x in fc_lines[jj].split()]
                 if len(entry) > 0 and entry[3] == np.floor(mjd_start) - 3:
                     for kk in range(7):
@@ -2249,11 +2249,11 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                     break  # exit loop
 
         ''' go-go-go: '''
-        
+
         mjd0 = mjuliandate(ob.tstamps[0].year, ob.tstamps[0].month, ob.tstamps[0].day)
         if source.lower()[0] == 'p':
             r2000_keep = []
-            
+
         for ii, tstamp in enumerate(ob.tstamps):
             ''' set dates: '''
             mjd = mjuliandate(tstamp.year, tstamp.month, tstamp.day)
@@ -2263,7 +2263,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
 
             ''' compute tai & tt '''
             TAI, TT = taitime(mjd, UTC)
-            
+
             ''' interpolate eops to t_obs '''
             UT1, eop_int = eop_iers(mjd, UTC, eops)
 
@@ -2288,7 +2288,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                 sc_gtrs[ii, 6:9]  = dot(r2000[:,:,0].T, sc_gcrs[ii,6:9].T)
                 sc_gtrs[ii, 9:12] = dot(r2000[:,:,0].T, sc_gcrs[ii,9:12].T) + \
                                     dot(r2000[:,:,1].T, sc_gcrs[ii,6:9].T)
-                                     
+
             ''' compute the coordinate time fraction of the CT day at S/C position '''
             # Compute geocentric longitude of RadioAstron
             lon_gcen = atan2 ( sc_gtrs[ii,7], sc_gtrs[ii,6] )
@@ -2307,7 +2307,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                 v_site = 0.0
 
             CT, dTAIdCT = t_eph(JD, UT1, TT, lon_gcen, u_site, v_site)
-            
+
             ''' calculate state vector of the Earth at JD+CT, in [m, m/s] '''
             rrd = pleph(JD+CT, 3, 12, jpl_eph)
             earth = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
@@ -2326,7 +2326,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                                 - earth[:,1]*dot(earth[:,1], sc_gtrs[ii,6:9])/\
                                     (2.0*const.C**2) + earth[:,0]
 #                print sc_bcrs[ii,6:9]
-                # >> add Earth bc velocity, as sc velocities are 
+                # >> add Earth bc velocity, as sc velocities are
                 # calculated afterwards
                 sc_bcrs[ii, 9:12] = earth[:,1]
             else:
@@ -2344,7 +2344,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
             for nn in range(1,len(CT_eph)):
                  if CT_eph[nn]<CT_eph[nn-1]:
                       CT_eph[nn] += 1
-        
+
         ''' calculate velosities if GNSS '''
         if source.lower()[0] == 'p':
             for jj in range(9, 12):
@@ -2359,12 +2359,12 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                 sc_gcrs[ii, 9:12] = dot(r2000_keep[ii][:, :, 0], sc_gtrs[ii, 9:12].T) + \
                                    dot(r2000_keep[ii][:, :, 1], sc_gtrs[ii, 6:9].T)
                 sc_bcrs[ii, 9:12] += sc_gcrs[ii, 9:12]
-                
+
         ''' calculate acceleration using an optimal Chebyshёv poly '''
         for jj in range(12, 15):
             p = optimalFit(UT_eph, sc_gcrs[:, jj-3], min_order=3, max_order=15, fit_type='cheb')
             sc_gcrs[:, jj] = cheb.chebval(UT_eph, cheb.chebder(p.best_estimator_.coef_)) / 86400.0
-                            
+
         ''' resample to 1 sec grid '''
         if (t_step - 1.0) > 1.0e-6:
             N_obs = int((date_t_end - date_t_start).total_seconds()) + 1
@@ -2387,7 +2387,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
             t_stamps = UT_eph
             sc_gcrs_save = sc_gcrs
             sc_gtrs_save = sc_gtrs
-        
+
         ''' interp bc eph to round time stamps '''
         sc_bcrs_save = np.zeros((N_obs, 12))
         for jj in range(6,12):
@@ -2395,7 +2395,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
             # sc_bcrs_save[:, jj], _ = lagint(9, CT_eph, sc_bcrs[:, jj], t_stamps)
             # sc_bcrs_save[:, jj], _ = lagint(3, CT_eph, sc_bcrs[:, jj], t_stamps)
             sc_bcrs_save[:, jj] = interpolate(CT_eph, sc_bcrs[:, jj], t_stamps, 5, 2)
-        
+
         ''' save to files '''
         # GTRS
         with open(os.path.join(sc_eph_cat, sc_gtrs_eph),'w') as f:
@@ -2419,7 +2419,7 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                     '{:16.10f} {:15.10f} {:15.10f}\n'\
                     .format(*sc_gcrs_save[jj,12:15]/1e3)
                 f.write(s)
-        # BCRS        
+        # BCRS
         with open(os.path.join(sc_eph_cat, sc_bcrs_eph),'w') as f:
             for jj in range(int(N_obs)):
                 s = '{:5d} {:02d} {:02d} {:02d} {:02d} {:06.3f} '\
@@ -2429,12 +2429,12 @@ def ra_eph_down(source, date_t_start, date_t_end, inp):
                     '{:20.6f} {:18.6f} {:18.6f} {:16.10f} {:15.10f} {:15.10f}\n'\
                     .format(*sc_bcrs_save[jj,6:12]/1e3)
                 f.write(s)
-        
+
     return sc_bcrs_eph, sc_gtrs_eph, sc_gcrs_eph
-            
+
 '''
 #==============================================================================
-#  Load eph in IPM-style scf format       
+#  Load eph in IPM-style scf format
 #==============================================================================
 '''
 def load_scf(scf_file):
@@ -2475,10 +2475,10 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
     if dow==7:
         dow=0
         gnss_week += 1
-    
+
     gnss_week = int(gnss_week)
     dow = int(dow)
-    
+
     if source[0:2].lower() == 'pr': # GLONASS
         gnss_sp3 = os.path.join(sc_eph_cat,'raw_gnss/igl{:04d}{:01d}.sp3'.\
                                 format(gnss_week, dow))
@@ -2489,7 +2489,7 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
         sp3_name = 'igs{:04d}{:01d}.sp3'.format(gnss_week, dow)
     else:
         raise Exception('Wrong GNSS source name')
-    
+
     # doesn't exist? download first then:
     if not os.path.isfile(gnss_sp3):
         print 'GNSS sp3-file: {:s}.Z not found, fetching...'.format(sp3_name)
@@ -2511,7 +2511,7 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
                 raise Exception('file {:s} not found on the server. fail!'.\
                         format(sp3_name+'.Z'))
             ftp.quit()
-            
+
         except Exception, err:
             print str(err)
             print 'Failed to download {:s} from cddis.nasa.gov'.format(sp3_name)
@@ -2520,7 +2520,7 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
     if load:
         with open(gnss_sp3) as f:
             f_lines = f.readlines()
-        
+
         # remove comments:
         f_lines = [l for l in f_lines if l[0] not in ['#','+','%','/']]
         # extract time in GPS time scale and convert to UTC:
@@ -2529,22 +2529,22 @@ def load_sp3(sc_eph_cat, source, date_t_start, load=True):
         time = [datetime.datetime(*map(int, t)) - \
                 datetime.timedelta(seconds=utc_gps) for t in time]
         time = [[t.year, t.month, t.day, t.hour, t.minute, t.second] for t in time]
-    
+
         xyz = [map(float, x.split()[1:4]) for x in f_lines \
                 if source.lower() in x.lower()]
-    
+
         # output
         eph = []
         for t, r in zip(time, xyz):
             eph.append(t+r)
-    
+
         #convert output to a numpy array
         return np.asarray(eph)
 
 
 '''
 #==============================================================================
-#     
+#
 #==============================================================================
 '''
 #@jit
@@ -2566,10 +2566,10 @@ def taitime(mjd, UTC):
     # Calculation of TT (in fraction of day)
     TT = TAI + 32.184/86400.0
     return TAI, TT
-    
+
 '''
 #==============================================================================
-# 
+#
 #==============================================================================
 '''
 def eop_iers(mjd, UTC, eops):
@@ -2580,7 +2580,7 @@ def eop_iers(mjd, UTC, eops):
     arc and that UT1-UTC is in seconds of time. At least
     one point before and one point after the epoch of the
     interpolation point are necessary in order for the
-    interpolation scheme to work. 
+    interpolation scheme to work.
 
   parameters are :
     RJD     - array of the epochs of data (given in mjd)
@@ -2595,7 +2595,7 @@ def eop_iers(mjd, UTC, eops):
     y_int   - interpolated value of y
     dX_int  - interpolated value of dX
     dY_int  - interpolated value of dY
-  
+
   CALLED SUBROUTINE : LAGINT (Lagrange interpolation)
                          PMUT1_OCEANS (Diurnal and semidiurnal oceanic effects)
                          PM_GRAVI (Diurnal and semidiurnal lunisolar effects)
@@ -2612,13 +2612,13 @@ def eop_iers(mjd, UTC, eops):
     dX = eops[:,5]
     dY = eops[:,6]
 #    n = len(eops[:,0])
-    
+
     rjd_int = mjd + UTC
 
 #    x_int = LAGINT (RJD,X,n,rjd_int)
-#    y_int = LAGINT (RJD,Y,n,rjd_int)          
-#    ut1_int = LAGINT (RJD,UT1,n,rjd_int)          
-#    dX_int = LAGINT (RJD,dX,n,rjd_int)          
+#    y_int = LAGINT (RJD,Y,n,rjd_int)
+#    ut1_int = LAGINT (RJD,UT1,n,rjd_int)
+#    dX_int = LAGINT (RJD,dX,n,rjd_int)
 #    dY_int = LAGINT (RJD,dY,n,rjd_int)
 #    print x_int, y_int, ut1_int, dX_int, dY_int
 
@@ -2629,15 +2629,15 @@ def eop_iers(mjd, UTC, eops):
     dY_int = lagint(4,RJD,dY,rjd_int)[0][0]
 
     # --------------
-    # Oceanic effect      
+    # Oceanic effect
     # --------------
     cor_x, cor_y, cor_ut1 = PMUT1_OCEANS (rjd_int)
 
     x_int = x_int + cor_x
     y_int = y_int + cor_y
     ut1_int = ut1_int + cor_ut1
-    
-    # Lunisolar effect 
+
+    # Lunisolar effect
     cor_x, cor_y = PM_GRAVI(rjd_int)
 
     x_int = x_int + cor_x
@@ -2645,16 +2645,16 @@ def eop_iers(mjd, UTC, eops):
 
     # output
     eop_int = [ut1_int, x_int, y_int, dX_int, dY_int]
-          
+
     # ut1 in seconds of the day
     ut1 = eop_int[0] + UTC * 86400.0
-    
+
     return ut1, eop_int
-     
+
 ## ----------------------------------------------------------------
 #@numba.jit('f8(f8[:], f8[:], i8, f8)')
 def LAGINT (X,Y,n,xint):
-    ''' 
+    '''
      This subroutine performs lagrangian interpolation
      within a set of (X,Y) pairs to give the y
      value corresponding to xint. This program uses a
@@ -2674,7 +2674,7 @@ def LAGINT (X,Y,n,xint):
     yout = 0.0
     for i in range(n-1):
         if ( xint >= X[i-1] and xint < X[i] ): k = i
-    
+
     if ( k < 2 ): k = 2
     if ( k > n-2 ): k = n-2
 
@@ -2692,10 +2692,10 @@ def PMUT1_OCEANS(rjd):
     '''
      This subroutine provides, in time domain, the diurnal/subdiurnal
      tidal effets on polar motion ("), UT1 (s) and LOD (s). The tidal terms,
-     listed in the program above, have been extracted from the procedure   
+     listed in the program above, have been extracted from the procedure
      ortho_eop.f coed by Eanes in 1997.
-     
-     N.B.:  The fundamental lunisolar arguments are those of Simon et al.  
+
+     N.B.:  The fundamental lunisolar arguments are those of Simon et al.
 %
      These corrections should be added to "average"
      EOP values to get estimates of the instantaneous values.
@@ -2707,17 +2707,17 @@ def PMUT1_OCEANS(rjd):
      cor_ut1  - tidal correction in UT1-UTC (sec. of time)
      cor_lod  - tidal correction in length of day (sec. of time)
 %
-     coded by Ch. Bizouard (2002), initially coded by McCarthy and 
-     D.Gambis(1997) for the 8 prominent tidal waves.  
-      
-     arg(6),    % Array of the tidal arguments   
-     Darg(6)    % Array of their time derivative 
-    '''      
+     coded by Ch. Bizouard (2002), initially coded by McCarthy and
+     D.Gambis(1997) for the 8 prominent tidal waves.
+
+     arg(6),    % Array of the tidal arguments
+     Darg(6)    % Array of their time derivative
+    '''
     halfpi = 1.5707963267948966
     secrad = 2.0*halfpi/(180.0*3600.0)
 
-#  Oceanic tidal terms present in x (microas),y(microas),ut1(microseconds)       
-#  narg(j,6) : Multipliers of GMST+pi and Delaunay arguments. 
+#  Oceanic tidal terms present in x (microas),y(microas),ut1(microseconds)
+#  narg(j,6) : Multipliers of GMST+pi and Delaunay arguments.
 
     narg = np.asarray([
     [1,-1, 0,-2,-2,-2],
@@ -2791,8 +2791,8 @@ def PMUT1_OCEANS(rjd):
     [2, 1, 0, 0, 0, 0],
     [2, 1, 0, 0, 0,-1],
     [2, 0, 0, 2, 0, 2]])
-    
-     
+
+
     data = np.asarray([
            [ -0.05,   0.94,  -0.94,  -0.05,  0.396, -0.078],
            [  0.06,   0.64,  -0.64,   0.06,  0.195, -0.059],
@@ -2865,7 +2865,7 @@ def PMUT1_OCEANS(rjd):
            [ -1.77,   1.79,   1.71,   1.04, -0.146,  0.037],
            [ -0.77,   0.78,   0.75,   0.45, -0.064,  0.017],
            [ -0.33,   0.62,   0.65,   0.19, -0.049,  0.018 ]])
- 
+
     XSIN = data[:,0]
     XCOS = data[:,1]
     YSIN = data[:,2]
@@ -2876,11 +2876,11 @@ def PMUT1_OCEANS(rjd):
     T = (rjd - 51544.5)/36525.0  # julian century
 
     # arguments in the following order : chi=GMST+pi,l,lp,F,D,Omega
-    # et leur derivee temporelle 
+    # et leur derivee temporelle
 
     arg = np.zeros(6)
 #    Darg = np.zeros(6)
-    
+
     arg[0] = (67310.54841 +\
                (876600.0*3600.0 + 8640184.812866)*T +\
                0.093104*T**2 -\
@@ -2896,7 +2896,7 @@ def PMUT1_OCEANS(rjd):
     arg[1] = -0.00024470*T**4 + 0.051635*T**3 + 31.8792*T**2 \
                + 1717915923.2178*T + 485868.249036
     arg[1] = fmod(arg[1],1296000.0)*secrad
-      
+
 #    Darg[1] = -4.*0.00024470*T**3 + 3.*0.051635*T**2 \
 #               + 2.*31.8792*T + 1717915923.2178
 #    Darg[1] = Darg[1]* secrad / 36525.0 # rad/day
@@ -2908,7 +2908,7 @@ def PMUT1_OCEANS(rjd):
 #    Darg[2] = -4.0*0.00001149*T**3 - 3.*0.000136*T**2 \
 #                -  2.0*0.5532*T + 129596581.0481
 #    Darg[2] = Darg[2]* secrad / 36525.0 # rad/day
-          
+
     arg[3] = 0.00000417*T**4 - 0.001037*T**3 - 12.7512*T**2 \
                + 1739527262.8478*T + 335779.526232
     arg[3] = fmod(arg[3],1296000.0)*secrad
@@ -2916,7 +2916,7 @@ def PMUT1_OCEANS(rjd):
 #    Darg[3] = 4.0*0.00000417*T**3 - 3.0*0.001037*T**2 \
 #              - 2.0 * 12.7512*T + 1739527262.8478
 #    Darg[3] = Darg[3]* secrad / 36525.0   # rad/day
-    
+
     arg[4] = -0.00003169*T**4 + 0.006593*T**3 - 6.3706*T**2 \
                + 1602961601.2090*T + 1072260.70369
     arg[4] = fmod(arg[4],1296000.0)*secrad
@@ -2937,7 +2937,7 @@ def PMUT1_OCEANS(rjd):
     ag = np.sum(narg[:,]*arg,1)
     ag = np.fmod(ag,4.0*halfpi)
 #    dag = np.sum(narg[:,]*Darg,1)
-   
+
     cor_x = np.sum(XCOS*np.cos(ag) + XSIN*np.sin(ag),0)
     cor_y = np.sum(YCOS*np.cos(ag) + YSIN*np.sin(ag),0)
     cor_ut1 = np.sum(UTCOS*np.cos(ag) + UTSIN*np.sin(ag),0)
@@ -2947,7 +2947,7 @@ def PMUT1_OCEANS(rjd):
     cor_y   *= 1.0e-6   # arcseconds (")
     cor_ut1 *= 1.0e-6 # seconds (s)
 #    cor_lod *= 1.0e-6 # seconds (s)
-    
+
 #    return cor_x, cor_y, cor_ut1, cor_lod
 #    return cor_x, cor_y, cor_ut1
     return np.array([cor_x, cor_y, cor_ut1])
@@ -2957,8 +2957,8 @@ def PM_GRAVI(rjd):
     """
      This subroutine provides, in time domain, the diurnal
      lunisolar effet on polar motion (")
-     
-     N.B.:  The fundamental lunisolar arguments are those of Simon et al.  
+
+     N.B.:  The fundamental lunisolar arguments are those of Simon et al.
 %
      These corrections should be added to "average"
      EOP values to get estimates of the instantaneous values.
@@ -2973,7 +2973,7 @@ def PM_GRAVI(rjd):
     halfpi = 1.5707963267948966
     secrad = 2.0*halfpi/(180.0*3600.0)
 
-#  Diurnal lunisolar tidal terms present in x (microas),y(microas)      
+#  Diurnal lunisolar tidal terms present in x (microas),y(microas)
 #  narg(j,6) : Multipliers of GMST+pi and Delaunay arguments.
 
     narg = np.asarray([
@@ -2987,36 +2987,36 @@ def PM_GRAVI(rjd):
          [1, 0, 0, 0, 0, 0],
          [1, 0, 0, 0, 0,-1],
          [1, 1, 0, 0, 0, 0]])
-     
+
     XSIN = [ -.44, -2.31, -.44, -2.14, -11.36, .84, -4.76, 14.27, 1.93, .76 ]
-     
+
     XCOS = [ .25, 1.32, .25, 1.23, 6.52, -.48, 2.73, -8.19, -1.11, -.43 ]
-    
+
     YSIN = [ -.25, -1.32, -.25, -1.23, -6.52, .48, -2.73, 8.19, 1.11, .43 ]
-    
+
     YCOS = [ -.44, -2.31, -.44, -2.14, -11.36, .84, -4.76, 14.27, 1.93, .76 ]
- 
+
     T = (rjd - 51544.5)/36525.0  # julian century
 
 # arguments in the following order : chi=GMST+pi,l,lp,F,D,Omega
-# et leur derivee temporelle 
+# et leur derivee temporelle
 
     arg = np.zeros(6)
-    
+
     arg[0] = (67310.54841 +
               (876600.0*3600.0 + 8640184.812866)*T +
                0.093104*T**2 -
                6.2e-6*T**3)*15.0 + 648000.0
     arg[0] = fmod(arg[0],1296000.0)*secrad
-   
+
     arg[1] = -0.00024470*T**4 + 0.051635*T**3 + 31.8792*T**2 \
                + 1717915923.2178*T + 485868.249036
     arg[1] = fmod(arg[1],1296000)*secrad
-     
+
     arg[2] = -0.00001149*T**4 - 0.000136*T**3 \
                -  0.5532*T**2 + 129596581.0481*T + 1287104.79305
     arg[2] = fmod(arg[2],1296000.0)*secrad
-    
+
     arg[3] = 0.00000417*T**4 - 0.001037*T**3 - 12.7512*T**2 \
                + 1739527262.8478*T + 335779.526232
     arg[3] = fmod(arg[3],1296000.0)*secrad
@@ -3024,23 +3024,23 @@ def PM_GRAVI(rjd):
     arg[4] = -0.00003169*T**4 + 0.006593*T**3 - 6.3706*T**2 \
               + 1602961601.2090*T + 1072260.70369
     arg[4] = fmod(arg[4],1296000.0)*secrad
-  
+
     arg[5] = -0.00005939*T**4 + 0.007702*T**3 \
               + 7.4722*T**2 - 6962890.2665*T + 450160.398036
     arg[5] = fmod(arg[5],1296000.0)*secrad
 
-    # CORRECTIONS    
+    # CORRECTIONS
     ag = np.sum(narg[:,]*arg,1)
     ag = np.fmod(ag, 4.0 * halfpi)
-    
+
     cor_x = np.sum(XCOS*np.cos(ag) + XSIN*np.sin(ag),0)
     cor_y = np.sum(YCOS*np.cos(ag) + YSIN*np.sin(ag),0)
-    
+
     cor_x *= 1.0e-6   # arcseconds (")
     cor_y *= 1.0e-6   # arcseconds (")
-    
+
     return cor_x, cor_y
-    
+
 
 #==============================================================================
 # IAU TDB-TT
@@ -3052,90 +3052,90 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
      - - - - - - - - -
       i a u _ D T D B
      - - - - - - - - -
-   
+
      An approximation to TDB-TT, the difference between barycentric
      dynamical time and terrestrial time, for an observer on the Earth.
-   
+
      The different time scales - proper, coordinate and realized - are
      related to each other
-   
+
                TAI             <-  physically realized
-                
+
              offset            <-  observed (nominally +32.184s)
-                
+
                TT              <-  terrestrial time
-                
+
        rate adjustment (L_G)   <-  definition of TT
-                
+
                TCG             <-  time scale for GCRS
-                
+
          "periodic" terms      <-  iau_DTDB is an implementation
-                
+
        rate adjustment (L_C)   <-  function of solar-system ephemeris
-                
+
                TCB             <-  time scale for BCRS
-                
+
        rate adjustment (-L_B)  <-  definition of TDB
-                
+
                TDB             <-  TCB scaled to track TT
-                
+
          "periodic" terms      <-  -iau_DTDB is an approximation
-                
+
                TT              <-  terrestrial time
-   
+
      Adopted values for the various constants can be found in the IERS
      Conventions (McCarthy & Petit 2003).
-   
+
      This routine is part of the International Astronomical Union's
      SOFA (Standards of Fundamental Astronomy) software collection.
-   
+
      Status  support routine.
-   
+
      Given
         DATE1,DATE2     d    date, TDB (Notes 1-3)
         UT              d    universal time (UT1, fraction of one day)
         ELONG           d    longitude (east positive, radians)
         U               d    distance from Earth spin axis (km)
         V               d    distance north of equatorial plane (km)
-   
+
      Returned
        iau_DTDB         d    TDB-TT (seconds)
-   
+
      Notes
-   
+
      1) The date DATE1+DATE2 is a Julian Date, apportioned in any
         convenient way between the arguments DATE1 and DATE2.  For
         example, JD(TDB)=2450123.7 could be expressed in any of these
         ways, among others
-   
+
                DATE1          DATE2
-   
+
             2450123.7D0        0D0        (JD method)
              2451545D0      -1421.3D0     (J2000 method)
             2400000.5D0     50123.2D0     (MJD method)
             2450123.5D0       0.2D0       (date & time method)
-   
+
         The JD method is the most natural and convenient to use in cases
         where the loss of several decimal digits of resolution is
         acceptable.  The J2000 method is best matched to the way the
         argument is handled internally and will deliver the optimum
         resolution.  The MJD method and the date & time methods are both
         good compromises between resolution and convenience.
-   
+
         Although the date is, formally, barycentric dynamical time (TDB),
         the terrestrial dynamical time (TT) can be used with no practical
         effect on the accuracy of the prediction.
-   
+
      2) TT can be regarded as a coordinate time that is realized as an
         offset of 32.184s from International Atomic Time, TAI.  TT is a
         specific linear transformation of geocentric coordinate time TCG,
         which is the time scale for the Geocentric Celestial Reference
         System, GCRS.
-   
+
      3) TDB is a coordinate time, and is a specific linear transformation
         of barycentric coordinate time TCB, which is the time scale for
         the Barycentric Celestial Reference System, BCRS.
-   
+
      4) The difference TCG-TCB depends on the masses and positions of the
         bodies of the solar system and the velocity of the Earth.  It is
         dominated by a rate difference, the residual being of a periodic
@@ -3147,7 +3147,7 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
         and gravitational ree-shift as the observer (on the Earth's
         surface) experiences variations in speed (with respect to the
         BCRS) and gravitational potential.
-   
+
      5) TDB can be regarded as the same as TCB but with a rate adjustment
         to keep it close to TT, which is convenient for many applications.
         The history of successive attempts to define TDB is set out in
@@ -3157,7 +3157,7 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
         imply slightly changed transformations between TCG and TCB, which
         could introduce a linear drift between TDB and TT;  however, any
         such drift is unlikely to exceed 1 nanosecond per century.
-   
+
      6) The geocentric TDB-TT remel used in the present routine is that of
         Fairhead & Bretagnon (1990), in its full form.  It was originally
         supplied by Fairhead (private communications with P.T.Wallace,
@@ -3166,69 +3166,69 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
         essentially unaffected by the changes, the differences with
         respect to the Fairhead & Bretagnon original being at the 1e-20 s
         level.
-   
+
         The topocentric part of the remel is from Moyer (1981) and
         Murray (1983), with fundamental arguments adapted from
         Simon et al. 1994.  It is an approximation to the expression
         ( v / c ) . ( r / c ), where v is the barycentric velocity of
         the Earth, r is the geocentric position of the observer and
         c is the speed of light.
-   
+
         By supplying zeroes for U and V, the topocentric part of the
         remel can be nullified, and the routine will return the Fairhead
         & Bretagnon result alone.
-   
+
      7) During the interval 1950-2050, the absolute accuracy is better
         than +/- 3 nanoseconds relative to time ephemerides obtained by
         direct numerical integrations based on the JPL DE405 solar system
         ephemeris.
-   
+
      8) It must be stressed that the present routine is merely a remel,
         and that numerical integration of solar-system ephemerides is the
         definitive method for predicting the relationship between TCG and
         TCB and hence between TT and TDB.
-   
+
      References
-   
+
         Fairhead, L., & Bretagnon, P., Astron.Astrophys., 229, 240-247
         (1990).
-   
+
         IAU 2006 Resolution 3.
-   
+
         McCarthy, D. D., Petit, G. (eds.), IERS Conventions (2003),
         IERS Technical Note No. 32, BKG (2004)
-   
+
         Moyer, T.D., Cel.Mech., 23, 33 (1981).
-   
+
         Murray, C.A., Vectorial Astrometry, Adam Hilger (1983).
-   
+
         Seidelmann, P.K. et al., Explanatory Supplement to the
         Astronomical Almanac, Chapter 2, University Science Books (1992).
-   
+
         Simon, J.L., Bretagnon, P., Chapront, J., Chapront-Touze, M.,
         Francou, G. & Laskar, J., Astron.Astrophys., 282, 663-683 (1994).
-   
+
      This revision  2010 July 29
-   
+
      SOFA release 2010-12-01
-   
+
      Copyright (C) 2010 IAU SOFA Board.  See notes at end.
-   
+
    -----------------------------------------------------------------------
     '''
 
     #  2Pi
     D2PI = 6.283185307179586476925287
-    
+
     #  Degrees to radians
     DD2R = 1.745329251994329576923691e-2
-    
+
     #  Reference epoch (J2000.0), JD
     DJ00 = 2451545.0
-    
+
     #  Days per Julian millennium
     DJM = 365250.0
-    
+
     #
     #  =====================
     #  Fairhead et al. remel
@@ -3247,7 +3247,7 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
     #   "   785-787  "   "  T**4   "  .
     #
     #FAIRHD = np.zeros((3,787))
-    
+
     FAIRHD = np.array([\
      1656.674564e-6,    6283.075849991, 6.240054195,
        22.417471e-6,    5753.384884897, 4.296977442,
@@ -4048,11 +4048,11 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
 
     #  Time since J2000.0 in Julian millennia.
     T = ( ( DATE1-DJ00 ) + DATE2 ) / DJM
-    
+
     #  =================
     #  Topocentric terms
     #  =================
-    
+
     #  Convert UT to local solar time in radians.
     TSOL = fmod(UT, 1.0) * D2PI + ELONG
 
@@ -4091,7 +4091,7 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
     #  =====================
     #  Fairhead et al. remel
     #  =====================
-    
+
     #  T**0
     W0 = 0.0
     for J in range(474,0,-1):
@@ -4115,7 +4115,7 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
     W4 = 0.0
     for J in range(787,784,-1):
         W4 = W4 + FAIRHD[0,J-1] * sin(FAIRHD[1,J-1]*T + FAIRHD[2,J-1])
-    
+
     #  Multiply by powers of T and combine.
     WF = T * ( T * ( T * ( T * W4 + W3 ) + W2 ) + W1 ) + W0
 
@@ -4129,34 +4129,34 @@ def dtdb( DATE1, DATE2, UT, ELONG, U, V ):
     #  ============
     #  Final result
     #  ============
-    
+
     #  TDB-TT in seconds.
     iau_DTDB = WT + WF + WJ
 
     return iau_DTDB
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def t_eph( JD, UT1, TT, lon_gcen, U, V ):
-    ''' 
+    '''
     #    SUBROUTINE T_EPH is the utility routine which computes the coordinate time
     #    "T_eph" which is the independent variable in the JPL ephemerids DE405/LE405.
-    # 
+    #
     #    T_eph is approximately equal to TDB, but not exactly.
     #    Difference T_eph-TDB is ignored in SUBROUTINE T_EPH %%%
-    # 
+    #
     #    In the routine difference T_eph-TT ~ TDB-TT is calculated on base
     #    of model of Fairhead  Bretagnon (1990), in its full form, where TDB is
     #    barycentric dynamical time and TT is terrestrial time.
     #    The present routine contains an adaptation of the Fairhead subroutine.
-    # 
+    #
     #    The result is calculation of periodic part that has a main (annual)
     #    sinusoidal term of amplitude approximately 0.00166 seconds, plus
     #    planetary terms up to about 20 microseconds, and quasiperiodic
     #    topocentric part up to 2 microseconds and the T_eph fraction of
     #    the coordinate time day.   (DAYS)
-    # 
+    #
     #    The topocentric part of the model is from Moyer (1981) and
     #    Murray (1983), with fundamental arguments adapted from
     #    Simon et al. 1994.  The topocentric part that is equal to
@@ -4164,20 +4164,20 @@ def t_eph( JD, UT1, TT, lon_gcen, U, V ):
     #    the Earth, r' is the geocentric position of the observer and
     #    c is the speed of light, in routine is approximated
     #    by Moyer's equation.
-    # 
+    #
     #   References:
-    # 
+    #
     #      1  Fairhead,L.,  Bretagnon,P., Astron.Astrophys., 229, 240-247
     #         (1990).
-    # 
+    #
     #      2  Moyer,T.D., Cel.Mech., 23, 33 (1981).
-    # 
+    #
     #      3  Murray,C.A., Vectorial Astrometry, Adam Hilger (1983).
-    # 
+    #
     #      4  Simon J.L., Bretagnon P., Chapront J., Chapront-Touze M.,
     #         Francou G.  Laskar J., 1994, Astron.Astrophys., 282, 663-683.
-    # 
-    # 
+    #
+    #
     #    Input variables:
     #        1.        JD - The JULIAN DATE at zero hours UTC of the date.   (DAYS)
     #        2.     tAI - The atomic time fraction of the atomic time day. (DAYS)
@@ -4187,37 +4187,37 @@ def t_eph( JD, UT1, TT, lon_gcen, U, V ):
     #                              (0 <= lon_gcen <= 2*pi)
     #        6.        U  - Station 1 distance from the Earth spin axis.     (KM)
     #        7.        V  - Station 1 distance north of equatorial plane.    (KM)
-    # 
+    #
     #    Output variables:
     #        1.        CT - The T_eph fraction of the coordinate time day.   (DAYS)
     #        2.   dTAIdCT - The partial derivative of the atomic time with
     #                        respect to the coordinate time.                 (SEC/SEC)
-    # 
+    #
     #    The algorithm goes as follows:
-    # 
+    #
     #   1) Calculation of MJD measured in TAI (in DAYS) (it was done in TAITIME)
     #        tAI = dfloat(mjd) + utc + dfloat(idelt)/86400.
     #      where idelt = TAI - UTC = n [sec]
     #      Value of n (=idelt) is computed by SUBROUTINE NSEC
     #      Fraction of the atomic time day at observing site #1 (=TAI)
     #      is computed by SUBROUTINE TAITIME
-    # 
+    #
     #   2) Calculation of TT=TDT - Terrestrial Time (it was done in TAITIME)
     #        tT = TAI + 32.184
-    # 
+    #
     #   3) Calculation of the Coordinate Time T_eph
     #       t_eph = TT + 1/c**2 * V_E * r' + P,
     #      where P are periodic term that are calculated
     #      in SUBROUTINE PERIOD_TERM
-    # 
+    #
     # -----------------------------------------------------------------------
-    #    SUBROUTINE T_EPH was written by V.Zharov 
-    # 
+    #    SUBROUTINE T_EPH was written by V.Zharov
+    #
     #    VERSION 1.0   21 May 2005
     # -----------------------------------------------------------------------
-    # 
+    #
     '''
-    
+
     # Sun Mean Anomaly
     f2 = [ -0.00001149,  -0.000136,  -0.5532, 129596581.0481,  1287104.793048 ]
     # Mean Elongation of Moon from Sun
@@ -4228,23 +4228,23 @@ def t_eph( JD, UT1, TT, lon_gcen, U, V ):
     LJup = [ -0.00001885, 0.000133,   0.80387,  10930689.989453,   123665.467464 ]
     # Mean Longitude of Saturn
     LSat = [ -0.00003500,    -0.000107,   1.86868, 4404639.847038,   180278.79948 ]
-    
+
     sec360 = 1296000.0 # arcseconds in one turn
-    
+
     # Calculation of periodic terms
     per_terms, dperdct = PERIOD_TERM (JD, TT)
-    
+
     # Calculation of CT (in fraction of day)
     CT0 = TT + per_terms/86400.0
-    
+
     # Calculation of the partial derivative of the atomic time
     # with respect to the coordinate time.  The derivatives of
     # the long period terms (without diurnal topocentric terms) are
     # computed.
     dTAIdCT = 1.0 - dperdct
-    
+
     # Correct the CT time for the topocentric terms
-    # 
+    #
     # NOTE: t in formulae of mean elements is TDB measured in
     # CENTURES of Julian years from J2000.0
     # In Simon et al. 1994 T is measured in ThOUSANDS of years.
@@ -4254,7 +4254,7 @@ def t_eph( JD, UT1, TT, lon_gcen, U, V ):
     t2 = t * t
     t3 = t * t2
     t4 = t * t3
-    
+
     # Convert UT1 to local solar time in radians.
     TSOL = UT1/86400.0 * (2.0*pi) + lon_gcen
     # Arguments in radians
@@ -4273,7 +4273,7 @@ def t_eph( JD, UT1, TT, lon_gcen, U, V ):
     # Mean Longitude of Saturn
     w5 = LSat[0]*t4 + LSat[1]*t3 + LSat[2]*t2 + LSat[3]*t + LSat[4]
     ELS = fmod( w5, sec360 ) * 4.8481368110953599e-06
-    
+
     # TOPOCENTRIC TERMS (in Sec):  from Moyer 1981
     CT_top = + 3.17679e-10 * U * sin(TSOL) \
              + 5.312e-12   * U * sin(TSOL - EMSUN) \
@@ -4299,7 +4299,7 @@ def PERIOD_TERM(jd, TT):
     coordinate time are calculated with accuracy of
     order of 10**{-16} sec/sec (not all terms are
     included for calculation of dt3, dt5, etc)
-    
+
     Returned value is per_terms = TDB - TT in sec.
     '''
     T   = ( (jd  - 2451545.0) + TT )/36525.0
@@ -5032,7 +5032,7 @@ def PERIOD_TERM(jd, TT):
        0.0000103 * sin(    7.6266071276 *T + 5.594294322 )   + \
        0.0000104 * sin(   94.9175608970 *T + 5.674287810 )   + \
        0.0000101 * sin( 1351.7870106233 *T + 2.196632348 )   + \
-       0.0000100 * sin( 1193.3367960670 *T + 4.056084160 )   
+       0.0000100 * sin( 1193.3367960670 *T + 4.056084160 )
     # --------------------------------------------------------------------
     # T**2
 
@@ -5180,10 +5180,10 @@ def PERIOD_TERM(jd, TT):
     #   Accuracy of calculation of periodic terms is of order of 2x10**{-14} sec
     #   for one Julian century. Accuracy of calculation of derivatives with
     #   respect to coordinate time was limited by a value of 3x10**{-17).
-    # 
+    #
     #   Derivatives [microsec/Julian Century] were calculated by MAPLE software.
     #   Order of terms can differ from the original order.
-    # 
+    #
     #   Conversion factor from   [microsec/Julian Century] to [Sec/Sec] is equal
     #   to 10**(-6)/36525/86400 = 3x10**(-16). Only terms with amplitudes more
     #   than 0.1 [microsec/Julian Century] were kept for calculation.
@@ -5648,7 +5648,7 @@ def PERIOD_TERM(jd, TT):
 
     dt32 = 0.1192755232   *cos( 8399.6847317911 *T+0.022670115 )
     # ----------------------------------------------------------------------
-    # *T**2  
+    # *T**2
     dt34 = 27.16167407    *cos(  628.3075849991 *T+2.642893748 )
 
     # Correction to use JPL planetary masses instead of IAU.
@@ -5666,15 +5666,15 @@ def PERIOD_TERM(jd, TT):
     # Conversion of derivative to [Sec/Sec]
     dperdct = dperdct * 1e-6/86400.0/36525.0
     return per_terms, dperdct
-    
-    
+
+
 #==============================================================================
-#     
+#
 #==============================================================================
 def ter2cel(date_utc, eop_int, dTAIdCT=1.0, theory='iau2000', mode='der'):
-    ''' 
+    '''
     Compute celestial-to-terrestrial matrix for a given UTC date/time
-    
+
     mode='der' - do calculate derivatives
     mode='noDer' - do not calculate derivatives
     '''
@@ -5693,7 +5693,7 @@ def ter2cel(date_utc, eop_int, dTAIdCT=1.0, theory='iau2000', mode='der'):
             cel2ter_m1 = cel2ter00(date_utc -   sec, eop_int) # -1s TAI
             cel2ter_p1 = cel2ter00(date_utc +   sec, eop_int) # +1s TAI
             cel2ter_p2 = cel2ter00(date_utc + 2*sec, eop_int) # +2s TAI
-    # following IAU 2006/2000A:   
+    # following IAU 2006/2000A:
     if theory=='iau2006':
         raise NotImplemented
 #        cel2ter = cel2ter06(date_utc, eop_int);
@@ -5707,9 +5707,9 @@ def ter2cel(date_utc, eop_int, dTAIdCT=1.0, theory='iau2000', mode='der'):
     # transpose it to get terrestrial-to-celestial matrix and its CT derivative
         r2000[:,:,0] = cel2ter.T
     # (dr/dTAI)*(dTAI/dCT):
-        r2000[:,:,1] = dTAIdCT * (cel2ter_p1.T - cel2ter_m1.T) / 2.0 
+        r2000[:,:,1] = dTAIdCT * (cel2ter_p1.T - cel2ter_m1.T) / 2.0
     # (dv/dTAI)*(dTAI/dCT):
-        r2000[:,:,2] = dTAIdCT * (cel2ter_p2.T - 
+        r2000[:,:,2] = dTAIdCT * (cel2ter_p2.T -
                        2.0*cel2ter.T + cel2ter_m2.T) / 4.0
 #        print '{:.18e}'.format(cel2ter_m2[0,0])
 #        print '{:.18e}'.format(-2.0*cel2ter[0,0])
@@ -5725,12 +5725,12 @@ def ter2cel(date_utc, eop_int, dTAIdCT=1.0, theory='iau2000', mode='der'):
         r2000 = cel2ter.T
     else:
         raise Exception('unrecognised mode')
-    
+
     return r2000
-    
-    
+
+
 #==============================================================================
-#     
+#
 #==============================================================================
 #def cel2ter00(date_utc, eop_int):
 #    date_eop = (date_utc.year, date_utc.month, date_utc.day,\
@@ -5743,7 +5743,7 @@ def ter2cel(date_utc, eop_int, dTAIdCT=1.0, theory='iau2000', mode='der'):
 def cel2ter00(date_utc, eop_int):
     '''
     # Function vint_cel2ter calculates transformation matrix ICRF -> ITRF
-    # according to the IERS 2010 Conventions. IAU 2000A CIO-based remel 
+    # according to the IERS 2010 Conventions. IAU 2000A CIO-based remel
     # with classiacal angles is used.
     #
     # input: date_utc = [2007 04 05 12 00 0.0]  : array with the date in UTC
@@ -5759,10 +5759,10 @@ def cel2ter00(date_utc, eop_int):
     ## initialize
 #    date_utc = datetime.datetime(*date_eop[0:6])
 #    eop_int = date_eop[6:]
-    
+
     # * Arcseconds to radians
     as2r = 4.848136811095359935899141e-6
-    
+
     # UT1-UTC
     dut1 = eop_int[0]
     # * Polar motion (arcsec->radians).
@@ -5771,7 +5771,7 @@ def cel2ter00(date_utc, eop_int):
     # * CIP offsets wrt IAU 2000A (as->radians)
     dx00 = eop_int[3] * as2r
     dy00 = eop_int[4] * as2r
-    
+
     # date
     iy = date_utc.year
     im = date_utc.month
@@ -5780,7 +5780,7 @@ def cel2ter00(date_utc, eop_int):
     mn = date_utc.minute
     sc = date_utc.second + date_utc.microsecond*1e-6
     ## IAU 2000A remel
-    
+
     # * TT (MJD).
     date = mjuliandate ( iy, im, iday )
     DJMJD0 =  2400000.5
@@ -5793,8 +5793,8 @@ def cel2ter00(date_utc, eop_int):
     # * UT1.
     TUT = time + dut1/86400.0
     # UT1 = date + TUT
-    
-    
+
+
     ## * =========================
     ## * IAU 2006/2000A, CIO based
     ## * =========================
@@ -5827,7 +5827,7 @@ def cel2ter00(date_utc, eop_int):
     # * Form celestial-terrestrial matrix (including polar motion).
     rc2it = dot(rpom, RC2TI)
 #    print '{:.18e}'.format(rc2it[0,0])
-#    print rc2it    
+#    print rc2it
     return rc2it
 
 
@@ -5945,7 +5945,7 @@ def iau_C2IXYS ( X, Y, S ):
     RC2I = iau_RZ ( E, RC2I )
     RC2I = iau_RY ( D, RC2I )
     RC2I = iau_RZ ( -(E+S), RC2I )
-    
+
     return RC2I
     # *  Finished.
 
@@ -6144,7 +6144,7 @@ def iau_DAT ( IY, IM, ID, FD ):
     # *  if pre-1972, adjust for DRIFT.
     if ( IS <= NERA1 ):
         DA = DA + ( DJM + FD - DRIFT[IS,0] ) * DRIFT[IS,1]
-      
+
     DELTAT = DA
     return DELTAT
     # *  Finished.
@@ -6290,7 +6290,7 @@ def iau_FAD03 ( T ):
     # *
     # *-----------------------------------------------------------------------
     '''
-    
+
     # *  Arcseconds to radians.
     DAS2R = 4.848136811095359935899141e-6
 
@@ -6300,10 +6300,10 @@ def iau_FAD03 ( T ):
     # * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # *  Mean elongation of the Moon from the Sun (IERS Conventions 2003).
-    return fmod (      1072260.703692 + 
-                        T*( 1602961601.2090 + 
-                        T*(        - 6.3706 + 
-                        T*(          0.006593 + 
+    return fmod (      1072260.703692 +
+                        T*( 1602961601.2090 +
+                        T*(        - 6.3706 +
+                        T*(          0.006593 +
                         T*(        - 0.00003169 )))), TURNAS ) * DAS2R
 
     # *  Finished.
@@ -6358,7 +6358,7 @@ def iau_FAE03 ( T ):
     # *
     # *-----------------------------------------------------------------------
     '''
-    
+
     # *  2Pi.
     D2PI = 6.283185307179586476925287
 
@@ -6416,7 +6416,7 @@ def iau_FAF03 ( T ):
     # *
     # *-----------------------------------------------------------------------
     '''
-    
+
     # *  Arcseconds to radians.
     DAS2R = 4.848136811095359935899141e-6
 
@@ -6427,10 +6427,10 @@ def iau_FAF03 ( T ):
 
     # *  Mean longitude of the Moon minus that of the ascending node
     # *  (IERS Conventions 2003).
-    return fmod(       335779.526232 + 
-                        T*( 1739527262.8478 + 
-                        T*(       - 12.7512 + 
-                        T*(       -  0.001037 + 
+    return fmod(       335779.526232 +
+                        T*( 1739527262.8478 +
+                        T*(       - 12.7512 +
+                        T*(       -  0.001037 +
                         T*(          0.00000417 )))), TURNAS ) * DAS2R
 
 # *  Finished.
@@ -6550,12 +6550,12 @@ def iau_FAL03 ( T ):
     # * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # *  Mean anomaly of the Moon (IERS Conventions 2003).
-    return fmod(       485868.249036 + 
-                        T*( 1717915923.2178 + 
-                        T*(         31.8792 + 
-                        T*(          0.051635 + 
+    return fmod(       485868.249036 +
+                        T*( 1717915923.2178 +
+                        T*(         31.8792 +
+                        T*(          0.051635 +
                         T*(        - 0.00024470 )))), TURNAS ) * DAS2R
-                
+
     # *  Finished.
 
 
@@ -6614,10 +6614,10 @@ def iau_FALP03 ( T ):
     # * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # *  Mean anomaly of the Sun (IERS Conventions 2003).
-    return fmod(     1287104.793048 + 
-                         T*( 129596581.0481 + 
-                         T*(       - 0.5532 + 
-                         T*(         0.000136 + 
+    return fmod(     1287104.793048 +
+                         T*( 129596581.0481 +
+                         T*(       - 0.5532 +
+                         T*(         0.000136 +
                          T*(       - 0.00001149 )))), TURNAS ) * DAS2R
 
     # *  Finished.
@@ -6853,10 +6853,10 @@ def iau_FAOM03 ( T ):
     # * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # *  Mean longitude of the Moon's ascending node (IERS Conventions 2003).
-    return fmod(      450160.398036 + 
-                         T*( - 6962890.5431 + 
-                         T*(         7.4722 + 
-                         T*(         0.007702 + 
+    return fmod(      450160.398036 +
+                         T*( - 6962890.5431 +
+                         T*(         7.4722 +
+                         T*(         0.007702 +
                          T*(       - 0.00005939 )))), TURNAS ) * DAS2R
 
     # *  Finished.
@@ -7112,18 +7112,18 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *
     # *  Status   canonical remel.
     # *
-    # *  Given 
+    # *  Given
     # *     DATE1,DATE2   d    TT as a 2-part Julian Date (Note 1)
     # *
-    # *  Returned 
+    # *  Returned
     # *     DPSI,DEPS     d    nutation, luni-solar + planetary (Note 2)
     # *
-    # *  Notes 
+    # *  Notes
     # *
     # *  1) The TT date DATE1+DATE2 is a Julian Date, apportioned in any
     # *     convenient way between the two arguments.  For example,
     # *     JD(TT)=2450123.7 could be expressed in any of these ways,
-    # *     among others 
+    # *     among others
     # *
     # *            DATE1          DATE2
     # *
@@ -7181,7 +7181,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *     predictions of sub-mas accuracy at current epochs.  However, there
     # *     are three shortcomings in the MHB2000 remel that must be taken
     # *     into account if more accurate or definitive results are required
-    # *     (see Wallace 2002) 
+    # *     (see Wallace 2002)
     # *
     # *       (i) The MHB2000 total nutations are simply arithmetic sums,
     # *           yet in reality the various components are successive Euler
@@ -7216,7 +7216,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *     triplicates.  To keep the present code close to the original MHB
     # *     algorithm, this small inefficiency has not been corrected.
     # *
-    # *  Called 
+    # *  Called
     # *     iau_FAL03    mean anomaly of the Moon
     # *     iau_FAF03    mean argument of the latitude of the Moon
     # *     iau_FAOM03   mean longitude of the Moon's ascending node
@@ -7229,7 +7229,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *     iau_FAUR03   mean longitude of Uranus
     # *     iau_FAPA03   general accumulated precession in longitude
     # *
-    # *  References 
+    # *  References
     # *
     # *     Chapront, J., Chapront-Touze, M. & Francou, G. 2002,
     # *     Astron.Astrophys. 387, 700
@@ -7258,7 +7258,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *
     # *-----------------------------------------------------------------------
     '''
-    
+
     # *  Arcseconds to radians
     DAS2R = 4.848136811095359935899141e-6
 
@@ -7296,16 +7296,16 @@ def iau_NUT00A ( DATE1, DATE2 ):
 
     # *  Number of terms in the planetary nutation remel
     NPL = 687
-    
+
     #NAPL = np.zeros((NPL,14))
-    
+
     # *  Longitude and obliquity coefficients
     #ICPL = np.zeros((NPL,4))
-    
+
     # *  ----------------------------------------
     # *  Tables of argument and term coefficients
     # *  ----------------------------------------
-    
+
     #
     #  Luni-Solar argument multipliers
     #               L     L'    F     D     Om
@@ -8674,7 +8674,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
          [     -3.0,       0.0,      0.0,        1.0,     0.0,     0.0],
          [     -3.0,       0.0,      0.0,        2.0,     0.0,     0.0] ])
 
-# 
+#
 #  Planetary argument multipliers
 #              L   L'  F   D   Om  Me  Ve  E  Ma  Ju  Sa  Ur  Ne  pre
 
@@ -10068,19 +10068,19 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *  -------------------
     # *  LUNI-SOLAR NUTATION
     # *  -------------------
-    
+
     # *
     # *  Fundamental (Delaunay) arguments
     # *
-    
+
     # *  Mean anomaly of the Moon (IERS 2003).
     EL = iau_FAL03 ( T )
 
     # *  Mean anomaly of the Sun (MHB2000).
-    ELP = fmod(      1287104.79305 + 
-                  T*( 129596581.0481 + 
-                  T*(       - 0.5532 + 
-                  T*(         0.000136 + 
+    ELP = fmod(      1287104.79305 +
+                  T*( 129596581.0481 +
+                  T*(       - 0.5532 +
+                  T*(         0.000136 +
                   T*(       - 0.00001149 )))), TURNAS ) * DAS2R
 
     # *  Mean longitude of the Moon minus that of the ascending node
@@ -10105,10 +10105,10 @@ def iau_NUT00A ( DATE1, DATE2 ):
     for I in range( NLS-1,-1,-1):
 
         # *     Argument and functions.
-        ARG = fmod( float( NALS[I,0] ) * EL  + 
-                       float( NALS[I,1] ) * ELP + 
-                       float( NALS[I,2] ) * F   + 
-                       float( NALS[I,3] ) * D   + 
+        ARG = fmod( float( NALS[I,0] ) * EL  +
+                       float( NALS[I,1] ) * ELP +
+                       float( NALS[I,2] ) * F   +
+                       float( NALS[I,3] ) * D   +
                        float( NALS[I,4] ) * OM, D2PI )
         SARG = sin(ARG)
         CARG = cos(ARG)
@@ -10125,14 +10125,14 @@ def iau_NUT00A ( DATE1, DATE2 ):
     # *  ------------------
     # *  PLANETARY NUTATION
     # *  ------------------
-    
+
     # *  n.b.  The MHB2000 code computes the luni-solar and planetary nutation
     # *        in different routines, using slightly different Delaunay
     # *        arguments in the two cases.  This behaviour is faithfully
     # *        reproduced here.  Use of the IERS 2003 expressions for both
     # *        cases leads to negligible changes, well below
     # *        0.1 microarcsecond.
-    
+
     # *  Mean anomaly of the Moon (MHB2000).
     AL = fmod( 2.35555598 + 8328.6914269554 * T, D2PI )
 
@@ -10189,7 +10189,7 @@ def iau_NUT00A ( DATE1, DATE2 ):
                        float( NAPL[I,13] ) * APA, D2PI )
         SARG = sin(ARG)
         CARG = cos(ARG)
-        
+
         # *     Term.
         DP = DP + float( ICPL[I,0]) * SARG + float( ICPL[I,1]) * CARG
         DE = DE + float( ICPL[I,2]) * SARG + float( ICPL[I,3]) * CARG
@@ -10236,7 +10236,7 @@ def iau_PN00A ( DATE1, DATE2 ):
     # *     RB          d(3,3)    frame bias matrix (Note 4)
     # *     RP          d(3,3)    precession matrix (Note 5)
     # *     RBP         d(3,3)    bias-precession matrix (Note 6)
-    # *     RN          d(3,3)    nutation matrix (Note 7)	
+    # *     RN          d(3,3)    nutation matrix (Note 7)
     # *     RBPN        d(3,3)    GCRS-to-true matrix (Notes 8,9)
     # *
     # *  Notes:
@@ -10428,10 +10428,10 @@ def iau_PN00 ( DATE1, DATE2, DPSI, DEPS ):
     '''
     # *  IAU 2000 precession-rate adjustments.
     _, DEPSPR = iau_PR00 ( DATE1, DATE2 )
-    
+
     # *  Mean obliquity, consistent with IAU 2000 precession-nutation.
     EPSA = iau_OBL80 ( DATE1, DATE2 ) + DEPSPR
-    
+
     # *  Frame bias and precession matrices and their product.
     RB, RP, RBP = iau_BP00 ( DATE1, DATE2 )
 
@@ -10440,7 +10440,7 @@ def iau_PN00 ( DATE1, DATE2, DPSI, DEPS ):
 
     # *  Bias-precession-nutation matrix (classical).
     RBPN = dot(RN, RBP)
-    
+
     return EPSA, RB, RP, RBP, RN, RBPN
     # *  Finished.
 
@@ -10514,7 +10514,7 @@ def iau_PNM00A ( DATE1, DATE2 ):
     # *-----------------------------------------------------------------------
     '''
     # * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
+
     # *  Obtain the required matrix (discarding other results).
     _, _, _, _, _, _, _, RBPN = iau_PN00A ( DATE1, DATE2 )
     return RBPN
@@ -10703,7 +10703,7 @@ def iau_RZ(phi, R):
                    [-sin(phi), cos(phi), 0], \
                    [0,0,1]])
     return np.dot(Rz, R)
-    
+
 def rz ( phi, R ):
     '''
     # *+
@@ -10751,7 +10751,7 @@ def rz ( phi, R ):
     A[1,0] = -S
     A[0,1] = S
     A[1,1] = C
-    
+
     # *  Rotate.
     return dot(A,R)
 
@@ -10921,7 +10921,7 @@ def iau_XYS00A ( DATE1, DATE2 ):
 
     # *  Obtain s.
     S = iau_S00 ( DATE1, DATE2, X, Y )
-    
+
     return X, Y, S
     # *  Finished.
 
@@ -11018,17 +11018,17 @@ def iau_PR00 ( DATE1, DATE2 ):
     # *  ------------------------------------
     # *  Precession and obliquity corrections (radians per century)
     # *  ------------------------------------
-    
+
     PRECOR = -0.29965 * DAS2R
     OBLCOR = -0.02524 * DAS2R
-    
+
     # *  Interval between fundamental epoch J2000.0 and given date (JC).
     T = ( ( DATE1-DJ00 ) + DATE2 ) / DJC
 
     # *  Precession rate contributions with respect to IAU 1976/80.
     DPSIPR = PRECOR * T
     DEPSPR = OBLCOR * T
-    
+
     return DPSIPR, DEPSPR
     # *  Finished.
 
@@ -11105,7 +11105,7 @@ def iau_OBL80 ( DATE1, DATE2 ):
     T = ( ( DATE1-DJ00 ) + DATE2 ) / DJC
 
     # *  Mean obliquity of date.
-    return DAS2R * ( 84381.448 + ( -46.8150 + ( -0.00059 + 
+    return DAS2R * ( 84381.448 + ( -46.8150 + ( -0.00059 +
                                0.001813 * T ) * T ) * T )
 
     # *  Finished.
@@ -11277,14 +11277,14 @@ def iau_BP00 ( DATE1, DATE2 ):
     DPSIBI, DEPSBI, DRA0 = iau_BI00()
 
     # *  Precession angles (Lieske et al. 1977)
-    PSIA77 =          ( 5038.7784 + 
-                      (   -1.07259 + 
+    PSIA77 =          ( 5038.7784 +
+                      (   -1.07259 +
                       (   -0.001147 ) * T ) * T ) * T * DAS2R
-    OMA77  =   EPS0 + ( 
-                      (    0.05127 + 
+    OMA77  =   EPS0 + (
+                      (    0.05127 +
                       (   -0.007726 ) * T ) * T ) * T * DAS2R
-    CHIA   =          (   10.5526 + 
-                      (   -2.38064 + 
+    CHIA   =          (   10.5526 +
+                      (   -2.38064 +
                       (   -0.001125 ) * T ) * T ) * T * DAS2R
 
     # *  Apply IAU 2000 precession corrections.
@@ -11381,7 +11381,7 @@ def iau_BI00():
     DPSIBI = DPBIAS
     DEPSBI = DEBIAS
     DRA = DRA0
-    
+
     return DPSIBI, DEPSBI, DRA
     # *  Finished.
 
@@ -11663,9 +11663,9 @@ def iau_S00 ( DATE1, DATE2, X, Y ):
     T = ( ( DATE1-DJ00 ) + DATE2 ) / DJC
 
     # *  Fundamental Arguments (from IERS Conventions 2003)
-    
+
     FA = np.zeros(8)
-    
+
     # *  Mean anomaly of the Moon.
     FA[0] = iau_FAL03 ( T )
 
@@ -11703,7 +11703,7 @@ def iau_S00 ( DATE1, DATE2, X, Y ):
         for J in range(0,8):
             A = A + float(KS0[I,J])*FA[J]
         S0 = S0 + ( SS0[I,0]*sin(A) + SS0[I,1]*cos(A) )
-        
+
     for I in range(NS1-1,-1,-1):
         A = 0.0
         for J in range(0,8):
@@ -11727,7 +11727,7 @@ def iau_S00 ( DATE1, DATE2, X, Y ):
         A = A + float(KS4[J])*FA[J]
     S4 = S4 + ( SS4[0]*sin(A) + SS4[1]*cos(A) )
 
-    return ( S0 + ( S1 + ( S2 + ( S3 + ( S4 + 
+    return ( S0 + ( S1 + ( S2 + ( S3 + ( S4 +
                   S5 * T ) * T ) * T ) * T ) * T ) * DAS2R - X*Y/2.0
 
     # *  Finished.
@@ -11763,7 +11763,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
     if (datetime.datetime.now() - date_start).total_seconds() < 0:
         print 'Experiment start date is in the future. Thus no tropo/iono data.'
         return
-    
+
     ''' load data from first day to last+1 '''
     # set dates
     day_start = datetime.datetime(date_start.year, date_start.month,
@@ -11822,7 +11822,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                 except Exception, err:
                     print str(err)
                     print 'no troposphere available this time.'
-            
+
             ''' tropospheric gradient files: '''
             # check file existance and download if necessary:
             lhg_file = '{:4d}{:03d}.lhg_r'.format(year, doy)
@@ -11841,12 +11841,12 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                 except Exception, err:
                     print str(err)
                     print 'no tropo gradients available this time.'
-                        
+
             ''' vmf1 grid files: '''
             vmf_grid_file = 'VMFG_{:4d}{:02d}{:02d}.H'\
                                 .format(year, day.month, day.day)
             # (check the last file):
-            if not os.path.isfile(meteo_cat+'/'+vmf_grid_file+'18'): 
+            if not os.path.isfile(meteo_cat+'/'+vmf_grid_file+'18'):
                 print 'vmf1 grid files '+vmf_grid_file+\
                       '00-18 not found, downloading...'
                 for hh in ('00','06','12','18'):
@@ -11875,7 +11875,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                         except Exception, err:
                             print str(err)
                             print 'no vmf1 grid data this time'
-            
+
     ''' ionospheric data '''
     if do_ion_calc:
         # for each day
@@ -11911,7 +11911,7 @@ def doup(do_trp_calc, do_ion_calc, cat_eop, meteo_cat, ion_cat,
                         print 'file {:s} not found on the server. no iono this time'.\
                                 format(ionex_zip)
                     ftp.quit()
-                    
+
                 except Exception, err:
                     print str(err)
                     print 'no ionosphere this time'
@@ -11943,8 +11943,8 @@ def eop_update(cat_eop, n=0):
         except Exception, err:
             print str(err)
             pass
-        
-        
+
+
 #==============================================================================
 # >>>>>>>>>  VLBI In the Near-field Toolkit -- VINT  <<<<<<<<<<<
 #==============================================================================
@@ -11952,26 +11952,26 @@ def eop_update(cat_eop, n=0):
 def vint_s(ob):
     """
     Main engine used to calculate dudes (Delays, Uvws, Doppler, Etc.)
-    
+
     v0.1 24/10/2013
     v0.2 23/11/2013
     v0.3 19/12/2013
-    
+
     coded by Dmitry Duev (JIVE),
     as everything else here, pretty much
     """
     # exp_name is used to create a folder in the _out directory. if empty,
     # the output goes straight into the _out dir.
-    
+
     # tell the user what you're doing
     print ob
-    
+
     ''' load input sittings: '''
     inp = ob.inp
-    
-    ''' init a dude object for output '''    
+
+    ''' init a dude object for output '''
     dud = dude()
-    
+
     # Deal with 'Zero-baseline' in delay mode: produce zeros
     # This is used when a station-centric mode of SFXC is wanted
     # in other words, when the phase center is at one of the stations
@@ -11985,17 +11985,17 @@ def vint_s(ob):
             dud.uvw = np.zeros((len(ob.tstamps), 3))
         # exit the function
         return dud
-    
+
     ''' mkdir '_out/exp_name' if non existend '''
     exp_name = ob.exp_name
 
     if not os.path.isdir(os.path.join(inp['out_path'], exp_name)) and \
             (exp_name is not None or len(exp_name) > 0):
         os.makedirs(os.path.join(inp['out_path'], exp_name))
-    
+
     ''' init constants '''
     const = constants(inp['jpl_eph'])
-    
+
     ''' load s/c ephemerides '''
     if ob.sou_type != 'C':
         eph = load_sc_eph(ob.sou_type, ob.source,
@@ -12011,7 +12011,7 @@ def vint_s(ob):
                           inp['sc_xyz'])
     else:
         eph = None
-    
+
     ''' load S/C freq ramping parameters if 2(3)-way Doppler '''
     if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary3way':
         freq_ramp = np.array(freqRamp(cat_dir=inp['f_ramp'],
@@ -12045,7 +12045,7 @@ def vint_s(ob):
         ob.sta.append(list(set(freq_ramp[:, 4])))
         # flatten the list
         ob.sta = list(flatten(ob.sta))
-    
+
     ''' load S/C freq if 1-way Doppler '''
     if ob.sou_type != 'C' and inp['doppler_calc'] and inp['dop_model'] == 'bary1way':
         try:
@@ -12078,7 +12078,7 @@ def vint_s(ob):
         pass
     # update eop file, if it's out of date, namely, older than (n) days:
 #    eop_update(inp['cat_eop'], 3)
-    
+
     # if RA was observing, add Pu or Gt to the station list, it'll be used for
     # calculating formatter time offset for the RA downlink stream
 #    if 'RA' in ob.sta:
@@ -12090,7 +12090,7 @@ def vint_s(ob):
 #    sta = geodetic(sta, const)
     for ii, st in enumerate(sta):
         sta[ii].geodetic(const)
-    
+
     ''' calculate [Az, El] UTC series for the S/C case '''
     # lt-corrected ITRF ephemeris of the S/C is used here for each station:
 #    if ob.sou_type!='C' or ('RA' in ob.sta):
@@ -12100,7 +12100,7 @@ def vint_s(ob):
 #            t_obs = [(x - ob.tstamps[0]).total_seconds()/86400.0 + t_0 \
 #                     for x in ob.tstamps]
 #            st.AzEl(eph.gtrs, JD, eph.UT, t_obs, inp['jpl_eph'], interpolants=True)
-        
+
     ''' Load MF & Meteo data into the site-objects '''
     if inp['do_trp_calc']:
         for ii, st in enumerate(sta):
@@ -12121,17 +12121,17 @@ def vint_s(ob):
             print str(err)
             print 'Unable to load vTEC data. Ionospheric delay will not be computed.'
             inp['do_ion_calc'] = False
-    
-    
+
+
     ''' ########  main loop ######## '''
     mjd_start = mjuliandate(ob.tstamps[0].year,\
                                ob.tstamps[0].month,ob.tstamps[0].day)
-    
+
 #    from astropy.utils.iers import IERS_A, IERS_A_URL
 #    from astropy.utils.iers import IERS_B, IERS_B_URL
 #    from astropy.utils.data import download_file
-#    iers_b_file = download_file(IERS_B_URL, cache=True)  
-#    iers_b = IERS_B.open(iers_b_file)                     
+#    iers_b_file = download_file(IERS_B_URL, cache=True)
+#    iers_b = IERS_B.open(iers_b_file)
 
     uv_const = const.C  / (inp['mas_step']*(pi/648000000.0))
 
@@ -12143,14 +12143,14 @@ def vint_s(ob):
         if not inp['doppler_calc']:
 #            print ob.freqs
             freq = [f[2] for f in ob.freqs if f[0]<=tstamp<=f[1]][0]
-    
+
         ''' set dates: '''
         mjd = mjuliandate(tstamp.year, tstamp.month, tstamp.day)
         dd = mjd - mjd_start
         UTC = (tstamp.hour + tstamp.minute/60.0 + \
                 (tstamp.second + tstamp.microsecond*1e-6)/3600.0)/24.0
         JD = mjd + 2400000.5
-        
+
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
@@ -12162,7 +12162,7 @@ def vint_s(ob):
 #        print toc-tic
 #        tic = _time()
 
-        
+
         ''' interpolate eops to tstamp '''
         UT1, eop_int = eop_iers(mjd, UTC, eops)
 
@@ -12188,7 +12188,7 @@ def vint_s(ob):
 #        print 'dtdb = {:.18f}'.format(TT+tt_tdb/86400)
 #        print 'UT1 = {:.18f}'.format(UT1)
 #        print 'CT_mine = {:.18f}'.format(CT)
-        
+
         astro_tstamp = Time(str(tstamp), format='iso', scale='utc', precision=9,
                  location=EarthLocation.from_geocentric(*sta[0].r_GTRS, unit=units.m))
 #        t = Time(str(tstamp), format='iso', scale='utc', precision=9, \
@@ -12200,7 +12200,7 @@ def vint_s(ob):
 #        print t.tdb.jd
 #        CT = (t.tdb.jd-0.5) - np.floor(t.tdb.jd-0.5)
 #        print 'CT = {:.18f}'.format(CT)
-        
+
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
@@ -12213,7 +12213,7 @@ def vint_s(ob):
             _, _, numlt = eph.RaDec_bc_sec(JD, CT*86400.0, inp['jpl_eph'])
             numlt /= 86400.0
             # should cover uplink sta for 3-way Doppler (2lt back) - another lt
-            numlt = max(15.0/86400.0, 3.5*numlt) 
+            numlt = max(15.0/86400.0, 3.5*numlt)
             # bcrs
             mini = max(np.searchsorted(eph.CT, CT+dd-numlt)-1, 0)
             maxi = np.searchsorted(eph.CT, CT+dd+numlt)
@@ -12294,12 +12294,12 @@ def vint_s(ob):
             # displacement due to atmospheric loading:
             # Should be the one by Ray and Ponte (2003)
             # http://geophy.uni.lu/ggfc-atmosphere/tide-loading-calculator.html
-        
+
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
 
-        
+
         ''' add up geophysical corrections and convert sta state to J2000 '''
         for ii, st in enumerate(sta):
 #            if 'eph' in locals():
@@ -12334,7 +12334,7 @@ def vint_s(ob):
                 print str(err)
                 raise Exception('Not found ramp params for '+
                                 ob.source+' at ' + str(tstamp))
-                                
+
         ''' coarse! f ramp table for 1-way deep space Doppler (for iono) '''
         if ob.sou_type!='C' and inp['doppler_calc'] and \
             inp['dop_model'] == 'bary1way' and freq_ramp is not None:
@@ -12359,7 +12359,7 @@ def vint_s(ob):
             except Exception, err:
                 print str(err)
                 raise Exception('Not found ramp params for '+ob.source+' at ' + str(tstamp))
-        
+
         ''' delays due to instrumental and propagation effects '''
         for si, st in enumerate(sta):
             if st.name == 'GEOCENTR' or st.name == 'RA':
@@ -12399,7 +12399,7 @@ def vint_s(ob):
                 az, el = aber_source(st.v_GCRS, st.vw, sou.K_s, r2000, earth)
                 ra = sou.ra
                 dec = sou.dec
-                
+
             # current met params:
             if len(st.met['TC'])>0:
                 T_site = st.fMet['fT'](mjd+UTC)
@@ -12409,7 +12409,7 @@ def vint_s(ob):
                 T_site = 0.0
                 P_site = 1000.0
                 H_site = 100.0
-                
+
             ## thermal deformation of telescopes:
             sta[si] = thermal_def(st, ra, dec, el, T_site, const.C)
             ## axis offset:
@@ -12443,11 +12443,11 @@ def vint_s(ob):
                     f_0 = freq
 
                 sta[si] = ion_igs(st, iono, el, az, JD, UTC, f_0)
-        
+
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
-        
+
         ''' geometric delay '''
         if inp['delay_calc']:
             ## Concensus model IERS Conventions 2010:
@@ -12457,7 +12457,7 @@ def vint_s(ob):
                                   const.GM, const.TDB_TCB, const.L_C, const.C)
             # this correction is rather small, thus neglected: [see tn36 11.10]
     #        print sta[1].dtau_tropo*dot(sou.K_s,sta[1].v_GCRS-sta[0].v_GCRS)/const.C
-            
+
             ## Vlasov/Zharov/Sazhin far-field for RadioAstron:
             if ob.sou_type=='C' and ('RA' in ob.sta):
                 dtau, dtau_dt_min1, lt_downlink = delay_ra(JD, CT, UTC,
@@ -12466,7 +12466,7 @@ def vint_s(ob):
                                   earth, sun,
                                   sou.K_s, inp['jpl_eph'], const.GM, const.TDB_TCB,
                                   const.L_C, const.C, const.AE)
-            
+
             ## Near-field Fukushima:
             if ob.sou_type!='C' and inp['nf_model']=='Fukushima':
                 dtau = delay_nf_fukushima(JD, CT, dd,
@@ -12495,7 +12495,7 @@ def vint_s(ob):
                 # print 'dtau_Duev = {:.18f}'.format(dtau)
                 # print tstamp, dtau_ - dtau, dtau_ - dtau__
             # print dtau_, dtau
-            
+
             ''' stack delays due to all effects together: '''
             # RadioAstron far-field:
             # [(geometry, geophysics); instrumental(thermal, axis offset),
@@ -12530,14 +12530,14 @@ def vint_s(ob):
                          (sta[1].dtau_ao - sta[0].dtau_ao),
                          (sta[1].dtau_tropo - sta[0].dtau_tropo),
                          (sta[1].dtau_iono - sta[0].dtau_iono)]
-                     
+
             # the rug really tied the room together, did it not?:
             dud.delay.append(delay)
-        
+
 #        toc = _time()
 #        print toc-tic
 #        tic = _time()
-        
+
         ''' far-field uvw '''
         # compute numerically as c*(cos(dec)*dtau/dra,dtau/ddec,tau)
         if inp['uvw_calc'] and ob.sou_type=='C':
@@ -12564,15 +12564,15 @@ def vint_s(ob):
                               earth, sun, \
                               K_plus_dec, inp['jpl_eph'], const.GM, const.TDB_TCB, \
                               const.L_C, const.C, const.AE, uv=True)
-            
+
             u = const.C * (dtau_plus_ra - dtau)/(1e-5) / cos(dec)
             v = const.C * (dtau_plus_dec - dtau)/(1e-4)
             # w
             w = dtau*const.C
-            
+
             # Donny, please:
             dud.uvw.append([u, v, w])
-            
+
         ''' near-field uvw '''
         # compute numerically
 #        tic1=_time()
@@ -12602,7 +12602,7 @@ def vint_s(ob):
             v = uv_const * (dtaus[1] - dtau)
             # w (dtau/drho)
             w = (dtaus[0] - dtau)/inp['m_step']
-                        
+
 #            u = uv_const * (dtaus[4] - dtaus[5]) / (2.0*cos(dec))
 #            v = uv_const * (dtaus[2] - dtaus[3]) / 2.0
 #            w = (dtaus[0] - dtaus[1])/(2.0*inp['m_step'])
@@ -12658,8 +12658,8 @@ def vint_s(ob):
                                UTC+dd,
                                sta[0].dtau_therm, sta[0].dtau_ao,
                                sta[0].dtau_tropo, sta[0].dtau_iono]
-                           
-            # 3-way barycentric model               
+
+            # 3-way barycentric model
             if inp['dop_model'] == 'bary3way':
                 # current uplink station index in sta list:
                 cus = [x.name for x in sta[1:]].index(upSta) + 1
@@ -12707,7 +12707,7 @@ def vint_s(ob):
 #                print JD, CT, JD_tr, CT_tr, dd
 #                if CT_tr > CT: # if tr a day before the first day of obs:
 #                    CT_tr -= 1
-                                
+
 #                print tstamp, JD, CT, JD_tr, CT_tr, dd
                 ra, dec, _ = eph_cut.RaDec_bc_sec(JD_tr, CT_tr*86400.0, inp['jpl_eph'])
 #                print ra, dec
@@ -12720,7 +12720,7 @@ def vint_s(ob):
                     T_site = 0.0
                     P_site = 1000.0
                     H_site = 100.0
-                
+
                 # thermal deformation:
                 sta[cus] = thermal_def(sta[cus], ra, dec, el, T_site, const.C)
                 ## axis offset:
@@ -12742,7 +12742,7 @@ def vint_s(ob):
                 if inp['do_ion_calc'] and len(iono.fVTEC)>0:
                     f_0 = rampTslot[2] # use uplink freq for 3-way Doppler, upsta
                     sta[cus] = ion_igs(sta[cus], iono, el, az, JD_UTC_tr, UTC_tr, f_0)
-                
+
 #                print 'stalo: ', sta[cus].dtau_therm, sta[cus].dtau_ao,
 #                               sta[cus].dtau_tropo, sta[cus].dtau_iono
 #                print tstamp, sta[0].dtau_tropo, sta[cus].dtau_tropo
@@ -12754,7 +12754,7 @@ def vint_s(ob):
                            (sta[0].dtau_ao + sta[cus].dtau_ao),
                            (sta[0].dtau_tropo + sta[cus].dtau_tropo),
                            (sta[0].dtau_iono + sta[cus].dtau_iono)]
-                
+
             ''' append to dude-obj '''
             dud.doppler.append(doppler)
 #        toc = _time()
@@ -12774,9 +12774,9 @@ def vint_s(ob):
 #        ''' correction of geom prediction epoch due to instr/prop delay '''
 #        t_corr = doppler_raw[:,1]*86400.0 - \
 #                  np.sum(doppler_raw[:,2:], axis=1)
-#        
+#
 #        doppler = np.interp(t_corr, doppler_raw[:,1]*86400.0, doppler_raw[:,0])
-#    
+#
 #        doppler = np.vstack((doppler_raw[:,0], doppler - doppler_raw[:,0]))
 
         ''' turn delays due to instr. and propagation effects
@@ -12808,13 +12808,13 @@ def vint_s(ob):
             doppler = np.vstack((doppler, -drate*doppler_raw[:,0]))
         dud.doppler = doppler.T
     return dud
-    
-    
+
+
 #==============================================================================
-#     
+#
 #==============================================================================
 def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
-    '''    
+    '''
      dyear - difference btw epoch of observation and epoch of station catalog (EPOCH)
        Arrays:
            /ocean/
@@ -12825,9 +12825,9 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
                K = 1,2,3   - Vertical, East-West, North-South components !!!!
                L = 1,...N  - number of sites
             2) phs_ocean(11,3,N) - ocean loading phases. (rad)
-       /eops/ 
+       /eops/
             1) eops(7,7) -  on dates closest to date of observation
-               eops(1:7,1) = MJD 
+               eops(1:7,1) = MJD
                eops(1:7,2) = UT1-UTC (Sec)
                eops(1:7,3) = UT1-TAI (Sec)
                eops(1:7,4) = x       (Arcsec)
@@ -12874,7 +12874,7 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
             for f_line in f_lines:
                 if f_line[0]!='#' and (sou.ivsname.lower() in f_line.lower()):
                     #ra:
-                    sou.radec.append([float(i) for i in f_line[14:29].strip().split()]) 
+                    sou.radec.append([float(i) for i in f_line[14:29].strip().split()])
                     #dec:
                     sou.radec.append([float(i) for i in f_line[34:49].strip().split()])
             # ra/dec in rad:
@@ -12883,11 +12883,11 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
             sou.dec = pi*(abs(sou.radec[1][0]) + sou.radec[1][1]/60.0 +
                           sou.radec[1][2]/3600.0)/180.0
             if sou.radec[1][0]<0: sou.dec *= -1
-        # J2000.0 source unit vector:        
+        # J2000.0 source unit vector:
         sou.K_s = np.array([cos(sou.dec)*cos(sou.ra),
                             cos(sou.dec)*sin(sou.ra),
                             sin(sou.dec)])
-    
+
     ## Station info
     sta = [site(sta_name) for sta_name in sta_names] # init site objects
     # first, get the cat epoch:
@@ -12906,9 +12906,9 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
     if EPOCH is None:
         raise Exception('Station positions catalogue EPOCH not found. Check '\
                +inp['sta_xyz']+' file')
-    
+
     # load cats for station data:
-    with open(inp['sta_xyz'], 'r') as f: xyz_lines = f.readlines()   
+    with open(inp['sta_xyz'], 'r') as f: xyz_lines = f.readlines()
     with open(inp['sta_vxvyvz'], 'r') as f: vxvyvz_lines = f.readlines()
     with open(inp['sta_thermdef'], 'r') as f: thermdef_lines = f.readlines()
     with open(inp['oc_load'], 'r') as f: oclo_lines = f.readlines()
@@ -12944,19 +12944,19 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
                         break
                 # alternative way:
                 # matching = [s for s in thermdef_lines if st.name in s and len(s)>0 and s[0]!='#'][-1]
-                strz = matching[0:55].split()         
+                strz = matching[0:55].split()
                 fltz = [float(i) for i in matching[55:].split()]
                 st.ivs_name, st.focus_type, \
                              st.mount_type, st.radome, st.meas_type = strz[1:]
                 st.T0, st.sin_T, st.cos_T, st.h0, st.ant_diam, st.hf, st.df, \
                        st.gamma_hf, st.hp, st.gamma_hp, st.AO, st.gamma_AO, \
-                       st.hv, st.gamma_hv, st.hs, st.gamma_hs = fltz    
+                       st.hv, st.gamma_hv, st.hs, st.gamma_hs = fltz
     # load ocean loading parameters:
             for jj in range(len(oclo_lines)):
                 f_line = oclo_lines[jj]
                 if  len(f_line)>0 and f_line[0]!='$' and (st.name in f_line):
                     jj+=1
-                    f_line = oclo_lines[jj] 
+                    f_line = oclo_lines[jj]
                     while f_line[0]=='$':
                         jj+=1
                         f_line = oclo_lines[jj]
@@ -12968,17 +12968,17 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
                     break
     # load atmospheric loading parameters: (to be added..)
 
-    # Compute dyear - difference btw the epoch of the first observation 
-    # and the epoch of the station catalog (necessary for calculation of 
+    # Compute dyear - difference btw the epoch of the first observation
+    # and the epoch of the station catalog (necessary for calculation of
     # tectonic motion of the sites)
     UTC_start = (float(date_t_start.hour) + date_t_start.minute/60.0 + \
                  date_t_start.second/3600.0) / 24.0
     dyear = ((date_t_start-ep_0).days + UTC_start) / 365.25
-    
+
     # sta crds in TRF to date of obs:
-    for st in sta: 
+    for st in sta:
         st.r_GTRS_date = st.r_GTRS + dyear*st.v_GTRS
-    
+
     ## load eops
     # get the relevant eop entries from the catalogue:
     with open(inp['cat_eop'], 'r') as fc:
@@ -12999,31 +12999,31 @@ def load_cats(inp, sou_name, sou_type, sta_names, date_t_start, sou_radec=None):
                     eops[kk,6] = entry[9] # dY
                     entry = [float(x) for x in fc_lines[jj+kk+1].split()]
                 break #exit loop
-                    
+
     # done
     return sou, sta, eops
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def geodetic(sta, const):
-    
+
     '''
     function geodetic calculates the site position in geodetic coordinate
     systems for the stations participating in the current observation.
     Transformation VW from local geodetic coordinate system (Vertical,East,North)
     to the Earth-fixed coordinate system is calculated for each cite.
-    % 
-    For transformation to geodetic coordinate system the 
+    %
+    For transformation to geodetic coordinate system the
     IAG1999 Reference Ellipsoid (Table 1.1, IERS 2000 Conventions) is used
     The geophysical values are those for the "zero-frequency" tide system.
     NOTE !!! The ITRF2000 is "conventional tide free crust" system.
-  
-     Input  - 
+
+     Input  -
        1. sta               - list of site-objects
        2. const             - physical constants
-       
+
      Output to each site-object:
        lat_geod          - The geodetic latitude at each site (RAD)
        h_geod            - The geodetic height of each site. (M)
@@ -13037,7 +13037,7 @@ def geodetic(sta, const):
                               system to the Earth-fixed coordinate system
 
     '''
-    
+
     for st in sta:
         if st.name == 'RA' or st.name == 'GEOCENTR':
             continue
@@ -13045,7 +13045,7 @@ def geodetic(sta, const):
         st.sph_rad = sqrt( sum(x*x for x in st.r_GTRS_date) )
         # Compute geocentric latitude
         st.lat_gcen = asin( st.r_GTRS_date[2] / st.sph_rad )
-        # Compute geocentric longitude       
+        # Compute geocentric longitude
         st.lon_gcen = atan2( st.r_GTRS_date[1], st.r_GTRS_date[0] )
         if st.lon_gcen < 0.0:
             st.lon_gcen = st.lon_gcen + 2.0*pi
@@ -13059,14 +13059,14 @@ def geodetic(sta, const):
         st.lat_geod, st.h_geod = geoid( req, st.r_GTRS_date[2], \
                                         const.AE, const.F )
         # Compute the local VEN-to-crust-fixed rotation matrices by rotating
-        # about the geodetic latitude and the longitude. 
+        # about the geodetic latitude and the longitude.
         # w - rotation matrix by an angle lat_geod around the y axis
         w = R_123(2, st.lat_geod)
         # v - rotation matrix by an angle -lon_gcen around the z axis
         v = R_123(3, -st.lon_gcen)
-        # product of the two matrices:        
+        # product of the two matrices:
         st.vw = dot(v, w)
-        
+
     return sta
 
 
@@ -13074,12 +13074,12 @@ def geoid(r, z, a, fr):
     '''
     Program to transform Cartesian to geodetic coordinates
     based on the exact solution (Borkowski,1989)
-     
-           Input variables :  
+
+           Input variables :
                  r, z = equatorial [m] and polar [m] components
-           Output variables: 
+           Output variables:
                  fi, h = geodetic coord's (latitude [rad], height [m])
-    
+
     IERS ellipsoid: semimajor axis (a) and inverse flattening (fr)
     '''
 
@@ -13111,20 +13111,20 @@ def geoid(r, z, a, fr):
     h = (r - a*t)*cos(fi) + (z - b)*sin(fi)
 
     return fi, h
-    
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def R_123 (i, theta):
     '''
     function R_123 creates a matrix 'R_i' which describes
     a right rotation by an angle 'THETA' about coordinate axis 'I'
-  
+
      Input variables:
         1. I      -  The number which determines the rotation axis.
                      (I = 1, 2, 3 corresponds X, Y, and Z axes respectfully)
         2. THETA  -  The rotation angle. (RAD)
-  
+
      Output variables:
         1. R(3,3) -  The 3x3 rotation matrix. (UNITLESS)
     '''
@@ -13145,7 +13145,7 @@ def R_123 (i, theta):
         r[2,1] = -s
         r[0,2] = 0.0
         r[1,2] = +s
-        r[2,2] = +c     
+        r[2,2] = +c
     elif i==2:
     #Rotation around the Y-axis:
     #        ( C  0 -S )
@@ -13164,7 +13164,7 @@ def R_123 (i, theta):
     #Rotation around the Z-axis:
     #        ( C  S  0 )
     # R(Z) = (-S  C  0 )
-    #        ( 0  0  1 ) 
+    #        ( 0  0  1 )
         r[0,0] = +c
         r[1,0] = -s
         r[2,0] = 0.0
@@ -13176,10 +13176,10 @@ def R_123 (i, theta):
         r[2,2] = 1.0
 
     return r
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def load_sc_eph(sou_type, source, t_start, t_end, inp,
                 uvw_calc=False, sc_rhophitheta=False, sc_xyz=False,
@@ -13209,14 +13209,14 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
     else:
         paddLeft = forcePaddLeft
     t_start_padd = t_start - datetime.timedelta(minutes=paddLeft)
-    
+
     # tdb is more than 1 minute ahead of utc. padd the right-hand side therefore!
     if forcePaddRight is None:
         paddRight = 2  # should do the job
     else:
         paddRight = forcePaddRight
     t_end_padd = t_end + datetime.timedelta(minutes=paddRight)
-    
+
     dd = ( datetime.datetime(t_end_padd.year, t_end_padd.month, t_end_padd.day) -
            datetime.datetime(t_start_padd.year, t_start_padd.month,
                              t_start_padd.day) ).days
@@ -13224,7 +13224,7 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
     days = []
     for di in range(dd+1):
         days.append([ datetime.datetime(t_start_padd.year, t_start_padd.month,
-                       t_start_padd.day) + datetime.timedelta(days=di), 
+                       t_start_padd.day) + datetime.timedelta(days=di),
                       datetime.datetime(t_start_padd.year, t_start_padd.month,
                        t_start_padd.day, 23, 59, 59) + datetime.timedelta(days=di) ])
     days = np.array(days)
@@ -13251,11 +13251,11 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
             eph_file_names = ra_eph_down(source, t_s, t_e, inp)
         # append to eph_files name list
         eph_files.append(eph_file_names)
-    
+
     # return if user doesn't want to load that shit
     if not load:
         return
-    
+
     ''' now load the ephs into an ephem-object '''
     if sou_type == 'C':
         source = 'RA'
@@ -13328,7 +13328,7 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
     eph.CT = eph.CT[mask]
     eph.CT_sec = eph.CT_sec[mask]
     eph.UT = eph.UT[mask]
-#    print eph.CT.shape    
+#    print eph.CT.shape
     # remove rows in ephs according to 1D CT mask
 #    print eph.gtrs.shape
 #    # (first, turn 1D mask into a 2D matrix)
@@ -13365,13 +13365,13 @@ def load_sc_eph(sou_type, source, t_start, t_end, inp,
 #            fBce.append(f)
 #        eph.fBcrs.append(fBce) # list of lists
     # evaluate: sp.interpolate.splev(xnew,eph.fGtrs[jj],der=0)
-        
+
     # return the eph object
     return eph
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def sc_uvw_eph(eph, inp):
     '''
@@ -13397,45 +13397,45 @@ def sc_uvw_eph(eph, inp):
     tmp = np.copy(sc_gc_rpt)
     tmp[:,0] += m_step
     eph.bcrs[1][:,6:9] = sph2cart(tmp) + earth_ssb
-    
+
     # phi + mas_step
     tmp = np.copy(sc_gc_rpt)
     tmp[:,1] += mas_step*(pi/648000000.0)
     eph.bcrs[2][:,6:9] = sph2cart(tmp) + earth_ssb
-    
+
     # theta + mas_step
     tmp = np.copy(sc_gc_rpt)
     tmp[:,2] += mas_step*(pi/648000000.0)
     eph.bcrs[3][:,6:9] = sph2cart(tmp) + earth_ssb
-    
+
 #    # rho +- m_step m
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,0] += m_step
 #    #sph2cart(np.hstack((sc_gc_rpt[0:1],sc_gc_rpt[2]+m_step)))
 #    eph.bcrs[1][:,6:9] = sph2cart(tmp) + earth_ssb
-#    
+#
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,0] -= m_step
 #    eph.bcrs[2][:,6:9] = sph2cart(tmp) + earth_ssb
-#    
+#
 #    # phi +- mas_step
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,1] += mas_step*(pi/648000000.0)
 #    eph.bcrs[3][:,6:9] = sph2cart(tmp) + earth_ssb
-#    
+#
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,1] -= mas_step*(pi/648000000.0)
 #    eph.bcrs[4][:,6:9] = sph2cart(tmp) + earth_ssb
-#    
+#
 #    # theta +- mas_step
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,2] += mas_step*(pi/648000000.0)
 #    eph.bcrs[5][:,6:9] = sph2cart(tmp) + earth_ssb
-#    
+#
 #    tmp = np.copy(sc_gc_rpt)
 #    tmp[:,2] -= mas_step*(pi/648000000.0)
 #    eph.bcrs[6][:,6:9] = sph2cart(tmp) + earth_ssb
-    
+
 #    plt.subplot(2,1,1)
 #    plt.plot(eph.CT, eph.bcrs[0][:,6]-eph.bcrs[5][:,6],\
 #            eph.CT, eph.bcrs[0][:,7]-eph.bcrs[5][:,7],\
@@ -13445,12 +13445,12 @@ def sc_uvw_eph(eph, inp):
 #            eph.CT, eph.bcrs[0][:,7]-eph.bcrs[6][:,7],\
 #            eph.CT, eph.bcrs[0][:,8]-eph.bcrs[6][:,8])
 #    plt.show()
-    
+
     return eph
 
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def cart2sph(xyz):
     '''
@@ -13475,7 +13475,7 @@ def cart2sph(xyz):
         rpt[1] = atan2(xyz[2], sqrt(xy)) # phi ('elevation')
         rpt[2] = atan2(xyz[1], xyz[0]) # theta ('azimuth')
     return rpt
-    
+
 def sph2cart(rpt):
     '''
     Spherical to cartesian crd transformation
@@ -13496,7 +13496,7 @@ def sph2cart(rpt):
 
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def sc_xyz_eph(eph, inp):
     '''
@@ -13513,7 +13513,7 @@ def sc_xyz_eph(eph, inp):
     eph.bcrs[2][:,7] += m_step
     # z + m_step m
     eph.bcrs[3][:,8] += m_step
-    
+
 #    # x +- m_step m
 #    eph.bcrs[1][:,6] += m_step
 #    eph.bcrs[2][:,6] -= m_step
@@ -13523,43 +13523,43 @@ def sc_xyz_eph(eph, inp):
 #    # z +- m_step m
 #    eph.bcrs[5][:,8] += m_step
 #    eph.bcrs[6][:,8] -= m_step
-    
+
     return eph
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
     '''
-      - - - - - - - - - - - - - - - 
+      - - - - - - - - - - - - - - -
        D E H A N T T I D E I N E L
-      - - - - - - - - - - - - - - - 
-    
+      - - - - - - - - - - - - - - -
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
+
       This subroutine computes the tidal corrections of station displacements
-      caused by lunar and solar gravitational attraction (see References). 
+      caused by lunar and solar gravitational attraction (see References).
       The computations are calculated by the following steps:
-    
-      Step 1): General degree 2 and degree 3 corrections + CALL ST1IDIU 
+
+      Step 1): General degree 2 and degree 3 corrections + CALL ST1IDIU
       + CALL ST1ISEM + CALL ST1L1.
-      
+
       Step 2): CALL STEP2DIU + CALL STEP2LON
-    
+
       It has been decided that the Step 3 non-correction for permanent tide
       would not be applied in order to avoid a jump in the reference frame.
       This Step 3 must be added in order to get the non-tidal station position
       and to conform with the IAG Resolution.
-    
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -13569,15 +13569,15 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          sta - site object
          t - Datetime object with t_obs
          earth, sun, moon, - BCRS state vecs of Earth, Sun and Moon
          r2000 - rotation matrix ITRS -> ICRS
          calc_vel - numerically calculate velocity or not
-         
-       which is converted to:  
+
+       which is converted to:
          XSTA          d(3)   Geocentric position of the station (Note 1)
          XSUN          d(3)   Geocentric position of the Sun (Note 2)
          XMON          d(3)   Geocentric position of the Moon (Note 2)
@@ -13585,31 +13585,31 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
          MONTH         i      Month (Note 3)
          DAY           i      Day of Month (Note 3)
          FHR           d      Hour in the day (Note 4)
-    
+
       Returned:
          dx_tide        d(3)   Displacement vector (Note 5)
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates,
-         X, Y, and Z, are expressed in meters. 
-      
+         X, Y, and Z, are expressed in meters.
+
       2) The position is in Earth Centered Earth Fixed (ECEF) frame.  All
          coordinates are expressed in meters.
  !!!     This means that the earth-centered positions of the Sun and the Moon
          should be rotated by r2000T!!! Note that in the example below the
          radius-vectors are given in a wrong frame (~ICRS).
-    
+
       3) The values are expressed in Coordinated Universal Time (UTC).
-    
+
       4) The fractional hours in the day is computed as the hour + minutes/60.0
          + sec/3600.0.  The unit is expressed in Universal Time (UT).
-    
+
       5) The displacement vector is in the geocentric ITRF.  All components are
          expressed in meters.
-    
+
       Called:
-         SPROD             Finds the scalar product and unit vector of two vectors 
+         SPROD             Finds the scalar product and unit vector of two vectors
          ZERO_VEC8         Returns the zero vector
          ST1IDIU           Corrects for the out-of-phase part of Love numbers
                            for the diurnal band
@@ -13620,11 +13620,11 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
          STEP2DIU          Computes in-phase and out-of-phase corrections in
                            the diurnal band
          STEP2LON          Same as above for the long period band
-    
+
       Test case:
          given input: XSTA(1) = 4075578.385 meters
                       XSTA(2) =  931852.890 meters
-                      XSTA(3) = 4801570.154 meters   
+                      XSTA(3) = 4801570.154 meters
                       XSUN(1) = 137859926952.015 meters
                       XSUN(2) = 54228127881.4350 meters
                       XSUN(3) = 23509422341.6960 meters
@@ -13634,38 +13634,38 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
                       YR      = 2009
                       MONTH   = 4
                       DAY     = 13
-                      FHR     = 0.00 hours 
-                      
+                      FHR     = 0.00 hours
+
          expected output:  dx_tide(1) = 0.7700420357108125891e-01 meters
                            dx_tide(2) = 0.6304056321824967613e-01 meters
                            dx_tide(3) = 0.5516568152597246810e-01 meters
-    
+
     % XSTA=[4075578.385 931852.890 4801570.154];
     % XSUN=[137859926952.015 54228127881.4350 23509422341.6960];
     % XMON=[-179996231.920342 -312468450.131567 -169288918.592160];
     % YR=2009; MONTH=4; DAY=13; FHR=0.0;
     % dehanttideinel(XSTA,YR,MONTH,DAY,FHR,XSUN,XMON,1)
       References:
-    
+
          Groten, E., 2000, Geodesists Handbook 2000, Part 4,
          http://www.gfy.ku.dk/~iag/HB2000/part4/groten.htm. See also
          ''Parameters of Common Relevance of Astronomy, Geodesy, and
          Geodynamics," J. Geod., 74, pp. 134-140
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-         
+
          Pitjeva, E. and Standish, E. M., 2009, ''Proposals for the masses
          of the three largest asteroids, the Moon-Earth mass ratio and the
          Astronomical Unit," Celest. Mech. Dyn. Astr., 103, pp. 365-372
-    
+
          Ries, J. C., Eanes, R. J., Shum, C. K. and Watkins, M. M., 1992,
          ''Progress in the Determination of the Gravitational Coefficient
          of the Earth," Geophys. Res. Lett., 19(6), pp. 529-531
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
                        P. M. Mathews
@@ -13675,7 +13675,7 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
       2006 February 06 J. Ray         Header comments modified to clarify
                                       input/output units and systems
       2006 February 06 J. Ray         Subroutine DUTC modified for leap
-                                      second on 2006.0 and to correct 
+                                      second on 2006.0 and to correct
                                       do 5 i=1,87 from 84 to 87
       2006 August   31 G. Petit       Correct DUTC for dates after 2007
       2007 June     20 H. Manche      Modified DUTC to correct past mistake
@@ -13687,8 +13687,8 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
                                       STEP2DIU
       2009 February 19 G. Petit       Update routine iau_DAT for 2009.0 leap
                                       second
-      2009 August   06 B.E. Stetzler  Initial standardization of code 
-      2009 August   07 B.E. Stetzler  Updated MASS_RATIO_SUN, 
+      2009 August   06 B.E. Stetzler  Initial standardization of code
+      2009 August   07 B.E. Stetzler  Updated MASS_RATIO_SUN,
                                       MASS_RATIO_MOON and RE to CBEs and
                                       provided a test case
       2009 August  07  B.E. Stetzler  Capitalized all variables for Fortran
@@ -13704,23 +13704,23 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
     FHR = (t.hour + t.minute/60.0 + t.second/3600.0)
     XSUN = dot(r2000[:,:,0].T, sun[:,0] - earth[:,0]) # in GTRS
     XMON = dot(r2000[:,:,0].T, moon[:,0] - earth[:,0]) # in GTRS
-    
+
 # test values
 #    XSTA=np.array([4075578.385, 931852.890, 4801570.154])
 #    XSUN=np.array([137859926952.015, 54228127881.4350, 23509422341.6960])
 #    XMON=np.array([-179996231.920342, -312468450.131567, -169288918.592160])
 #    YR=2009; MONTH=4; DAY=13; FHR=0.0;
-    
-    #----------------------------------------------------------------------  
-    # NOMINAL SECOND DEGREE AND THIRD DEGREE LOVE NUMBERS AND SHIDA NUMBERS  
-    #----------------------------------------------------------------------  
+
+    #----------------------------------------------------------------------
+    # NOMINAL SECOND DEGREE AND THIRD DEGREE LOVE NUMBERS AND SHIDA NUMBERS
+    #----------------------------------------------------------------------
     H20 = 0.6078
     L20 = 0.0847
     H3 = 0.292
     L3 = 0.015
-    #----------------------------------------------------------------------  
-    # SCALAR PRODUCT OF STATION VECTOR WITH SUN/MOON VECTOR  
-    #----------------------------------------------------------------------  
+    #----------------------------------------------------------------------
+    # SCALAR PRODUCT OF STATION VECTOR WITH SUN/MOON VECTOR
+    #----------------------------------------------------------------------
     SCS = dot(XSTA,XSUN)
     RSUN = norm(XSUN)
     SCM = dot(XSTA,XMON)
@@ -13728,31 +13728,31 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
     RMON = norm(XMON)
     SCSUN=SCS/RSTA/RSUN
     SCMON=SCM/RSTA/RMON
-    #----------------------------------------------------------------------   
-    # COMPUTATION OF NEW H2 AND L2  
-    #----------------------------------------------------------------------  
+    #----------------------------------------------------------------------
+    # COMPUTATION OF NEW H2 AND L2
+    #----------------------------------------------------------------------
     COSPHI=sqrt(XSTA[0]**2+XSTA[1]**2)/RSTA
     H2=H20-0.0006*(1.0-3.0/2.0*COSPHI**2)
     L2=L20+0.0002*(1.0-3.0/2.0*COSPHI**2)
 
-    # P2 term  
+    # P2 term
     P2SUN=3.0*(H2/2.0-L2)*SCSUN**2-H2/2.0
     P2MON=3.0*(H2/2.0-L2)*SCMON**2-H2/2.0
 
-    # P3 term  
+    # P3 term
     P3SUN=5.0/2.0*(H3-3.0*L3)*SCSUN**3+3.0/2.0*(L3-H3)*SCSUN
     P3MON=5.0/2.0*(H3-3.0*L3)*SCMON**3+3.0/2.0*(L3-H3)*SCMON
 
-    #----------------------------------------------------------------------  
-    # TERM IN DIRECTION OF SUN/MOON VECTOR  
-    #----------------------------------------------------------------------  
+    #----------------------------------------------------------------------
+    # TERM IN DIRECTION OF SUN/MOON VECTOR
+    #----------------------------------------------------------------------
     X2SUN=3.0*L2*SCSUN
     X2MON=3.0*L2*SCMON
     X3SUN=3.0*L3/2.0*(5.0*SCSUN**2-1.0)
     X3MON=3.0*L3/2.0*(5.0*SCMON**2-1.0)
-    #----------------------------------------------------------------------  
-    # FACTORS FOR SUN/MOON USING IAU CURRENT BEST ESTIMATES (SEE REFERENCES) 
-    #----------------------------------------------------------------------  
+    #----------------------------------------------------------------------
+    # FACTORS FOR SUN/MOON USING IAU CURRENT BEST ESTIMATES (SEE REFERENCES)
+    #----------------------------------------------------------------------
     MASS_RATIO_SUN=332946.0482
     MASS_RATIO_MOON=0.0123000371
     RE=6378136.6
@@ -13760,7 +13760,7 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
     FAC2MON=MASS_RATIO_MOON*RE*(RE/RMON)**3
     FAC3SUN=FAC2SUN*(RE/RSUN)
     FAC3MON=FAC2MON*(RE/RMON)
-  
+
     # TOTAL DISPLACEMENT
     dx_tide = np.zeros(3)
     for I in range(3):
@@ -13769,44 +13769,44 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
                    FAC3SUN*( X3SUN*XSUN[I]/RSUN + P3SUN*XSTA[I]/RSTA ) +\
                    FAC3MON*( X3MON*XMON[I]/RMON + P3MON*XSTA[I]/RSTA )
 
-    #+---------------------------------------------------------------------  
-    # CORRECTIONS FOR THE OUT-OF-PHASE PART OF LOVE NUMBERS (PART H_2^(0)I  
-    # AND L_2^(0)I )  
+    #+---------------------------------------------------------------------
+    # CORRECTIONS FOR THE OUT-OF-PHASE PART OF LOVE NUMBERS (PART H_2^(0)I
+    # AND L_2^(0)I )
     #----------------------------------------------------------------------
 
-    # FIRST, FOR THE DIURNAL BAND       
+    # FIRST, FOR THE DIURNAL BAND
     XCORSTA = ST1IDIU(XSTA,XSUN,XMON,FAC2SUN,FAC2MON)
     dx_tide = dx_tide + XCORSTA
 
-    # SECOND, FOR THE SEMI-DIURNAL BAND       
+    # SECOND, FOR THE SEMI-DIURNAL BAND
     XCORSTA = ST1ISEM(XSTA,XSUN,XMON,FAC2SUN,FAC2MON)
     dx_tide = dx_tide + XCORSTA
 
     #+---------------------------------------------------------------------
-    # CORRECTIONS FOR THE LATITUDE DEPENDENCE OF LOVE NUMBERS (PART L^(1) )  
-    #----------------------------------------------------------------------   
+    # CORRECTIONS FOR THE LATITUDE DEPENDENCE OF LOVE NUMBERS (PART L^(1) )
+    #----------------------------------------------------------------------
     XCORSTA = ST1L1(XSTA,XSUN,XMON,FAC2SUN,FAC2MON)
     dx_tide = dx_tide + XCORSTA
-    
-    if calc_vel: 
-        dx_tide0 = dx_tide
-    
-    # CONSIDER CORRECTIONS FOR STEP 2  
 
-    #+---------------------------------------------------------------------  
-    # CORRECTIONS FOR THE DIURNAL BAND:  
-    # 
-    #  FIRST, WE NEED TO KNOW THE DATE CONVERTED IN JULIAN CENTURIES 
-    #        
-    #   1) CALL THE SUBROUTINE COMPUTING THE JULIAN DATE 
-    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+    if calc_vel:
+        dx_tide0 = dx_tide
+
+    # CONSIDER CORRECTIONS FOR STEP 2
+
+    #+---------------------------------------------------------------------
+    # CORRECTIONS FOR THE DIURNAL BAND:
+    #
+    #  FIRST, WE NEED TO KNOW THE DATE CONVERTED IN JULIAN CENTURIES
+    #
+    #   1) CALL THE SUBROUTINE COMPUTING THE JULIAN DATE
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     JJM0 = 2400000.5
     JJM1 = mjuliandate( YR, MONTH, DAY )
     T=((JJM0-2451545.0)+JJM1+FHR/24.0)/36525.0
 
-    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-    #   2) CALL THE SUBROUTINE COMPUTING THE CORRECTION OF UTC TIME  
-    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    #   2) CALL THE SUBROUTINE COMPUTING THE CORRECTION OF UTC TIME
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     DTT = nsec(JJM1)
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     DTT = DTT + 32.184
@@ -13817,33 +13817,33 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
     #  CORRECTIONS, (in-phase and out-of-phase frequency dependence):
     XCORSTA = STEP2DIU(XSTA,FHR,T)
     dx_tide=dx_tide+XCORSTA
-    
+
 #    np.set_printoptions(precision=16)
 #    print dx_tide
     #  CORRECTIONS FOR THE LONG-PERIOD BAND,
-    #  (in-phase and out-of-phase frequency dependence):  
+    #  (in-phase and out-of-phase frequency dependence):
     XCORSTA = STEP2LON(XSTA,T)
     dx_tide=dx_tide+XCORSTA
-    
+
     # CONSIDER CORRECTIONS FOR STEP 3
-    
+
     #----------------------------------------------------------------------
-    # UNCORRECT FOR THE PERMANENT TIDE  
-    #  
-    #      SINPHI=XSTA(3)/RSTA  
+    # UNCORRECT FOR THE PERMANENT TIDE
+    #
+    #      SINPHI=XSTA(3)/RSTA
     #      COSPHI=sqrt(XSTA(1)**2+XSTA(2)**2)/RSTA
-    #      COSLA=XSTA(1)/COSPHI/RSTA  
-    #      SINLA=XSTA(2)/COSPHI/RSTA  
+    #      COSLA=XSTA(1)/COSPHI/RSTA
+    #      SINLA=XSTA(2)/COSPHI/RSTA
     #      DR=-sqrt(5.0/4.0/PI)*H2*0.31460*(3.0/2.0*SINPHI**2-0.5)
     #      DN=-sqrt(5.0/4.0/PI)*L2*0.31460*3.0*COSPHI*SINPHI
     #      dx_tide(1)=dx_tide(1)-DR*COSLA*COSPHI+DN*COSLA*SINPHI
-    #      dx_tide(2)=dx_tide(2)-DR*SINLA*COSPHI+DN*SINLA*SINPHI  
+    #      dx_tide(2)=dx_tide(2)-DR*SINLA*COSPHI+DN*SINLA*SINPHI
     #      dx_tide(3)=dx_tide(3)-DR*SINPHI      -DN*COSPHI
     #-----------------------------------------------------------------------
 
 # check test values
 #    print dx_tide
-    
+
     #calculate dv_tide, if requested
     dv_tide = np.zeros(3)
     dx_td = []
@@ -13862,7 +13862,7 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
             XMON = dot((r2000[:,:,0] + jj*r2000[:,:,1]).T, \
                           moon[:,0] - earth[:,0] + \
                           jj*(moon[:,1] - earth[:,1])) # in GTRS
-            
+
             JJM0 = 2400000.5
             JJM1 = mjuliandate( YR, MONTH, DAY )
             T=((JJM0-2451545.0)+JJM1+FHR/24.0)/36525.0
@@ -13875,11 +13875,11 @@ def dehanttideinel(sta, t, earth, sun, moon, r2000, calc_vel=True):
             dx_ti = dx_ti + XCORSTA
             dx_td.append(dx_ti)
         dv_tide = (dx_td[1] - dx_td[0])/2.0 # m/s in GTRS
-    
+
     # dx_tide and dv_tide are in GTRS. We want them in GCRS:
     sta.dr_tide = dot(r2000[:,:,0], dx_tide)
     sta.dv_tide = dot(r2000[:,:,1], dx_tide) + dot(r2000[:,:,0], dv_tide)
-    
+
     return sta
 
 #@jit(double[:](double[:], double[:], double[:], double, double))
@@ -13889,20 +13889,20 @@ def ST1IDIU (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
       - - - - - - - - - - -
        S T 1 I D I U
       - - - - - - - - - - -
-    
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
+
       This subroutine gives the out-of-phase corrections induced by
-      mantle anelasticity in the diurnal band. 
-    
+      mantle anelasticity in the diurnal band.
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -13912,56 +13912,56 @@ def ST1IDIU (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          XSTA          d(3)   Geocentric position of the IGS station (Note 1)
          XSUN          d(3)   Geocentric position of the Sun (Note 2)
          XMON          d(3)   Geocentric position of the Moon (Note 2)
-         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)      
-         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3) 
-    
+         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)
+         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3)
+
       Returned:
          XCORSTA       d(3)   Out of phase station corrections for diurnal band
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates are
-         expressed in meters. 
-      
+         expressed in meters.
+
       2) The position is in Earth Centered Earth Fixed (ECEF) frame.  All
          coordinates are expressed in meters.
-    
+
       3) The expressions are computed in the main program.  TGP is the tide
-         generated potential.  The units are inverse meters. 
-    
+         generated potential.  The units are inverse meters.
+
       Test case:
          given input: XSTA(1) = 4075578.385D0 meters
                       XSTA(2) =  931852.890D0 meters
-                      XSTA(3) = 4801570.154D0 meters   
+                      XSTA(3) = 4801570.154D0 meters
                       XSUN(1) = 137859926952.015D0 meters
                       XSUN(2) = 54228127881.4350D0 meters
                       XSUN(3) = 23509422341.6960D0 meters
                       XMON(1) = -179996231.920342D0 meters
                       XMON(2) = -312468450.131567D0 meters
                       XMON(3) = -169288918.592160D0 meters
-                      FAC2SUN =  0.163271964478954D0 1/meters     
-                      FAC2MON =  0.321989090026845D0 1/meters    
-                      
+                      FAC2SUN =  0.163271964478954D0 1/meters
+                      FAC2MON =  0.321989090026845D0 1/meters
+
          expected output:  XCORSTA(1) = -0.2836337012840008001D-03 meters
                            XCORSTA(2) =  0.1125342324347507444D-03 meters
                            XCORSTA(3) = -0.2471186224343683169D-03 meters
-    
+
       References:
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
-      2009 July     30 B.E. Stetzler  Initial standardization of code 
+      2009 July     30 B.E. Stetzler  Initial standardization of code
       2009 July     31 B.E. Stetzler  Provided a test case
     -----------------------------------------------------------------------
     '''
@@ -14017,20 +14017,20 @@ def ST1ISEM (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
       - - - - - - - - - - -
        S T 1 I S E M
       - - - - - - - - - - -
-    
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
+
       This subroutine gives the out-of-phase corrections induced by
-      mantle anelasticity in the semi-diurnal band. 
-    
+      mantle anelasticity in the semi-diurnal band.
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -14040,57 +14040,57 @@ def ST1ISEM (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          XSTA          d(3)   Geocentric position of the IGS station (Note 1)
          XSUN          d(3)   Geocentric position of the Sun (Note 2)
          XMON          d(3)   Geocentric position of the Moon (Note 2)
-         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)      
-         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3) 
-    
+         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)
+         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3)
+
       Returned:
          XCORSTA       d(3)   Out of phase station corrections for
                               semi-diurnal band
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates are
-         expressed in meters. 
-      
+         expressed in meters.
+
       2) The position is in Earth Centered Earth Fixed (ECEF) frame.  All
          coordinates are expressed in meters.
-    
+
       3) The expressions are computed in the main program.  TGP is the tide
-         generated potential.  The units are inverse meters. 
-    
+         generated potential.  The units are inverse meters.
+
       Test case:
          given input: XSTA(1) = 4075578.385D0 meters
                       XSTA(2) =  931852.890D0 meters
-                      XSTA(3) = 4801570.154D0 meters   
+                      XSTA(3) = 4801570.154D0 meters
                       XSUN(1) = 137859926952.015D0 meters
                       XSUN(2) = 54228127881.4350D0 meters
                       XSUN(3) = 23509422341.6960D0 meters
                       XMON(1) = -179996231.920342D0 meters
                       XMON(2) = -312468450.131567D0 meters
                       XMON(3) = -169288918.592160D0 meters
-                      FAC2SUN =  0.163271964478954D0 1/meters     
-                      FAC2MON =  0.321989090026845D0 1/meters    
-                      
+                      FAC2SUN =  0.163271964478954D0 1/meters
+                      FAC2MON =  0.321989090026845D0 1/meters
+
          expected output:  XCORSTA(1) = -0.2801334805106874015D-03 meters
                            XCORSTA(2) =  0.2939522229284325029D-04 meters
                            XCORSTA(3) = -0.6051677912316721561D-04 meters
-    
+
       References:
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
-      2009 July     31 B.E. Stetzler  Initial standardization of code 
+      2009 July     31 B.E. Stetzler  Initial standardization of code
       2009 July     31 B.E. Stetzler  Provided a test case
     -----------------------------------------------------------------------
     '''
@@ -14145,20 +14145,20 @@ def ST1L1 (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
       - - - - - - - - - - -
        S T 1 L 1
       - - - - - - - - - - -
-    
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
-      This subroutine gives the corrections induced by the latitude 
+
+      This subroutine gives the corrections induced by the latitude
       dependence given by L^1 in Mathews et al. 1991 (See References).
-    
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -14168,62 +14168,62 @@ def ST1L1 (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          XSTA          d(3)   Geocentric position of the IGS station (Note 1)
          XSUN          d(3)   Geocentric position of the Sun (Note 2)
          XMON          d(3)   Geocentric position of the Moon (Note 2)
-         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)      
-         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3) 
-    
+         FAC2SUN       d      Degree 2 TGP factor for the Sun (Note 3)
+         FAC2MON       d      Degree 2 TGP factor for the Moon (Note 3)
+
       Returned:
          XCORSTA       d(3)   Out of phase station corrections for
                               semi-diurnal band
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates are
-         expressed in meters. 
-      
+         expressed in meters.
+
       2) The position is in Earth Centered Earth Fixed (ECEF) frame.  All
          coordinates are expressed in meters.
-    
+
       3) The expressions are computed in the main program. TGP is the tide
-         generated potential.  The units are inverse meters. 
-    
+         generated potential.  The units are inverse meters.
+
       Test case:
          given input: XSTA(1) = 4075578.385D0 meters
                       XSTA(2) =  931852.890D0 meters
-                      XSTA(3) = 4801570.154D0 meters   
+                      XSTA(3) = 4801570.154D0 meters
                       XSUN(1) = 137859926952.015D0 meters
                       XSUN(2) = 54228127881.4350D0 meters
                       XSUN(3) = 23509422341.6960D0 meters
                       XMON(1) = -179996231.920342D0 meters
                       XMON(2) = -312468450.131567D0 meters
                       XMON(3) = -169288918.592160D0 meters
-                      FAC2SUN =  0.163271964478954D0 1/meters     
-                      FAC2MON =  0.321989090026845D0 1/meters    
-                      
+                      FAC2SUN =  0.163271964478954D0 1/meters
+                      FAC2MON =  0.321989090026845D0 1/meters
+
          expected output:  XCORSTA(1) = 0.2367189532359759044D-03 meters
                            XCORSTA(2) = 0.5181609907284959182D-03 meters
                            XCORSTA(3) = -0.3014881422940427977D-03 meters
-    
+
       References:
-    
+
          Mathews, P. M., Buffett, B. A., Herring, T. A., Shapiro, I. I.,
          1991b, Forced nutations of the Earth: Influence of inner core
          Dynamics 2. Numerical results and comparisons, J. Geophys. Res.,
          96, 8243-8257
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
-      2009 July     31 B.E. Stetzler  Initial standardization of code 
+      2009 July     31 B.E. Stetzler  Initial standardization of code
       2009 July     31 B.E. Stetzler  Provided a test case and Mathews
                                       reference
     -----------------------------------------------------------------------
@@ -14261,9 +14261,9 @@ def ST1L1 (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
     XCORSTA[0] = -DE*SINLA-DN*SINPHI*COSLA
     XCORSTA[1] = DE*COSLA-DN*SINPHI*SINLA
     XCORSTA[2] = DN*COSPHI
-   
+
    # Compute the station corrections for the semi-diurnal band.
-  
+
     L1=L1SD;
     COSTWOLA=COSLA**2-SINLA**2
     SINTWOLA=2.*COSLA*SINLA
@@ -14281,14 +14281,14 @@ def ST1L1 (XSTA,XSUN,XMON,FAC2SUN,FAC2MON):
        SINTWOLA-2.0*XMON[0]*XMON[1]*COSTWOLA)/RMON**2
 
     DE = 3.0*(DESUN+DEMON)
-    DN = 3.0*(DNSUN+DNMON) 
+    DN = 3.0*(DNSUN+DNMON)
 
     XCORSTA[0]=XCORSTA[0]-DE*SINLA-DN*SINPHI*COSLA
     XCORSTA[1]=XCORSTA[1]+DE*COSLA-DN*SINPHI*SINLA
     XCORSTA[2]=XCORSTA[2]+DN*COSPHI
 
     return XCORSTA
-    
+
 
 def STEP2DIU (XSTA,FHR,T):
     '''
@@ -14296,20 +14296,20 @@ def STEP2DIU (XSTA,FHR,T):
       - - - - - - - - - - -
        S T E P 2 D I U
       - - - - - - - - - - -
-    
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
+
       This subroutine gives the in-phase and out-of-phase corrections
-      induced by mantle anelasticity in the diurnal band. 
-    
+      induced by mantle anelasticity in the diurnal band.
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -14319,50 +14319,50 @@ def STEP2DIU (XSTA,FHR,T):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          XSTA          d(3)   Geocentric position of the IGS station (Note 1)
          FHR           d      Fractional hours in the day (Note 2)
          T             d      Centuries since J2000
-    
+
       Returned:
          XCORSTA       d(3)   In phase and out of phase station corrections
                               for diurnal band (Note 4)
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates are
-         expressed in meters. 
-      
+         expressed in meters.
+
       2) The fractional hours in the day is computed as the hour + minutes/60.0
          + sec/3600.0.  The unit is expressed in Universal Time (UT).
-    
+
       4) All coordinates are expressed in meters.
-    
+
       Test case:
          given input: XSTA(1) = 4075578.385D0 meters
                       XSTA(2) =  931852.890D0 meters
-                      XSTA(3) = 4801570.154D0 meters 
+                      XSTA(3) = 4801570.154D0 meters
                       FHR     = 0.00D0 hours
                       T       = 0.1059411362080767D0 Julian centuries
-                      
+
          expected output:  XCORSTA(1) = 0.4193085327321284701D-02 meters
                            XCORSTA(2) = 0.1456681241014607395D-02 meters
                            XCORSTA(3) = 0.5123366597450316508D-02 meters
-    
+
       References:
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
-      2009 July     31 B.E. Stetzler  Initial standardization of code 
+      2009 July     31 B.E. Stetzler  Initial standardization of code
       2009 August   06 B.E. Stetzler  Provided a test case
-      2009 August   06 B.E. Stetzler  Capitalized all variables for 
+      2009 August   06 B.E. Stetzler  Capitalized all variables for
                                       Fortran 77 compatibility
       2010 October  20 B.E. Stetzler  Input T corrected to be number of
                                       centuries since J2000
@@ -14444,10 +14444,10 @@ def STEP2DIU (XSTA,FHR,T):
     ZLA = atan2(XSTA[1],XSTA[0])
 
     XCORSTA = np.zeros(3)
-    
+
     THETAF=(TAU+DATDI[:,0]*S+DATDI[:,1]*H+DATDI[:,2]*P+\
                 DATDI[:,3]*ZNS+DATDI[:,4]*PS)*DEG2RAD
-        
+
     DR=DATDI[:,5]*2.0*SINPHI*COSPHI*np.sin(THETAF+ZLA)+\
         DATDI[:,6]*2.0*SINPHI*COSPHI*np.cos(THETAF+ZLA)
 
@@ -14456,15 +14456,15 @@ def STEP2DIU (XSTA,FHR,T):
 
     DE=DATDI[:,7]*SINPHI*np.cos(THETAF+ZLA)-\
         DATDI[:,8]*SINPHI*np.sin(THETAF+ZLA)
-        
+
     XCORSTA[0] = np.sum(DR*COSLA*COSPHI-DE*SINLA-DN*SINPHI*COSLA)
     XCORSTA[1] = np.sum(DR*SINLA*COSPHI+DE*COSLA-DN*SINPHI*SINLA)
     XCORSTA[2] = np.sum(DR*SINPHI+DN*COSPHI)
-    
+
     XCORSTA = XCORSTA/1000.0
 
     return XCORSTA
-    
+
 
 def STEP2LON (XSTA,T):
     '''
@@ -14472,20 +14472,20 @@ def STEP2LON (XSTA,T):
       - - - - - - - - - - -
        S T E P 2 L O N
       - - - - - - - - - - -
-    
+
       This routine is part of the International Earth Rotation and
       Reference Systems Service (IERS) Conventions software collection.
-    
+
       This subroutine gives the in-phase and out-of-phase corrections
-      induced by mantle anelasticity in the long period band. 
-    
+      induced by mantle anelasticity in the long period band.
+
       In general, Class 1, 2, and 3 models represent physical effects that
       act on geodetic parameters while canonical models provide lower-level
       representations or basic computations that are used by Class 1, 2, or
       3 models.
-     
+
       Status: Class 1
-    
+
          Class 1 models are those recommended to be used a priori in the
          reduction of raw space geodetic data in order to determine
          geodetic parameter estimates.
@@ -14495,49 +14495,49 @@ def STEP2LON (XSTA,T):
          1 or 2.
          Canonical models are accepted as is and cannot be classified as a
          Class 1, 2, or 3 model.
-    
+
       Given:
          XSTA          d(3)   Geocentric position of the IGS station (Note 1)
          T             d      Centuries since J2000
-    
+
       Returned:
          XCORSTA       d(3)   In phase and out of phase station corrections
                               for diurnal band (Note 2)
-    
+
       Notes:
-    
+
       1) The IGS station is in ITRF co-rotating frame.  All coordinates are
-         expressed in meters. 
-      
+         expressed in meters.
+
       2) All coordinates are expressed in meters.
-    
+
       Test case:
          given input: XSTA(1) = 4075578.385D0 meters
                       XSTA(2) =  931852.890D0 meters
-                      XSTA(3) = 4801570.154D0 meters 
+                      XSTA(3) = 4801570.154D0 meters
                       T       = 0.1059411362080767D0 Julian centuries
-                      
+
          expected output:  XCORSTA(1) = -0.9780962849562107762D-04 meters
                            XCORSTA(2) = -0.2236349699932734273D-04 meters
                            XCORSTA(3) =  0.3561945821351565926D-03 meters
-    
+
       References:
-    
+
          Mathews, P. M., Dehant, V., and Gipson, J. M., 1997, ''Tidal station
          displacements," J. Geophys. Res., 102(B9), pp. 20,469-20,477
-    
+
          Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
          IERS Technical Note No. 36, BKG (2010)
-    
+
       Revisions:
       1996 March    23 V. Dehant      Original code
       2009 August   07 B.E. Stetzler  Initial standardization of code
                                       and found unnecessary variables tau
-                                      and fhr 
+                                      and fhr
       2009 August   07 B.E. Stetzler  Provided a test case
-      2009 August   07 B.E. Stetzler  Capitalized all variables for 
+      2009 August   07 B.E. Stetzler  Capitalized all variables for
                                       Fortran 77 compatibility
-      2010 October  20 B.E. Stetzler  Input T corrected to be number of 
+      2010 October  20 B.E. Stetzler  Input T corrected to be number of
                                       centuries since J2000
     -----------------------------------------------------------------------
     '''
@@ -14589,10 +14589,10 @@ def STEP2LON (XSTA,T):
     PS = fmod(PS,360.0)
 
     XCORSTA = np.zeros(3)
-    
+
     THETAF=(DATDI[:,0]*S+DATDI[:,1]*H+DATDI[:,2]*P+\
                 DATDI[:,3]*ZNS+DATDI[:,4]*PS)*DEG2RAD
-        
+
     DR=DATDI[:,5]*(3.0*SINPHI**2-1.0)/2.0*np.cos(THETAF)+\
            DATDI[:,7]*(3.0*SINPHI**2-1.0)/2.0*np.sin(THETAF)
 
@@ -14602,14 +14602,14 @@ def STEP2LON (XSTA,T):
     XCORSTA[0] = np.sum(DR*COSLA*COSPHI-DN*SINPHI*COSLA)
     XCORSTA[1] = np.sum(DR*SINLA*COSPHI-DN*SINPHI*SINLA)
     XCORSTA[2] = np.sum(DR*SINPHI+DN*COSPHI)
-    
+
     XCORSTA /= 1000.0
 
     return XCORSTA
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def hardisp(sta, t, r2000, calc_vel=True):
     '''
@@ -14617,25 +14617,25 @@ def hardisp(sta, t, r2000, calc_vel=True):
      sta               site object with:
          sta.amp_ocean(11,3)   Amplitudes
          sta.phs_ocean(11,3)   Phases
-         sta.vw                Transformation matrix from VEN to the 
+         sta.vw                Transformation matrix from VEN to the
                                Earth-fixed coordinate system
      r2000             Transformation matrix from crust-fixed to J2000 system
-     calc_vel          Swich whether to calculate velocity numerically or not 
+     calc_vel          Swich whether to calculate velocity numerically or not
                        (as it's very small..)
-    
+
      output:
       sta object with dx_octide, dv_octide saved in dr_oclo, dv_oclo
-     
-    '''    
+
+    '''
     amp_ocean = sta.amp_ocean
     phs_ocean = sta.phs_ocean
     vw = sta.vw
-    
+
     dx_octide = hardisp_calc(amp_ocean, phs_ocean, vw, t, r2000)
-    
+
     # calculate velocity, if requested:
     dv_octide = np.zeros(3)
-    
+
     # calculate velocity numerically:
     if (calc_vel):
         dx_ol = []
@@ -14644,11 +14644,11 @@ def hardisp(sta, t, r2000, calc_vel=True):
         for jj in (-1, 1):
             dx_ol.append(hardisp_calc(amp_ocean, phs_ocean, vw,\
                                       t + jj*sec, r2000))
-        dv_octide = (dx_ol[1] - dx_ol[0])/2.0 # m/s in GCRS    
-    
+        dv_octide = (dx_ol[1] - dx_ol[0])/2.0 # m/s in GCRS
+
     sta.dr_oclo = np.array(dx_octide)
     sta.dv_oclo = np.array(dv_octide)
-    
+
     return sta
 
 
@@ -14657,37 +14657,37 @@ def hardisp_calc(amp_ocean, phs_ocean, vw, t, r2000):
      input:
      amp_ocean(11,3)   Amplitudes
      phs_ocean(11,3)   Phases
-     vw                Transformation matrix from VEN to the 
+     vw                Transformation matrix from VEN to the
                        Earth-fixed coordinate system
      r2000             Transformation matrix from crust-fixed to J2000 system
-     calc_vel          Swich whether to calculate velocity numerically or not 
+     calc_vel          Swich whether to calculate velocity numerically or not
                        (as it's very small..)
-    
+
      output:
       dx_octide - displacement due to ocean loading
-     
+
     '''
     # parameters
     NT = 342
     ntin = 11
-          
+
     IDT = np.array([ [2, 0, 0, 0, 0, 0],  [2, 2,-2, 0, 0, 0],   [2,-1, 0, 1, 0, 0],\
             [2, 2, 0, 0, 0, 0],  [1, 1, 0, 0, 0, 0],   [1,-1, 0, 0, 0, 0],\
             [1, 1,-2, 0, 0, 0],  [1,-2, 0, 1, 0, 0],   [0, 2, 0, 0, 0, 0],\
             [0, 1, 0,-1, 0, 0],  [0, 0, 2, 0, 0, 0] ], order='F')
     IDT = np.transpose(IDT)
-    
+
     year = t.year
     hh = t.hour
     mm = t.minute
     ss = t.second
-    
+
     doy = (t - datetime.datetime(year,1,1)).days + 1
     it = np.array([year, doy, hh, mm, ss])
 
-    # Find amplitudes and phases for all constituents, for each of the three 
+    # Find amplitudes and phases for all constituents, for each of the three
     # displacements. Note that the same frequencies are returned each time.
-    # 
+    #
     # BLQ format order is vertical, horizontal EW, horizontal NS
     AZ, _, PZ, _ = admint2(amp_ocean[:,0],IDT,-phs_ocean[:,0],ntin,it)
     AW, _, PW, _ = admint2(amp_ocean[:,1],IDT,-phs_ocean[:,1],ntin,it)
@@ -14695,41 +14695,41 @@ def hardisp_calc(amp_ocean, phs_ocean, vw, t, r2000):
 
     # set up for recursion, by normalizing frequencies, and converting
     # phases to radians
-    
+
     DR = 0.01745329252
-    
+
     PZ = DR*PZ
     PS = DR*PS
     PW = DR*PW
     F = pi*F/43200.0
-    
+
     # Set up harmonic coefficients, and compute tide
     HCZ = np.zeros(2*NT)
     HCS = np.zeros(2*NT)
     HCW = np.zeros(2*NT)
-    
+
     HCZ[::2]    = AZ*np.cos(PZ)
     HCZ[1::2]   = -AZ*np.sin(PZ)
     HCS[::2]    = AS*np.cos(PS)
     HCS[1::2]   = -AS*np.sin(PS)
     HCW[::2]    = AW*np.cos(PW)
     HCW[1::2]   = -AW*np.sin(PW)
-    
+
     dz, _ = recurs(HCZ, ntout, F)
     ds, _ = recurs(HCS, ntout, F)
     dw, _ = recurs(HCW, ntout, F)
 
-    # Change the signs on the horizontal displacements to convert the 
+    # Change the signs on the horizontal displacements to convert the
     # Vertical-West-South system to the Vertical-East-North system:
     dzne = np.array([dz, -ds, -dw])
-    
-    # Transformation of the displacements from local VEN to the 
+
+    # Transformation of the displacements from local VEN to the
     # Earth-fixed coordinate system
     # Then rotate vectors from crust-fixed to J2000 system.
     dx_octide = dot(r2000[:,:,0], dot(vw, dzne))
-    
+
     return dx_octide
-    
+
 #@jit
 #@numba.jit((double[:], double, double[:]))
 @numba.jit('(f8[:], f8, f8[:])')
@@ -14739,21 +14739,21 @@ def recurs(HC,NF,OM):
      - - - - - - - - -
       R E C U R S
      - - - - - - - - -
-   
+
      This routine is part of the International Earth Rotation and
      Reference Systems Service (IERS) Conventions software collection.
-   
+
      The purpose of the subroutine is to perform sine and cosine recursion
      to fill in data x, of length n, for nf sines and cosines with frequencies
-     om. 
-   
+     om.
+
      In general, Class 1, 2, and 3 models represent physical effects that
      act on geodetic parameters while canonical models provide lower-level
      representations or basic computations that are used by Class 1, 2, or
      3 models.
-    
-     Status: Canonical model	
-    
+
+     Status: Canonical model
+
         Class 1 models are those recommended to be used a priori in the
         reduction of raw space geodetic data in order to determine
         geodetic parameter estimates.
@@ -14763,7 +14763,7 @@ def recurs(HC,NF,OM):
         1 or 2.
         Canonical models are accepted as is and cannot be classified as a
         Class 1, 2, or 3 model.
-   
+
      Given: This is a support routine of the main program HARDISP.F.
         x              d      data provided from a file given as standard
                               input from the MAIN program HARDISP.F (Note 1)
@@ -14771,31 +14771,31 @@ def recurs(HC,NF,OM):
         hc             d      array containing alternating cosine and sine
                               coefficients
         nf             i      number of sine and cosine terms
-        om             d      sine and cosine frequencies (Note 2)  
-   
+        om             d      sine and cosine frequencies (Note 2)
+
      Returned:
         scr            d      scratch array of length 3 times nf which is
                               returned as the recursion cr
      Notes:
-   
+
      1) See the MAIN program HARDISP.F header comments for detailed information.
-    
+
      2) The frequencies are normalized so that the Nyquist frequency is pi.
-   
+
      Called:
         None
-   
+
      Test case:
         Not provided for this subroutine.
-   
+
      References:
-   
+
         Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         IERS Technical Note No. 36, BKG (2010)
-   
+
      Revisions:
      2009 June 05 B.E. Stetzler    Added header and copyright, used Dcos
-                                   and Dsin exclusively, and replaced END 
+                                   and Dsin exclusively, and replaced END
                                    DO statements with CONTINUE statements
      2009 August 19 B.E. Stetzler  Capitalized all variables for FORTRAN
                                    77 compatibility
@@ -14815,13 +14815,13 @@ def recurs(HC,NF,OM):
         X = X + SCR[3*J]
         SC = SCR[3*J]
         SCR[3*J] = SCR[3*J+2]*SC-SCR[3*J+1]
-        SCR[3*J+1] = SC        
-        
+        SCR[3*J+1] = SC
+
     return X, SCR
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def poletide(sta, t, eops, r2000, calc_vel=True):
     '''
@@ -14835,12 +14835,12 @@ def poletide(sta, t, eops, r2000, calc_vel=True):
     '''
     lat = sta.lat_geod
     lon = sta.lon_gcen
-    
+
     dx_poltide = poletide_calc(lat, lon, t, eops, r2000)
-    
+
     # calculate velocity, if requested:
     dv_poltide = np.zeros(3)
-    
+
     # calculate velocity numerically:
     if (calc_vel):
         dx_pt = []
@@ -14857,10 +14857,10 @@ def poletide(sta, t, eops, r2000, calc_vel=True):
 
 #@jit
 def poletide_calc(lat, lon, t, eops, r2000):
-    
+
     x_p = eops[1]
     y_p = eops[2]
-    
+
     mns = np.array([ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
     ds = 365.0
     if ( fmod(t.year, 4) == 0 ):
@@ -14869,7 +14869,7 @@ def poletide_calc(lat, lon, t, eops, r2000):
     t = t.year + ( np.sum(mns[0:t.month-1]) + \
         t.day + (t.hour + t.minute/60.0 + t.second/3600.0)/24.0 ) / ds
     t_0 = 2000.0
-    
+
     # until 2010:
     # stupid IERS' cubic model:
     if t<2010.0:
@@ -14879,7 +14879,7 @@ def poletide_calc(lat, lon, t, eops, r2000):
     else:
         x_p_mean_i = np.array([23.513, 7.6141])
         y_p_mean_i = np.array([358.891, -0.6287])
-    
+
     x_p_mean = 0.0
     y_p_mean = 0.0 # initialise
     for ii, vv in enumerate(x_p_mean_i):
@@ -14904,68 +14904,68 @@ def poletide_calc(lat, lon, t, eops, r2000):
                      [sin(lat)*cos(lon), sin(lat)*sin(lon), cos(lat)]]).T
     # rotate to GCRS:
     dx_poltide = dot(r2000[:,:,0],dot(R_T,S))
-    
+
     return dx_poltide
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def aber_source(v_GCRS, vw, K_s, r2000, earth):
     '''
     Compute source position corrected for annual and diurnal aberration.
-    
-    Returns apparent geodetic elevation angle and azimuth 
+
+    Returns apparent geodetic elevation angle and azimuth
     measured East from North
     '''
     const = constants()
     #In order to calculate the elevation angle E it is necessary to rotate
     #the J2000.0 source unit vector to the topocentric system.
-    
-    # Calculation of diurnal and annual aberration 
+
+    # Calculation of diurnal and annual aberration
     V_total = earth[:,1] + v_GCRS
     VdotS = dot(K_s, V_total)
-    
+
     # Use Eq.6-66 from Zharov's book Spherical Astronomy
     abs_vec_V = norm(V_total)
     # normalise velocity vector:
     unit_V = V_total / norm(V_total)
     ndotS = dot(K_s, unit_V)
-    
+
     rel_p = 1.0/sqrt( 1.0 - (abs_vec_V/const.C)**2 )
     w1 = ( rel_p - 1.0 ) / rel_p
     w2 = 1.0 /( 1.0 + VdotS/const.C )
-    
+
     K_star_aber = w2 * ( K_s/rel_p + V_total/const.C + w1*ndotS*unit_V )
     # normalise aberrated vector:
     K_unit_aber = K_star_aber / norm(K_star_aber)
-    
-    # compute the rotation matrix which rotates from the geocentric 
+
+    # compute the rotation matrix which rotates from the geocentric
     # crust fixed system to the VEN system
-    
+
     # Rotate the aberrated vector to the crust fixed system:
     Crust_star = dot(r2000[:,:,0].T, K_unit_aber)
     ven_star = dot(vw.T, Crust_star)
-    
+
     el = asin( ven_star[0] )
     az = atan2(ven_star[1],ven_star[2])
     if az < 0.0:
         az += 2.0*pi
-    
+
     return az, el
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def thermal_def(sta, alpha, delta, elv, T, C):
     '''
-    thermal_def computes delta_tau due to the 
+    thermal_def computes delta_tau due to the
     thermal deformation effect of the telescope
 
     input:
        sta - site object
-       alpha, delta, elv, T - right ascention, declination, elevation, 
+       alpha, delta, elv, T - right ascention, declination, elevation,
                                air temperature in C
        const
     output delay:
@@ -14973,7 +14973,7 @@ def thermal_def(sta, alpha, delta, elv, T, C):
     '''
     dl = -0.12*np.pi/180.0
     phi0 = 39.06*np.pi/180.0
-    
+
     # Antenna focus factor
     if sta.focus_type == 'FO_PRIM':
         Fa = 0.9
@@ -15009,14 +15009,14 @@ def thermal_def(sta, alpha, delta, elv, T, C):
                        sta.gamma_hp * (T - sta.T0) * (sta.hp * sin(elv) + \
                        sta.AO * sqrt( 1.0 - ( sin(elv)*sin(phi0) + \
 		 cos(elv)*cos(phi0)*(cos(alpha)*cos(dl) + sin(alpha)*sin(dl)) )**2 ) + \
-		 sta.hv - Fa * sta.hs) ) / C    
+		 sta.hv - Fa * sta.hs) ) / C
 
     sta.dtau_therm = dt_thermal
     return sta
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def mount_tel(sta, r2000, el, az, T, P, H, const):
     '''
@@ -15035,9 +15035,9 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
     Direction of fixed axis depends on the telescope mounting.
     '''
     RICHM = [39.06, 0.12]
-    
+
     # Determine the unit vector representing the antenna fixed axis in a
-    # topocentric VEN system    
+    # topocentric VEN system
     # Alt-azimuth
     if sta.mount_type == 'MO_AZEL':
         unit_I = np.array([1.0, 0.0, 0.0]) # xyz (VEN)
@@ -15058,13 +15058,13 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
     else:
         print 'Unknown mount type for {:s}, guessing AltAz'.format(sta.name)
         unit_I = np.array([1.0, 0.0, 0.0]) # xyz (VEN)
-    
-    # Correct the aberrated topocentric source unit vector for 
-    # atmospheric radio refraction. 
-    
+
+    # Correct the aberrated topocentric source unit vector for
+    # atmospheric radio refraction.
+
     # The zenith angle of the aberrated source:
     Z =  pi/2.0 - el
-    
+
     Temp_K = T + 273.16
     Humid_F = H / 100.0
     Press_Hg = P * 760.0/1013.25
@@ -15079,9 +15079,9 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
     app = np.array([cos(Z - rho), \
                     sin(Z - rho)*sin(az),\
                     sin(Z - rho)*cos(az)])
-    
+
     # Normalise aberrated+refracted vector:
-    star_unit_app =  app/norm(app)    
+    star_unit_app =  app/norm(app)
 
     ## Delay computation
     # Compute topocentric axis offset vector:
@@ -15091,7 +15091,7 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
 
     # Normalise topocentric axis offset vector
     unit_vec_L = vec_L/norm(vec_L)
-    
+
     #Rotate axis offset vector to the crust fixed frame
     unit_cff = dot(sta.vw, unit_vec_L)
     # Then rotate axis offset vector to the J2000 frame:
@@ -15099,7 +15099,7 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
 
     work2 = dot(sta.vw, star_unit_app)
     star_ab2000 = dot(r2000, work2)
-    
+
     doff_dl = dot(star_ab2000, unit_ax2000)
     d_dax = -doff_dl/const.C*N_air
     # why minus? because the telescope 'gets closer' to the source if dl>0
@@ -15107,12 +15107,12 @@ def mount_tel(sta, r2000, el, az, T, P, H, const):
     sta.dtau_ao = dtau_off
 
     return sta
-    
+
 #@numba.jit('f8(f8, f8, f8, f8)')
 def sbend(El_Rad, Temp_K, Humid_F, Press_Hg):
     '''
     input:
-        El_rad   -- elevation angle in radians 
+        El_rad   -- elevation angle in radians
         Press_Hg -- Pressure in mm of Mercury (Hg)
         Temp_K   -- Temperature in Kelvins
         Humid_F  -- relative humidity (percent)
@@ -15122,7 +15122,7 @@ def sbend(El_Rad, Temp_K, Humid_F, Press_Hg):
     '''
     CDEGRAD = 0.017453292519943295
     CARCRAD = 4.84813681109536e-06
-    
+
     a1 = 0.40816
     a2 = 112.30
     b1 = 0.12820
@@ -15146,27 +15146,27 @@ def sbend(El_Rad, Temp_K, Humid_F, Press_Hg):
     # Pressure in mm of Hg
     p2 = Press_Hg
 
-    # CALCULATE CORRECTIONS FOR PRES, TEMP, AND WETNESS 
+    # CALCULATE CORRECTIONS FOR PRES, TEMP, AND WETNESS
     d3 = 1.0 + (z2-z1)*exp(c1*(z2-c2))
     fp = (p2/p1)*(1.0-(p2-p1)*exp(a1*(z2-a2))/d3)
     ft = (t1/t2)*(1.0-  (t2-t1)*exp(b1*(z2-b2)))
     fw = 1.0+(w[0]*r*exp((w[1]*t2-w[2])/(t2-w[3]))/(t2*p2))
 
-    # CALCULATE OPTICAL REFRACTION 
+    # CALCULATE OPTICAL REFRACTION
     u = (z2-e[0])/e[1]
     x = e[10]
-    for i in range(8): 
+    for i in range(8):
         x = e[9-i] + u*x
 
     # COMBINE FACTORS AND FINISH OPTICAL FACTOR
-    bend_ang = ft*fp*fw*(exp(x/d3)-e[11]) 
+    bend_ang = ft*fp*fw*(exp(x/d3)-e[11])
 
     # BACK TO RADIANS FROM ARC SECONDS
     bend_ang = bend_ang*CARCRAD
-      
+
     return bend_ang
-    
-    
+
+
 def tropo_petrov(st, el, az, dmjd):
     """
         Petrov's tropospheric delay model based on numerical ray-tracing
@@ -15221,7 +15221,7 @@ def tropo_petrov(st, el, az, dmjd):
     return st
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def tropo_wien(st, el, az, dmjd, const, do_trp_grad_calc=False):
     """
@@ -15231,7 +15231,7 @@ def tropo_wien(st, el, az, dmjd, const, do_trp_grad_calc=False):
     # FIXME: could be out-of-bounds for uplink stations in 3-way Doppler
     # case if near midnight on the first day
     if dmjd < st.met['mjd'][0]:
-        dmjd = st.met['mjd'][0] 
+        dmjd = st.met['mjd'][0]
     # if vmf1 site data are present:
     ah = st.fMet['fAhz'](dmjd)
     aw = st.fMet['fAwz'](dmjd)
@@ -15246,9 +15246,9 @@ def tropo_wien(st, el, az, dmjd, const, do_trp_grad_calc=False):
         vmf1h, vmf1w = vmf1(ah, aw, dmjd, lat_gcen, np.pi/2.0 - el)
     else:
         vmf1h, vmf1w = vmf1_ht(ah, aw, dmjd, lat_gcen, h_geod, np.pi/2.0 - el)
-    
+
     dtau_tropo = (dzh*vmf1h + dzw*vmf1w) / const.C
-    
+
     # tropospheric gradients:
     if len(st.met['gnh'])>0 and do_trp_grad_calc:
         nh = st.fMet['fGnh'](dmjd)
@@ -15261,30 +15261,30 @@ def tropo_wien(st, el, az, dmjd, const, do_trp_grad_calc=False):
                 0.71*vmf1w*(nw*cos(az)+ew*sin(az))/tan(el) ) / const.C
         # add horizaontal gradient to the path delay:
         dtau_tropo += grad
-    
+
     st.dtau_tropo = dtau_tropo
-    
+
     return st
-    
+
 #@jit
 def vmf1(ah, aw, dmjd, dlat, zd):
     '''
     This subroutine determines the VMF1 (Vienna Mapping Functions 1)
     for specific sites.
-    Reference: Boehm, J., B. Werl, H. Schuh (2006), 
-    Troposphere mapping functions for GPS and very long baseline interferometry 
+    Reference: Boehm, J., B. Werl, H. Schuh (2006),
+    Troposphere mapping functions for GPS and very long baseline interferometry
     from European Centre for Medium-Range Weather Forecasts operational analysis data,
     J. Geoph. Res., Vol. 111, B02406, doi:10.1029/2005JB003629.
 
     Please mind that the coefficients in this paper are wrong. The corrected version of
-    the paper can be found at: 
+    the paper can be found at:
     http://ggosatm.hg.tuwien.ac.at/DOCS/PAPERS/2006Boehm_etal_VMF1.pdf
 
 
     input data
     ----------
     ah:   hydrostatic coefficient a (http://ggosatm.hg.tuwien.ac.at/DELAY/SITE/)
-    aw:   wet coefficient a         (http://ggosatm.hg.tuwien.ac.at/DELAY/SITE/)  
+    aw:   wet coefficient a         (http://ggosatm.hg.tuwien.ac.at/DELAY/SITE/)
     dmjd: modified julian date
     dlat: ellipsoidal latitude in radians
     zd:   zenith distance in radians
@@ -15312,7 +15312,7 @@ def vmf1(ah, aw, dmjd, dlat, zd):
         phh  = 0.0
         c11h = 0.005
         c10h = 0.001
-          
+
     ch = c0h + ((cos(doy/365.25*2.0*pi + phh)+1.0)*c11h/2.0 \
              + c10h)*(1.0-cos(dlat))
 
@@ -15330,27 +15330,27 @@ def vmf1(ah, aw, dmjd, dlat, zd):
     vmf1w   = topcon/(sine+gamma)
 
     return vmf1h, vmf1w
-    
+
 #@jit
 def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
     '''
-    !!! This is the version with height correction !!!  
-    !!! It has to be used with the grid !!!    
+    !!! This is the version with height correction !!!
+    !!! It has to be used with the grid !!!
 
     This subroutine determines the VMF1 (Vienna Mapping Functions 1)
-    Reference: Boehm, J., B. Werl, H. Schuh (2006), 
-    Troposphere mapping functions for GPS and very long baseline interferometry 
+    Reference: Boehm, J., B. Werl, H. Schuh (2006),
+    Troposphere mapping functions for GPS and very long baseline interferometry
     from European Centre for Medium-Range Weather Forecasts operational analysis data,
     J. Geoph. Res., Vol. 111, B02406, doi:10.1029/2005JB003629.
 
     Please mind that the coefficients in this paper are wrong. The corrected version of
-    the paper can be found at: 
+    the paper can be found at:
     http://ggosatm.hg.tuwien.ac.at/DOCS/PAPERS/2006Boehm_etal_VMF1.pdf
 
     input data
     ----------
     ah:   hydrostatic coefficient a (http://ggosatm.hg.tuwien.ac.at/DELAY/GRID/)
-    aw:   wet coefficient a         (http://ggosatm.hg.tuwien.ac.at/DELAY/GRID/)  
+    aw:   wet coefficient a         (http://ggosatm.hg.tuwien.ac.at/DELAY/GRID/)
     dmjd: modified julian date
     dlat: ellipsoidal latitude in radians
     ht:   ellipsoidal height in meter
@@ -15368,7 +15368,7 @@ def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
     this is taken from Niell (1996) to be consistent
     '''
     doy = dmjd  - 44239.0 + 1 - 28
-      
+
     bh = 0.0029
     c0h = 0.062
     if (dlat<0.0):      #   ! southern hemisphere
@@ -15379,7 +15379,7 @@ def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
         phh  = 0.0
         c11h = 0.005
         c10h = 0.001
-          
+
     ch = c0h + ((cos(doy/365.25*2.0*pi + phh)+1.0)*c11h/2.0 \
              + c10h)*(1.0-cos(dlat))
 
@@ -15389,7 +15389,7 @@ def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
     topcon = (1.0 + ah/(1.0 + bh/(1.0 + ch)))
     vmf1h   = topcon/(sine+gamma)
 
-    # height correction for hydrotatic part [Niell, 1996]     
+    # height correction for hydrotatic part [Niell, 1996]
     a_ht = 2.53e-5
     b_ht = 5.49e-3
     c_ht = 1.14e-3
@@ -15400,7 +15400,7 @@ def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
     ht_corr_coef = 1.0/sine - topcon/(sine + gamma)
     ht_corr      = ht_corr_coef * hs_km
     vmf1h        = vmf1h + ht_corr
-    
+
     bw = 0.00146
     cw = 0.04391
     beta   = bw/( sine + cw )
@@ -15409,10 +15409,10 @@ def vmf1_ht(ah, aw, dmjd, dlat, ht, zd):
     vmf1w   = topcon/(sine+gamma)
 
     return vmf1h, vmf1w
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
     '''
@@ -15421,39 +15421,39 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
     # FIXME: ionosphere must be thoroughly checked!
     UT_tec = iono.UT_tec
     fVTEC = iono.fVTEC
-    
+
     date_tec_0 = Time(str(iono.date_tec[0]), format='iso', scale='utc')
     t_UT = Time(jd+UT, format='jd', scale='utc')
     dd = (t_UT.datetime - date_tec_0.datetime).days
 #    print 'ion_igs:', t_UT.datetime, date_tec_0.datetime, dd
-    
+
     # calculate distance to point J of ray pierce into ionosphere from site
 #    H = 438.1*1e3 # m - mean height of the ionosphere above R_E
     H = 450*1e3 # m - height of ionosphere above R_E as stated in IONEX files
-    R_E = 6371.0*1e3 # m - Earth's radius from the TEC map 
+    R_E = 6371.0*1e3 # m - Earth's radius from the TEC map
 
     alpha = 0.9782 # Schaer JPL, but this is for H = 506.7 km
-    
+
     if 1==0:
     #    lat_geod = sta.lat_geod
-        # geocentric lat is used! 
+        # geocentric lat is used!
         # for reference see https://igscb.jpl.nasa.gov/igscb/data/format/ionex1.pdf
         lat_gcen = sta.lat_gcen
     #    lon_gcen = sta.lon_gcen
         h_geod = sta.h_geod
-        
+
         #WGS84 Ellipsoid
         a = 6378137.0 # m
         f = 1.0/298.2572235630
         b = a*(1.0-f) # m
         ec = sqrt((a**2-b**2)/(a**2))
-        
+
         R_oscul = a*sqrt(1.0-ec**2)/(1.0-(ec*sin(lat_gcen))**2) # m
-        
+
         source_vec = np.array([sin(pi/2.0-elv)*cos(azi),\
                                sin(pi/2.0-elv)*sin(azi),\
                                cos(pi/2.0-elv) ])
-        
+
         # slanted distance btw the ground and the iono layer
         ds = (R_oscul+h_geod)*sin(-elv) + \
              0.5 * sqrt( (2.0*(R_oscul+h_geod)*sin(-elv))**2 - \
@@ -15473,13 +15473,13 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
                            sin(pi/2.0-elv)*sin(azi),\
                            cos(pi/2.0-elv) ])
     r1 = r0 + D*source_vec
-    
+
     # lat/long of the pierce point
     rlalo = cart2sph(r1)
     lon = 180.0*rlalo[2]/pi
     lat = 180.0*rlalo[1]/pi
 #    print lat, lon
-    
+
     # yet another way of computing lon/lat
     #http://www.tudelft.nl/fileadmin/Faculteit/CiTG/
     #Over_de_faculteit/Afdelingen/Afdeling_Geoscience_and_Remote_Sensing/
@@ -15488,7 +15488,7 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
     f = 1.0/298.2572235630
     b = a*(1.0-f) # m
     ec = sqrt((a**2-b**2)/(a**2))
-    
+
     R_oscul = a*sqrt(1.0-ec**2)/(1.0-(ec*sin(sta.lat_geod))**2) # m
     z = pi/2 - elv
     z_prime = np.arcsin(R_oscul/(R_E+H)*sin(z))
@@ -15500,11 +15500,11 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
 #    print lat, lon
 #    raw_input()
 #    print UT
-    
+
 #    print sta.lat_gcen*180/pi, sta.lon_gcen*180/pi
 #    print lat, lon
 #    print azi*180/pi, elv*180/pi
-    
+
     # find closest epoch in TEC data:
     # easy case - UT is in UT_tec
     n0 = np.searchsorted(UT_tec, UT+dd)
@@ -15529,10 +15529,10 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
 #        print UT, UT_tec[nl:nr]
         TEC_z = np.interp(UT+dd, UT_tec[nl:nr], TEC_z)
         # TODO: fix at some point
-        # note: when calculating tau_iono for an uplink station when t_obs 
-        # starts at 00h, this will yield TEC_z[0], as it doesn't 
+        # note: when calculating tau_iono for an uplink station when t_obs
+        # starts at 00h, this will yield TEC_z[0], as it doesn't
         # do extrapolation. No big deal...
-    
+
     # calculate slanted TEC
     if 1==0:
         TEC = TEC_z / cos(asin( (R_oscul+h_geod)*sin(alpha*(pi/2.0-elv))/(R_E+H) ))
@@ -15542,17 +15542,17 @@ def ion_igs(sta, iono, elv, azi, jd, UT, f_0):
 
 #    print TEC_tecu
 #    raw_input()
-    
+
     # calculate ionspheric delay for the source
     delay_ion = 5.308018e10*TEC_tecu/(4.0*pi**2*f_0*f_0)
 
     sta.dtau_iono = delay_ion
-    
+
     return sta
-    
+
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def iau_tdbtcb( TDB1, TDB2 ):
     '''
@@ -15560,28 +15560,28 @@ def iau_tdbtcb( TDB1, TDB2 ):
       - - - - - - - - - - -
        i a u _ T D B T C B
       - - - - - - - - - - -
-    
+
       Time scale transformation:  Barycentric Dynamical Time, TDB, to
       Barycentric Coordinate Time, TCB.
-    
+
       This routine is part of the International Astronomical Union's
       SOFA (Standards of Fundamental Astronomy) software collection.
-    
+
       Status:  canonical.
-    
+
       Given:
          TDB1,TDB2    d      TDB as a 2-part Julian Date
-    
+
       Returned:
          TCB1,TCB2    d      TCB as a 2-part Julian Date
-    
+
       Notes:
-    
+
       1  TDB1+TDB2 is Julian Date, apportioned in any convenient way
          between the two arguments, for example where TDB1 is the Julian
          Day Number and TDB2 is the fraction of a day.  The returned
          TCB1,TCB2 follow suit.
-    
+
       2  The 2006 IAU General Assembly introduced a conventional linear
          transformation between TDB and TCB.  This transformation
          compensates for the drift between TCB and terrestrial time TT,
@@ -15596,20 +15596,20 @@ def iau_tdbtcb( TDB1, TDB2 ):
          conventional linear relationship adopted in 2006 sidestepped
          these difficulties whilst delivering a TDB that in practice was
          consistent with values before that date.
-    
+
       3  TDB is essentially the same as Teph, the time argument for the
          JPL solar system ephemerides.
-    
+
       Reference:
-    
+
          IAU 2006 Resolution B3
-    
+
       This revision:  2010 September 10
-    
+
       SOFA release 2010-12-01
-    
+
       Copyright (C) 2010 IAU SOFA Board.  See notes at end.
-    
+
     -----------------------------------------------------------------------
     '''
     # 1977 Jan 1.0 TAI = 1977/1/1 00:00:32.184 TCB, as two-part JD
@@ -15636,7 +15636,7 @@ def iau_tdbtcb( TDB1, TDB2 ):
         F = TDB1 - TDB0
         TCB1 = F - (D-(F-T77TF))*ELBB
         TCB2 = TDB2
-    
+
     return TCB1, TCB2
 
 @memoize
@@ -15646,29 +15646,29 @@ def iau_tcbtdb(TCB1, TCB2):
       - - - - - - - - - - -
        i a u _ T C B T D B
       - - - - - - - - - - -
-    
+
       Time scale transformation:  Barycentric Coordinate Time, TCB, to
       Barycentric Dynamical Time, TDB.
-    
+
       This routine is part of the International Astronomical Union's
       SOFA (Standards of Fundamental Astronomy) software collection.
-    
+
       Status:  canonical.
-    
+
       Given:
          TCB1,TCB2    d      TCB as a 2-part Julian Date
-    
+
       Returned:
          TDB1,TDB2    d      TDB as a 2-part Julian Date
          J            i      status:  0 = OK
-    
+
       Notes:
-    
+
       1  TCB1+TCB2 is Julian Date, apportioned in any convenient way
          between the two arguments, for example where TCB1 is the Julian
          Day Number and TCB2 is the fraction of a day.  The returned
          TDB1,TDB2 follow suit.
-    
+
       2  The 2006 IAU General Assembly introduced a conventional linear
          transformation between TDB and TCB.  This transformation
          compensates for the drift between TCB and terrestrial time TT,
@@ -15683,20 +15683,20 @@ def iau_tcbtdb(TCB1, TCB2):
          conventional linear relationship adopted in 2006 sidestepped
          these difficulties whilst delivering a TDB that in practice was
          consistent with values before that date.
-    
+
       3  TDB is essentially the same as Teph, the time argument for the
          JPL solar system ephemerides.
-    
+
       Reference:
-    
+
          IAU 2006 Resolution B3
-    
+
       This revision:  2010 May 13
-    
+
       SOFA release 2010-12-01
-    
+
       Copyright (C) 2010 IAU SOFA Board.  See notes at end.
-    
+
     -----------------------------------------------------------------------
     '''
     T77TD = 2443144.0
@@ -15718,29 +15718,29 @@ def iau_tcbtdb(TCB1, TCB2):
         TDB2 = TCB2
 
     return TDB1, TDB2
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def delay_iers(tjd, CT, r_1, r_2, v_2, earth, sun, K_s, jpl_eph, \
                GM, TDB_TCB, L_C, C):
     '''
     VLBI delay calculation following IERS Conventions 2010
-    '''    
+    '''
     # G*masses in TCB-frame! (see constants class)
 
     gamma_PPN = 1
-    
+
 #    b = sta[1].r_GCRS - sta[0].r_GCRS
     b = r_2 - r_1
-    
+
     # follow Kopeikin's notations
 #    _, t = iau_tdbtcb(tjd, CT) # reception time in TCB
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
-    
+
     # BCRS radius vectors of the reception sites at t:
     x_1 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_1 - \
           dot(earth[:,1],r_1)*earth[:,1] / (2.0*C**2)
@@ -15797,7 +15797,7 @@ def delay_iers(tjd, CT, r_1, r_2, v_2, earth, sun, K_s, jpl_eph, \
 #    print 'aa', _time()-tic
 #    print 'T_g = ', T_g
     '''
-    
+
     # IERS algorithm for finding gravitational delay
 #    tic = _time()
     T_g = 0.0
@@ -15828,35 +15828,35 @@ def delay_iers(tjd, CT, r_1, r_2, v_2, earth, sun, K_s, jpl_eph, \
                    (dot(earth[:,1], b)/C**2) * \
                     (1.0 + 0.5*dot(K_s, earth[:,1])/C) \
             ) / (1.0 + dot(K_s, earth[:,1] + v_2)/C)
-    
+
     return dtau
-    
-    
+
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
              K_s, jpl_eph, GM, TDB_TCB, L_C, C, AE, uv=False):
     '''
     VLBI delay calculation following Vlasov, Zharov, Sazhin (2012)
-    '''    
+    '''
     # G*masses in TCB-frame! (see constants class)
-    
+
     b = r_2 - r_1
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
 
 #    earth = earth*TDB_TCB
 #    sun = sun*TDB_TCB
-    
+
     # BCRS radius vectors of the reception sites at t:
     x_1 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_1 - \
           dot(earth[:,1],r_1)*earth[:,1] / (2.0*C**2)
     x_2 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_2 - \
           dot(earth[:,1],r_2)*earth[:,1] / (2.0*C**2)
 
-    
+
     # IERS algorithm for finding gravitational delay
     T_g = 0.0
     for kk in range(11):
@@ -15878,7 +15878,7 @@ def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
             r_moon = x_J - earth[:,0]
         if kk==10:
             r_sun = x_J - earth[:,0]
-    
+
     # Lorenz-transform from BCRS to GCRS
     # full geometric delay in the TT-frame
     dtau = ( T_g - (dot(K_s, b)/C) * \
@@ -15892,10 +15892,10 @@ def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
              dot(K_s, r_1)*dot(r_1, earth[:,2])/C**3 + \
              dot(K_s, earth[:,2])*(norm(r_1)**2)/(2.0*C**3) ) \
             / (1.0 + dot(K_s, earth[:,1] + v_2)/C)
-    
+
     if uv:
         return dtau
-    
+
     ''' calculate dtau_spacecraft/dt (proper time by geocentric coordinate time)
         to precision roughly 10^-15 '''
     # dtau/dTCB:
@@ -15908,7 +15908,7 @@ def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
                          norm(r_2)**2)/(2.0*norm(r_sun)**3) + \
                       GM[9]/norm(r_moon-r_2) - GM[9]/norm(r_moon) + \
                          GM[9]*dot(r_2,r_moon)/(norm(r_moon)**3) ) / C**2
-    
+
     ''' calculate downlink light-time from RA to Pushchino at CT '''
     # Get Solar system bodies r, v at CT wrt Earth
     r_B = []
@@ -15917,10 +15917,10 @@ def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
         rrd = pleph(tjd+CT, kk+1, 3, jpl_eph)
         r_B.append(rrd[0:3]*1e3)
         v_B.append(rrd[3:]*1e3)
-    
+
     precision = 1e-13
     n_max = 2
-    
+
     # initial approximation:
     nn = 0
     lt_tmp = 0.0
@@ -15950,15 +15950,15 @@ def delay_ra(tjd, CT, UTC, r_1, r_2, v_2, a_2, r_3, earth, sun,\
         dlt = (dlt - norm(r_23)/C - RLT) / (1.0 - p_dot/C)
         lt = lt + dlt/86400.0
         nn += 1
-    
+
     lt_downlink = (UTC - lt)*86400.0
 
     return dtau, dtau_dt_min1, lt_downlink
-    
-    
+
+
 
 #==============================================================================
-# 
+#
 #==============================================================================
 #@numba.jit
 def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
@@ -15966,17 +15966,17 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
     '''
     VLBI delay calculation following Moyer/Duev
     For reference see Duev et al. 2012 A&A 43
-    
+
     tjd - Julian Date of observation
     t_1 - epoch in TDB of observation, decimal days [0,1] * *86400
     dd - number of days since the start epoch of the ephemeris *86400
     r_1 - radius-vector of station 1 in GCRS (usually, Geocenter)
     r_2, v_2, a_2 - radius-vector, velocity, acceleration of station 2 in GCRS
     state_ss  - Solar system bodies r, v (and a for Earth) at t_1 wrt SSBC
-    
+
     tdb - "time coordinate" of the S/C ephemeris, decimal days *86400
     bcrs - state of the S/C
-    
+
     GM - G*M for Solar System bodies
     TDB_TCB - obvious
     L_C = 1 -d(TCG)/d(TCB)
@@ -15984,7 +15984,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
     '''
     earth = state_ss[2]
     sun = state_ss[-1]
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
 
@@ -16004,15 +16004,15 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
 
     ''' calculate 1st downleg light-time from S/C to Receiver 1
         to find signal transmission t_0 time given the reception time t_1
-    '''    
+    '''
     precision = 1e-15
     n_max = 3
     lag_order = 5
-    
+
     # initial approximation:
     nn = 0
     lt_01_tmp = 0.0
-    
+
     # s/c:
 
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_1)
@@ -16031,7 +16031,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
     while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
         lt_01_tmp = lt_01
         t_0 = t_1 - lt_01
-        
+
         x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
         y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
         z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -16040,13 +16040,13 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
         vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
         R_0 = np.hstack((x,y,z))
         V_0 = np.hstack((vx,vy,vz))
-        
+
         # vector needed for RLT calculation
         R_01 = R_1 - R_0
 
         # >> SS bodies
         RLT = 0.0
-        
+
         ''' BCRS state vectors of celestial bodies at t_0, [m, m/s]: '''
         ## Earth:
         JD = tjd
@@ -16058,7 +16058,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
         ## Moon:
         rrd = pleph(JD+t_0/86400.0, 10, 12, inp['jpl_eph'])
         moon = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-    
+
         state_ss_t0 = []
         for jj in (1,2,4,5,6,7,8,9):
             rrd = pleph(JD+t_0/86400.0, jj, 12, inp['jpl_eph'])
@@ -16066,7 +16066,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
         state_ss_t0.insert(2,earth)
         state_ss_t0.append(moon)
         state_ss_t0.append(sun)
-        
+
 #        for ii, state in enumerate(state_ss):
         for ii, (state_t1, state_t0) in enumerate(zip(state_ss, state_ss_t0)):
             if not (ii==2 and norm(r_1)<1e-3):
@@ -16077,7 +16077,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
                 R_0_B  = R_0 - rb_t0
                 R_1_B  = R_1 - rb_t1
                 R_01_B = R_1_B - R_0_B
-    
+
                 RLT += (2.0*GM[ii]/C**3) * \
                       log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
                               2.0*GM[ii]/C**2 ) / \
@@ -16090,7 +16090,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
         t_0 = t_1 - lt_01
 #        print 't_0 = {:.18f}'.format(t_0)
         nn += 1
-    
+
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -16120,10 +16120,10 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
     state_ss_t0.insert(2,earth)
     state_ss_t0.append(moon)
     state_ss_t0.append(sun)
-    
+
     ''' calculate 2st downleg light-time from S/C to Receiver 2
         to find signal reception time t_2 given the transmission time t_0
-    '''    
+    '''
     # initial approximation:
     nn = 0
     lt_02_tmp = 0.0
@@ -16136,7 +16136,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
 
     while (abs(lt_02 - lt_02_tmp) > precision) and (nn < n_max):
         lt_02_tmp = lt_02
-        
+
         # vector needed for RLT calculation
         t_2 = t_0 + lt_02
         dt_12 = t_2 - t_1
@@ -16163,7 +16163,7 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
 #        print 'RLT = {:.18f}'.format(RLT)
         lt_02 = lt_02 - (lt_02 - norm(R_02)/C - RLT) / \
                     ( 1.0 - dot(R_02, V_2)/(C*norm(R_02)) )
-        
+
         nn += 1
 #        print 't_2 = {:.18f}'.format(t_2)
 #    print 'f(x)=0?: {:.18f}'.format(t_2 - t_0 - norm(R_02)/C - RLT)
@@ -16185,10 +16185,10 @@ def delay_moyer(tjd, t_1, dd, r_1, r_2, v_2, a_2, state_ss, tdb, bcrs,
 #    print T2_T1
     print 't2-t1 = {:.18f}'.format(t2_t1)
 #    raw_input()
-    
+
     return t2_t1
-    
-    
+
+
 #==============================================================================
 # Station short names
 #==============================================================================
@@ -16197,7 +16197,7 @@ def shname(staz, shnames_cat, shnames_cat_igs=None):
     Station short names
     '''
     staz_short = []
-    
+
     with open(shnames_cat,'r') as cat:
         cat_lines = cat.readlines()
     cat_lines = [l for l in cat_lines if l[0]!='#']
@@ -16206,11 +16206,11 @@ def shname(staz, shnames_cat, shnames_cat_igs=None):
         with open(shnames_cat_igs,'r') as cat_igs:
             cat_igs_lines = cat_igs.readlines()
             cat_igs_lines = [l for l in cat_igs_lines if l[0]!='*']
-    
+
     # if single string was input, convert it to a list
     if type(staz)==type('A'):
         staz = [staz]
-        
+
     # find short name for each station:
     for sta in staz:
         matching = [line for line in cat_lines \
@@ -16223,7 +16223,7 @@ def shname(staz, shnames_cat, shnames_cat_igs=None):
             print 'Trying IGS catalogue '+shnames_cat_igs
 #            print [line[4:12].strip() for line in cat_igs_lines]
             matching = [line for line in cat_igs_lines \
-                    if line[4:12].strip() == sta]            
+                    if line[4:12].strip() == sta]
             matching = matching[-1].split()[0].strip()
             print matching
             if len(matching)==0:
@@ -16233,9 +16233,9 @@ def shname(staz, shnames_cat, shnames_cat_igs=None):
         else:
             matching = matching[-1].strip() # skip comments, which will show up first here
             staz_short.append(matching[-2:])
-        
+
     return staz_short
-    
+
 #==============================================================================
 # Station long names
 #==============================================================================
@@ -16244,7 +16244,7 @@ def loname(staz, shnames_cat, shnames_cat_igs=None):
     Station short names
     '''
     staz_long = []
-    
+
     with open(shnames_cat,'r') as cat:
         cat_lines = cat.readlines()
     cat_lines = [l for l in cat_lines if l[0]!='#']
@@ -16253,11 +16253,11 @@ def loname(staz, shnames_cat, shnames_cat_igs=None):
         with open(shnames_cat_igs,'r') as cat_igs:
             cat_igs_lines = cat_igs.readlines()
         cat_igs_lines = [l for l in cat_igs_lines if l[0]!='*']
-    
+
     # if single string was input, convert it to a list
     if type(staz)==type('A'):
         staz = [staz]
-        
+
     # find long name for each station:
     for sta in staz:
         matching = [line for line in cat_lines \
@@ -16280,11 +16280,11 @@ def loname(staz, shnames_cat, shnames_cat_igs=None):
         else:
             matching = matching[-1].strip() # skip comments, which will show up first here
             staz_long.append(matching.split()[0])
-            
+
     return staz_long
-    
+
 #==============================================================================
-# 
+#
 #==============================================================================
 def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                     sta1, sta2, inp, t_1_UTC):
@@ -16294,35 +16294,35 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
     TODO: to be removed in the next release
     """
     debug = False
-    
+
     GM = const.GM
     C = const.C
     L_C = const.L_C
     r_1 = sta1.r_GCRS
-    
+
     earth = state_ss_t1[2]
     sun = state_ss_t1[-1]
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
 #    if debug: print 'U = {:.18f}'.format(U)
-    
+
     # BCRS radius vectors of the first reception site at t_1:
     R_1 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_1 - \
           dot(earth[:,1], r_1)*earth[:,1] / (2.0*C**2)
-          
+
     ''' calculate downleg light-time from S/C to Receiver
         to find signal transmission t_0 time given the reception time t_1
-    '''    
+    '''
     precision = 1e-16
     n_max = 3
     lag_order = 9
-    
+
     # initial approximation:
     nn = 0
     lt_01_tmp = 0.0
-    
-    # s/c:    
+
+    # s/c:
     t_1, dd = t_1_days*86400, dd_days*86400
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_1)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_1)
@@ -16342,7 +16342,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
     while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
         lt_01_tmp = lt_01
         t_0 = t_1 - lt_01
-        
+
         x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
 #        x, _ = lagint(lag_order, tdb/86400.0, bcrs[:,6], (dd+t_0)/86400.0)
         y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
@@ -16366,7 +16366,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
                 R_1_B  = R_1 - rb
                 R_01_B = R_1_B - R_0_B
     #            print R_0_B, R_1_B, R_01_B
-                if debug: 
+                if debug:
                     print 'rlt = {:.18f}'.format((2.0*GM[ii]/C**3) * \
                       log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) / \
@@ -16377,7 +16377,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
                               2.0*GM[ii]/C**2 ) / \
                             ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) +
                               2.0*GM[ii]/C**2 ) )
-        
+
         lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
                     ( 1.0 - dot(R_01, V_0)/(C*norm(R_01)) )
 
@@ -16385,7 +16385,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
         if debug: print 't_0 = {:.18f}'.format(t_0)
         nn += 1
         if debug: print 'delta = {:.18f}'.format(abs(lt_01 - lt_01_tmp))
-    
+
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -16394,13 +16394,13 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
     vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
     R_0 = np.hstack((x,y,z))
     V_0 = np.hstack((vx,vy,vz))
-    
-    if debug: 
+
+    if debug:
         print 't_0 = {:.18f}'.format(t_0)
         print 'RLT = {:.18f}'.format(RLT)
         print 't_1 = {:.18f}'.format(t_1)
         print 'dd = {:.18f}'.format(dd)
-    
+
     ''' B/GCRS state of second reception station at t_1'''
     # BCRS radius vectors of the transmitting site at t_1:
     r_2 = sta2.r_GCRS
@@ -16416,16 +16416,16 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
             (1.0 - 3.0*U/C**2 - (norm(earth[:,1])/C)**2 + L_C -
              2.0*dot(earth[:,1], v_2)/C**2) * a_2 - \
             0.5*dot(earth[:,1], a_2)*(earth[:,1] + 2.0*v_2)/C**2
-    
+
 #    print 'R2_t1 = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*R_2_t_1)
-    
+
     if debug:
         print R_2_t_1
         print V_2_t_1
         print A_2_t_1
         print 'lalala\n'
     ##############
-        
+
     ''' BCRS state vectors of celestial bodies at t_0, [m, m/s]: '''
     ## Earth:
     rrd = pleph(jd+t_0/86400.0, 3, 12, inp['jpl_eph'])
@@ -16450,7 +16450,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
     state_ss_t0.insert(2,earth)
     state_ss_t0.append(moon)
     state_ss_t0.append(sun)
-        
+
     # initial approximation
     nn = 0
     lt_02 = norm(R_2_t_1 - R_0)/C
@@ -16459,19 +16459,19 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
     if debug: print 'initial t_2 = {:.18f}'.format(t_2)
 #    lt_02_tmp = 0.0
     t_2_tmp = 0.0
-    
+
 #    while (abs(lt_02 - lt_02_tmp) > precision) and (nn < n_max):
     while (abs(t_2 - t_2_tmp) > precision) and (nn < n_max):
         # if debug: print 'lt_02 - lt_02_tmp = {:.18f}'.format(lt_02 - lt_02_tmp)
         # lt_02_tmp = deepcopy(lt_02)
         if debug: print 't_2 - t_2_tmp = {:.18f}'.format(t_2 - t_2_tmp)
         t_2_tmp = deepcopy(t_2)
-            
+
         R_2 = R_2_t_1 + V_2_t_1*(t_2-t_1) + 0.5*A_2_t_1*(t_2-t_1)**2
         V_2 = V_2_t_1 + A_2_t_1*(t_2-t_1)
-        
+
         R_02 = R_2 - R_0
-        
+
         # >> SS bodies
         ## Earth:
         rrd = pleph(jd+t_2/86400.0, 3, 12, inp['jpl_eph'])
@@ -16482,7 +16482,7 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
         ## Moon:
         rrd = pleph(jd+t_2/86400.0, 10, 12, inp['jpl_eph'])
         moon = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-    
+
         state_ss_t2 = []
         for jj in (1,2,4,5,6,7,8,9):
             rrd = pleph(jd+t_2/86400.0, jj, 12, inp['jpl_eph'])
@@ -16510,21 +16510,21 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
                               2.0*GM[ii]/C**2 ) / \
                             ( norm(R_2_B) + norm(R_0_B) - norm(R_02_B) + \
                               2.0*GM[ii]/C**2 ) )
-                          
+
         t_2 = t_2 - (t_2 - t_0 - norm(R_02)/C - RLT) / \
                     ( 1.0 + dot(R_02, V_2)/(C*norm(R_02)) )
 
 #        lt_02 = lt_02 - (lt_02 - norm(R_02)/C - RLT) / \
 #                    ( 1.0 - dot(R_02, V_2)/(C*norm(R_02)) )
 #        t_2 = t_0 + lt_02
-        
+
         nn += 1
         if debug: print 't_2 = {:.18f}'.format(t_2)
-        
+
     if debug: print 'final t_2 = {:.18f}'.format(t_2)
-    
+
     if debug: print 'f(x)=0?: {:.18f}'.format(t_2 - t_0 - norm(R_02)/C - RLT)
-    
+
     # gravitational effect on the ray path from Fukushima
     R_0_1 = R_0 - R_1
     R_0_2 = R_0 - R_2
@@ -16543,13 +16543,13 @@ def delay_nf_moyer_depricated(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, con
                        (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) /\
                        (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
                        (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) )
-            if debug: 
+            if debug:
                 print 'i={:d}, T_g_21_i = {:.18f}'.format(ii, (2.0*GM[ii]/C**3) * \
                   log( (norm(R_2_B) + norm(R_0_B) + norm(R_0_2)) *\
                        (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) /\
                        (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
-                       (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) ))    
-    
+                       (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) ))
+
 #    raw_input()
 #     astropy_t_2 = Time(jd - 2400000.5, t_2/86400.0,
 #                format='mjd', scale='tdb', precision=9,
@@ -16951,7 +16951,7 @@ def delay_nf_moyer(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
 
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                        sta1, sta2):
@@ -16959,21 +16959,21 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     NF delay calculation following Sekido and Fukushima
     """
     debug = False
-    
+
     GM = const.GM
     C = const.C
     L_C = const.L_C
     r_1 = sta1.r_GCRS
     r_2 = sta2.r_GCRS
     v_2 = sta2.v_GCRS
-    
+
     earth = state_ss_t1[2]
     sun = state_ss_t1[-1]
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
 #    if debug: print 'U = {:.18f}'.format(U)
-    
+
     # BCRS radius vectors of the reception sites at t_1:
     R_1 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_1 - \
           dot(earth[:,1], r_1)*earth[:,1] / (2.0*C**2)
@@ -16983,19 +16983,19 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
             (1.0 - 2.0*U/C**2 - 0.5*(norm(earth[:,1])/C)**2 - \
              dot(earth[:,1], v_2)/C**2) * v_2 - \
             0.5*dot(earth[:,1], v_2)*earth[:,1]/C**2
-          
+
     ''' calculate downleg light-time from S/C to Receiver
         to find signal transmission t_0 time given the reception time t_1
-    '''    
+    '''
     precision = 1e-16
     n_max = 3
     lag_order = 9
-    
+
     # initial approximation:
     nn = 0
     lt_01_tmp = 0.0
-    
-    # s/c:    
+
+    # s/c:
     t_1, dd = t_1_days*86400, dd_days*86400
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_1)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_1)
@@ -17015,7 +17015,7 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
         lt_01_tmp = lt_01
         t_0 = t_1 - lt_01
-        
+
         x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
 #        x, _ = lagint(lag_order, tdb/86400.0, bcrs[:,6], (dd+t_0)/86400.0)
         y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
@@ -17039,7 +17039,7 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                 R_1_B  = R_1 - rb
                 R_01_B = R_1_B - R_0_B
     #            print R_0_B, R_1_B, R_01_B
-                if debug: 
+                if debug:
                     print 'rlt = {:.18f}'.format((2.0*GM[ii]/C**3) * \
                       log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
                               2.0*GM[ii]/C**2 ) / \
@@ -17050,7 +17050,7 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                               2.0*GM[ii]/C**2 ) / \
                             ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
                               2.0*GM[ii]/C**2 ) )
-        
+
         lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
                     ( 1.0 - dot(R_01, V_0)/(C*norm(R_01)) )
 
@@ -17058,7 +17058,7 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
         if debug: print 't_0 = {:.18f}'.format(t_0)
         nn += 1
         if debug: print 'delta = {:.18f}'.format(abs(lt_01 - lt_01_tmp))
-    
+
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -17067,30 +17067,30 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
     # vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
     R_0 = np.hstack((x,y,z))
     # V_0 = np.hstack((vx,vy,vz))
-    
-    if debug: 
+
+    if debug:
         print 't_0 = {:.18f}'.format(t_0)
         print 'RLT = {:.18f}'.format(RLT)
         print 't_1 = {:.18f}'.format(t_1)
         print 'dd = {:.18f}'.format(dd)
-    
+
     # That's the confusing way Fukushima defines it. suck it off!
     R_0_1 = R_0 - R_1
     R_0_2 = R_0 - R_2
-    
+
     # psuedo source-vector
     K = (R_0_1 + R_0_2)/(norm(R_0_1) + norm(R_0_2))
-    
+
     R_2_hat = R_0_2/norm(R_0_2)
     b = r_2 - r_1
     H = dot(K, b)/(2.0*norm(R_0_2)) * norm(np.cross(V_2/C, R_2_hat))**2
-    
+
     if debug:
         print 'R_2_hat = {:s}'.format(R_2_hat)
         print 'b = {:s}'.format(b)
         print 'H = {:.18f}'.format(H)
         print 'K = {:s}'.format(K)
-    
+
     # gravitational effect on the ray path
     T_g_21 = 0.0
     for ii, state in enumerate(state_ss_t1):
@@ -17105,14 +17105,14 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
                        (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) /\
                        (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
                        (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) )
-            if debug: 
+            if debug:
                 print 'i={:d}, T_g_21_i = {:.18f}'.format(ii, (2.0*GM[ii]/C**3) * \
                   log( (norm(R_2_B) + norm(R_0_B) + norm(R_0_2)) *\
                        (norm(R_1_B) + norm(R_0_B) - norm(R_0_1)) /\
                        (norm(R_2_B) + norm(R_0_B) - norm(R_0_2)) /
                        (norm(R_1_B) + norm(R_0_B) + norm(R_0_1)) ))
 
-    if debug: 
+    if debug:
         print 'T_g_21 = {:.18f}'.format(T_g_21)
 
     # delay in the TT-frame
@@ -17128,7 +17128,7 @@ def delay_nf_fukushima(jd, t_1_days, dd_days, state_ss_t1, tdb, bcrs, const,
 
 
 #==============================================================================
-# 
+#
 #==============================================================================
 def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
                 GM, TDB_TCB, L_C, C, x_way, freq_type,
@@ -17138,22 +17138,22 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     """
     Doppler calculation following Moyer/Duev
     For reference see Duev PhD thesis, MSU 2012.
-    
+
     dd - number of days since the start epoch of the ephemeris * 86400
     state_ss_t1  - Solar system bodies r, v (and a for Earth) at t_1 wrt SSBC
     """
     debug = False
-    
+
     r_1 = sta1.r_GCRS
     v_1 = sta1.v_GCRS
     if sta2 is not None:
         r_2 = sta2.r_GCRS
         v_2 = sta2.v_GCRS
         a_2 = sta2.a_GCRS
-    
+
     earth = state_ss_t1[2]
     sun = state_ss_t1[-1]
-    
+
     # Find potential U:
     U = GM[10]/norm(sun[:,0]-earth[:,0])
     if debug: print 't_1 = {:.18f}'.format(t_1)
@@ -17168,20 +17168,20 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     V_1 = earth[:,1] + ( (1.0 - U/(C**2) - L_C)*v_1 - \
           dot(earth[:,1],v_1)*earth[:,1] / (2.0*C**2) )* \
           (1.0 - (U + v_1**2/2.0 - L_C)/C**2)
-    
+
 
     ''' calculate downleg light-time from S/C to Receiver
         to find signal transmission t_0 time given the reception time t_1
-    '''    
+    '''
     precision = 1e-16
     n_max = 3
     lag_order = 9
-    
+
     # initial approximation:
     nn = 0
     lt_01_tmp = 0.0
-    
-    # s/c:    
+
+    # s/c:
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_1)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_1)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_1)
@@ -17199,7 +17199,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     while (abs(lt_01 - lt_01_tmp) > precision) and (nn < n_max):
         lt_01_tmp = lt_01
         t_0 = t_1 - lt_01
-        
+
         x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
         y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
         z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -17215,7 +17215,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         # >> SS bodies
         RLT = 0.0
         for ii, state in enumerate(state_ss_t1):
-#            if debug: 
+#            if debug:
 #                print 'keeping Sun only'
 #                if ii != 10: continue
             if ii==2 and norm(r_1)==0.0: continue
@@ -17225,7 +17225,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
             R_1_B  = R_1 - rb
             R_01_B = R_1_B - R_0_B
 #            print R_0_B, R_1_B, R_01_B
-            if debug: 
+            if debug:
                 print 'rlt = {:.18f}'.format((2.0*GM[ii]/C**3) * \
                   log(  ( norm(R_0_B) + norm(R_1_B) + norm(R_01_B) + \
                           2.0*GM[ii]/C**2 ) / \
@@ -17236,7 +17236,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
                           2.0*GM[ii]/C**2 ) / \
                         ( norm(R_0_B) + norm(R_1_B) - norm(R_01_B) + \
                           2.0*GM[ii]/C**2 ) )
-        
+
         lt_01 = lt_01 - (lt_01 - norm(R_01)/C - RLT) / \
                     ( 1.0 - dot(R_01, V_0)/(C*norm(R_01)) )
 
@@ -17244,7 +17244,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         if debug: print 't_0 = {:.18f}'.format(t_0)
         nn += 1
         if debug: print 'delta = {:.18f}'.format(abs(lt_01 - lt_01_tmp))
-    
+
     x, _ = lagint(lag_order, tdb, bcrs[:,6], dd+t_0)
     y, _ = lagint(lag_order, tdb, bcrs[:,7], dd+t_0)
     z, _ = lagint(lag_order, tdb, bcrs[:,8], dd+t_0)
@@ -17253,18 +17253,18 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     vz, _ = lagint(lag_order, tdb, bcrs[:,11], dd+t_0)
     R_0 = np.hstack((x,y,z))
     V_0 = np.hstack((vx,vy,vz))
-    
-    if debug: 
+
+    if debug:
         print 't_0 = {:.18f}'.format(t_0)
         print 'RLT = {:.18f}'.format(RLT)
         print 't_1 = {:.18f}'.format(t_1)
         print 'dd = {:.18f}'.format(dd)
-    
+
     if debug:
         rrd = pleph(2456266.5+t_0/86400.0, 2, 12, 'jpl_eph/JPLEPH.421')*1e3
         print 'xsat = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*(R_0-rrd[:3]))
         print 'obs_sat = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*(R_1 - R_0))
-    
+
     ''' BCRS state vectors of celestial bodies at t_0, [m, m/s]: '''
     ## Earth:
     JD = tjd
@@ -17290,7 +17290,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     state_ss_t0.insert(2,earth)
     state_ss_t0.append(moon)
     state_ss_t0.append(sun)
-    
+
     ''' My algorithm from PhD thesis '''
     # direction vector
 #    print R_0, R_1
@@ -17321,9 +17321,9 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 
     z_sh = -z_sh
 #    print 'z_sh = {:.18e}'.format(z_sh)
-    
+
     dtau_s_po_dTCB = 1.0 - (GMnaR_s + (norm(V_0)**2)/2.0)/C**2
-#    print 'dtau_s_po_dTCB = {:.18f}'.format(dtau_s_po_dTCB)    
+#    print 'dtau_s_po_dTCB = {:.18f}'.format(dtau_s_po_dTCB)
     dtau_o_po_dTCB = 1.0 - (GMnaR_o + (norm(V_1)**2)/2.0)/C**2
 #    print 'dtau_o_po_dTCB = {:.18f}'.format(dtau_o_po_dTCB)
 
@@ -17331,16 +17331,16 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     fonafe = (1.0+z_sh) * dtau_s_po_dTCB * (1.0 + dot(n_b,V_1)/C) / \
          ( dtau_o_po_dTCB * (1.0 + dot(n_b,V_0)/C) )
 #    print 'fonafe = {:.18f}'.format(fonafe)
-    
+
     # correction:
 #    U_1 = GM[10]/norm(sun[:,0]-R_1)
 #    U_E_1 = GM[2]/norm(r_1) + \
 #        GM[2]*AE**2*J_2*(1-3*(r_1[2]/norm(r_1))**2)/(2.0*norm(r_1)**3)
-#    
+#
 #    UTC_to_proper = 1 - norm(V_1)**2/(2*C**2) - ((norm(v_1)**2)/2.0 + U_E_1)/C**2
-    
+
 #    fonafe /= UTC_to_proper
-    
+
     ''' correct fonafe if f is given in GC (i.e. it's not proper): '''
     if x_way=='one' and freq_type=='gc':
 #        raise NotImplemented
@@ -17352,19 +17352,19 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         vz, _ = lagint(lag_order, utc, gcrs[:,11], dd+t_utc-lt_01)
         r_sc = np.hstack((x,y,z))
         v_sc = np.hstack((vx,vy,vz))
-        
+
         U_E_sc = GM[2]/norm(r_sc) + \
             GM[2]*AE**2*J_2*(1-3*(r_sc[2]/norm(r_sc))**2)/(2.0*norm(r_sc)**3)
 
         fonafe /= (1 + L_G - ((norm(v_sc)**2)/2.0 + U_E_sc)/C**2)
         return fonafe, None
-    
+
     if x_way=='one':
         # transmission event in TDB (used if frequency is ramped):
         astropy_t_0 = Time(tjd - 2400000.5, t_0/86400.0, \
                             format='mjd', scale='tdb', precision=9)
         return fonafe, astropy_t_0 # else simply pass
-        
+
     ''' 2(3)-way Doppler:
         calculate upleg light-time from Transmitter to S/C
         to find signal transmission time t_2 given the reception time t_0
@@ -17380,16 +17380,16 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 #            (1.0 - 3.0*U/C**2 - (norm(earth[:,1])/C)**2 + L_C - \
 #             2.0*dot(earth[:,1], v_2)/C**2) * a_2 - \
 #            0.5*dot(earth[:,1], a_2)*(earth[:,1] + 2.0*v_2)/C**2
-    
+
 #    print 'R2_t1 = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*R_2_t_1)
-    
+
     ''' calculate upleg light-time from Transmitter to S/C
         to find signal transmission t_2 time given the reception time t_0
     '''
     # initial approximation:
     nn = 0
     lt_20_tmp = 0.0
-    
+
     # initial approximation using R_2_t_1:
     lt_20 = (norm(R_0 - R_2_t_1)/C)
     if debug: print 'lt_20_0 = {:.18f}'.format(lt_20)
@@ -17423,17 +17423,17 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     if UTC<0:
 #        UTC, JD, mjd = UTC+1, JD-1, mjd-1
         UTC, JD, mjd = UTC+1, astropy_t_2.utc.jd1-1, astropy_t_2.utc.mjd-1
-    
+
     ''' compute tai & tt '''
     TAI, TT = taitime(mjd, UTC)
-    if debug: 
+    if debug:
         print 'UTC = {:.18f}'.format(UTC)
         print 'TAI = {:.18f}'.format(TAI)
         print 'TT = {:.18f}'.format(TT)
     ''' interpolate eops to tstamp '''
     UT1, eop_int = eop_iers(mjd, UTC, eops)
     if debug: print 'UT1 = {:.18f}'.format(UT1)
-    
+
     ''' compute coordinate time fraction of CT day at 2nd observing site '''
     CT, dTAIdCT = t_eph(JD, UT1, TT, sta2.lon_gcen, sta2.u, sta2.v)
 
@@ -17477,14 +17477,14 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
     # rotational deformation due to pole tide:
         sta2 = poletide(sta2, tstamp, eop_int, r2000)
 
-    
+
     ''' add up geophysical corrections and convert sta state to J2000 '''
     sta2.j2000gp(r2000)
-    
+
     r_2 = sta2.r_GCRS
     v_2 = sta2.v_GCRS
     a_2 = sta2.a_GCRS
-    
+
     # BCRS radius vectors of the transmitting site at t_2_0:
     R_2_t_2 = earth[:,0] + (1.0 - U/(C**2) - L_C)*r_2 - \
           dot(earth[:,1],r_2)*earth[:,1] / (2.0*C**2)
@@ -17496,7 +17496,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
             (1.0 - 3.0*U/C**2 - (norm(earth[:,1])/C)**2 + L_C - \
              2.0*dot(earth[:,1], v_2)/C**2) * a_2 - \
             0.5*dot(earth[:,1], a_2)*(earth[:,1] + 2.0*v_2)/C**2
-    
+
     t_2_0 = deepcopy(t_2)
     if debug:
         print R_2_t_2
@@ -17509,13 +17509,13 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         lt_20_tmp = deepcopy(lt_20)
         t_2 = t_0 - lt_20
 #        lt_201 = lt_20 + lt_01
-        
+
 #        R_2 = R_2_t_1 - V_2_t_1*lt_201 + 0.5*A_2_t_1*lt_201**2
 #        V_2 = V_2_t_1 - A_2_t_1*lt_201
-        
+
         R_2 = R_2_t_2 + V_2_t_2*(t_2-t_2_0) + 0.5*A_2_t_2*(t_2-t_2_0)**2
         V_2 = V_2_t_2 + A_2_t_2*(t_2-t_2_0)
-        
+
         if debug:
             print R_2
             print V_2
@@ -17525,7 +17525,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         # >> SS bodies
         RLT = 0.0
         for ii, (state_t0, state_t2) in enumerate(zip(state_ss_t0,state_ss_t2)):
-#            if debug: 
+#            if debug:
 #                print 'keeping Sun and Earth only'
 #                if ii != 10: continue
             if ii==2 and norm(r_2)==0.0: continue
@@ -17547,7 +17547,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
                           2.0*GM[ii]/C**2 ) / \
                         ( norm(R_2_B) + norm(R_0_B) - norm(R_20_B) + \
                           2.0*GM[ii]/C**2 ) )
-        
+
         lt_20 = lt_20 - (lt_20 - norm(R_20)/C - RLT) / \
                     ( 1.0 - dot(R_20, V_2)/(C*norm(R_20)) )
 
@@ -17555,20 +17555,20 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
         if debug: print 't_2 = {:.18f}'.format(t_2)
         nn += 1
         if debug: print 'delta = {:.18f}'.format(abs(lt_20 - lt_20_tmp))
-    
+
     # transmitter state at found t_2
 #    lt_201 = lt_20 + lt_01
 #    R_2 = R_2_t_1 - V_2_t_1*lt_201 + 0.5*A_2_t_1*lt_201**2
 #    V_2 = V_2_t_1 - A_2_t_1*lt_201
     R_2 = R_2_t_2 + V_2_t_2*(t_2-t_2_0) + 0.5*A_2_t_2*(t_2-t_2_0)**2
     V_2 = V_2_t_2 + A_2_t_2*(t_2-t_2_0)
-    
+
     if debug:
         print 't_0 = {:.18f}'.format(t_0)
         print 'RLT = {:.18f}'.format(RLT)
         print 't_2 = {:.18f}'.format(t_2)
         print 'dd = {:.18f}'.format(dd)
-    
+
         print 'obs_sat = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*(R_2 - R_0))
         print 'R2_t2 = [[{:.18f}],[{:.18f}],[{:.18f}]]'.format(*R_2)
 
@@ -17603,7 +17603,7 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 #    if debug:
 #        print 't_2_UTC = {:.18f}'.format(t_2_UTC*86400.0)
 #        raw_input()
-    
+
     ''' My algorithm from PhD thesis '''
     # direction vector
 #    print R_2, R_0
@@ -17634,9 +17634,9 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 
     z_sh = -z_sh
 #    print 'z_sh = {:.18e}'.format(z_sh)
-    
+
     dtau_s_po_dTCB = 1.0 - (GMnaR_s + (norm(V_2)**2)/2.0)/C**2
-#    print 'dtau_s_po_dTCB = {:.18f}'.format(dtau_s_po_dTCB)    
+#    print 'dtau_s_po_dTCB = {:.18f}'.format(dtau_s_po_dTCB)
     dtau_o_po_dTCB = 1.0 - (GMnaR_o + (norm(V_0)**2)/2.0)/C**2
 #    print 'dtau_o_po_dTCB = {:.18f}'.format(dtau_o_po_dTCB)
 
@@ -17645,26 +17645,26 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
          ( dtau_o_po_dTCB * (1.0 + dot(n_b,V_2)/C) )
 #    print 'fonafe = {:.18f}'.format(fonafe)
 #    raw_input()
-    
+
     # correction if station 1 is GC:
     if sta1.name == 'GEOCENTR':
         fonafe *= (1 + L_G)
-    
+
     # correction:
 #    U_2 = GM[10]/norm((sun[:,0]+(t_2-t_2_0)*sun[:,1])-R_2)
 #    r_ = r_2 + (t_2-t_2_0)*v_2 + (t_2-t_2_0)**2*a_2/2.0
 #    v_ = v_2 + (t_2-t_2_0)*a_2
 #    U_E_2 = GM[2]/norm(r_) + \
 #        GM[2]*AE**2*J_2*(1-3*(r_[2]/norm(r_))**2)/(2.0*norm(r_)**3)
-#    if debug:        
+#    if debug:
 #        print 'U_2 = {:.18f}'.format(U_2)
 #        print 'U_2/C**2 = {:.18f}'.format(U_2/C**2)
 #        print 'V_2**2/(2*C**2) = {:.18f}'.format(norm(V_2)**2/(2*C**2))
 #        print 'L_G, U_E_2/C**2 = {:.18f} {:.18f}'.format(L_G, U_E_2/C**2)
 #        print '{:.18f} {:.18f}'.format(L_G, ((norm(v_)**2)/2.0 + U_E_2)/C**2)
-#    
+#
 #    UTC_to_proper = 1 - norm(V_2)**2/(2*C**2) - ((norm(v_)**2)/2.0 + U_E_2)/C**2
-#    
+#
 #    if debug:
 #        print 't_2_proper = {:.18f}'.format(t_2_UTC*86400.0*UTC_to_proper)
 #        raw_input()
@@ -17677,11 +17677,11 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 #    U_E_1 = GM[2]/norm(r_1) + \
 #            GM[2]*AE**2*J_2*(1-3*(r_1[2]/norm(r_1))**2)/(2.0*norm(r_1)**3)
 #    fonafe *= (1 + ((norm(v_1)**2)/2.0 + U_E_1)/C**2)
-    
+
 #    U_E_2 = GM[2]/norm(r_2) + \
 #            GM[2]*AE**2*J_2*(1-3*(r_2[2]/norm(r_2))**2)/(2.0*norm(r_2)**3)
 #    fonafe /= (1 + ((norm(v_2)**2)/2.0 + U_E_2)/C**2)
-    
+
     # convert t1 and t2 to TT
 #    t1_dtdb = dtdb(tjd, t_1/86400., ut1/86400., sta1.lon_gcen, sta1.u, sta1.v)
 #    t1_tt = t_1 + t1_dtdb
@@ -17693,10 +17693,10 @@ def doppler_bc(tjd, t_1, dd, state_ss_t1, tdb, bcrs,
 #    lt_201_tt = lt_201 + (t1_dtdb - t2_dtdb)
 
     return fonafe, astropy_t_2.utc
-    
+
 '''
 #==============================================================================
-# 
+#
 #==============================================================================
 '''
 def pointings(source, stations, date_t_start, date_t_stop,
@@ -17704,26 +17704,26 @@ def pointings(source, stations, date_t_start, date_t_stop,
               cfg='input.cfg', output=False):
     """
     Compute pointings on spacecraft for a list of stations
-    
+
     date_t_start and date_t_stop - datetime.datetime objects
                                    defining obs time slot
     t_step - time step in seconds
-    
+
     cfg - input config file location
 
     output - produce a txt-damp or not
-    
+
     output path is set in cfg['out_path']
-    
+
     Function outputs an array of datetime objects with obs epochs,
     RA/Decs for J2000 and date in radians and Az/El in degrees
 
     """
-    
+
     ''' load input sittings: '''
     inp = inp_set(cfg)
     inp = inp.get_section('all')
-    
+
     ''' mkdir '_out' if non existend '''
     if inp['out_path'][0] == '/': # abs path?
         if not os.path.isdir(os.path.join(inp['out_path'])):
@@ -17732,9 +17732,9 @@ def pointings(source, stations, date_t_start, date_t_stop,
         abs_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
         if not os.path.isdir(os.path.join(abs_path, inp['out_path'])):
             os.makedirs(os.path.join(abs_path, inp['out_path']))
-    
+
     const = constants()
-    
+
     # known spacecraft:
     spacecraft = {'MEX': 'S', 'VEX': 'S', 'ROSETTA': 'S', 'GAIA': 'S', 'HER': 'S',
                   'RA': 'R'}
@@ -17744,11 +17744,11 @@ def pointings(source, stations, date_t_start, date_t_stop,
 
     source = source.upper()
     sou_type = spacecraft[source]
-    
+
     ''' stations '''
-    if type(stations) != type([]):        
+    if type(stations) != type([]):
         stations = [stations]
-    
+
     ''' fake obs '''
     ob = obs(stations, 'DUMMY', 'C')
     ob.addScan(date_t_start, t_step_in, stop=date_t_stop)
@@ -17762,26 +17762,26 @@ def pointings(source, stations, date_t_start, date_t_stop,
         except Exception, err:
             print str(err)
             print 'catalogue updates failed'
-    
+
     ''' load cats '''
     _, sta, eops = load_cats(inp, source, sou_type, stations, date_t_start)
-    
+
     ''' calculate site positions in geodetic coordinate frame
     + transformation matrix VW from VEN to the Earth-fixed coordinate frame '''
     for ii, st in enumerate(sta):
         sta[ii].geodetic(const)
-    
+
     # load ephemeris
     eph = load_sc_eph(sou_type, source, date_t_start, date_t_stop, inp)
 
     ''' actual pointings '''
-    
+
     pointingsJ2000 = []  # RA/Decs at J2000
     pointingsDate = []  # apparent RA/Decs (precessed and nutated to date)
     azels = []  # azimuth/elevations
-    
+
     # mjd_start = mjuliandate(ob.tstamps[0].year, ob.tstamps[0].month, ob.tstamps[0].day)
-    
+
     for tstamp in ob.tstamps:
         # print tstamp
         ''' set dates: '''
@@ -17789,16 +17789,16 @@ def pointings(source, stations, date_t_start, date_t_stop,
         # dd = mjd - mjd_start
         UTC = (tstamp.hour + tstamp.minute/60.0 + tstamp.second/3600.0)/24.0
         JD = mjd + 2400000.5
-    
+
         ''' compute tai & tt '''
         TAI, TT = taitime(mjd, UTC)
-    
+
         ''' interpolate eops to tstamp '''
         UT1, eop_int = eop_iers(mjd, UTC, eops)
-    
+
         ''' compute coordinate time fraction of CT day at 1st observing site '''
         CT, dTAIdCT = t_eph(JD, UT1, TT, sta[0].lon_gcen, sta[0].u, sta[0].v)
-    
+
         ''' BCRS state vectors of celestial bodies at JD+CT, [m, m/s]: '''
         ## Earth:
         rrd = pleph(JD+CT, 3, 12, inp['jpl_eph'])
@@ -17815,10 +17815,10 @@ def pointings(source, stations, date_t_start, date_t_stop,
         ## Moon:
         rrd = pleph(JD+CT, 10, 12, inp['jpl_eph'])
         moon = np.reshape(np.asarray(rrd), (3,2), 'F') * 1e3
-    
+
         ''' rotation matrix IERS '''
         r2000 = ter2cel(tstamp, eop_int, dTAIdCT, 'iau2000')
-    
+
         ''' displacements due to geophysical effects '''
         for ii, st in enumerate(sta):
             if st.name == 'GEOCENTR' or st.name == 'RA':
@@ -17826,13 +17826,13 @@ def pointings(source, stations, date_t_start, date_t_stop,
             sta[ii] = dehanttideinel(st, tstamp, earth, sun, moon, r2000)
             sta[ii] = hardisp(st, tstamp, r2000)
             sta[ii] = poletide(st, tstamp, eop_int, r2000)
-        
+
         ''' add up geophysical corrections and convert sta state to J2000 '''
         for ii, st in enumerate(sta):
             if st.name == 'GEOCENTR' or st.name == 'RA':
                 continue
             sta[ii].j2000gp(r2000)
-        
+
         ''' calculate [RA, Dec], [RA, Dec]_date, [Az, El] for cross-eyed scheduling: '''
         pnt_J2000_sta = []
         pnt_Date_sta = []
@@ -17857,11 +17857,11 @@ def pointings(source, stations, date_t_start, date_t_stop,
             else:
                 az, el, _ = st.AzEl2(eph.gcrs, eph.UT, JD, UTC, r2000[:, :, 0], inp['jpl_eph'])
                 azel_sta.append([az*180/np.pi, el*180/np.pi])
-    
+
         pointingsJ2000.append(pnt_J2000_sta)
         pointingsDate.append(pnt_Date_sta)
         azels.append(azel_sta)
-    
+
     ob.pointingsJ2000 = np.array(pointingsJ2000)
     ob.pointingsDate = np.array(pointingsDate)
     ob.azels = np.array(azels)
@@ -17881,9 +17881,9 @@ def pointings(source, stations, date_t_start, date_t_stop,
     ''' save to files '''
     if output:
         stations_short = shname(stations, inp['shnames_cat'], inp['shnames_cat_igs'])
-        
+
         date_string = date_t_start.strftime("%y%m%d")
-        
+
         for jj, stash in enumerate(stations_short):
             print 'Outputting {:s}'.format(stash)
             # save AzEls to human-readable text-files
@@ -17951,7 +17951,7 @@ def pointings(source, stations, date_t_start, date_t_stop,
                     dec = Angle(pointingsJ2000[ii,jj,1], unit=units.rad)
                     radec = np.hstack((ra.hms, dec.dms))
                     radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
-                    radec_str = 'ra={:02.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[0:3]) 
+                    radec_str = 'ra={:02.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[0:3])
                     radec_str += 'dec={:+.0f}:{:02.0f}:{:05.2f} \t '.format(*radec[3:])
                     radec_str +=  'equinox=\'j2000\' /\n'
                     line += radec_str
@@ -17967,12 +17967,12 @@ def pointings(source, stations, date_t_start, date_t_stop,
                     ra = Angle(pointingsDate[ii,jj,0], unit=units.rad)
                     dec = Angle(pointingsDate[ii,jj,1], unit=units.rad)
                     radec = np.hstack((ra.hms, dec.dms))
-        
+
                     radec[4:] = abs(radec[4:]) # minus doesn't belong to everyone..
                     radec_str = \
               'ra = {:02.0f}h{:02.0f}m{:010.7f}s  dec = {:-3.0f}d{:02.0f}\'{:010.7f}\"\n'\
                        .format(*radec)
                     line += radec_str
                     f.write(line)
-                    
+
     return ob.tstamps, pointingsJ2000, pointingsDate, azels
