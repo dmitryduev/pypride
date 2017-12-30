@@ -496,33 +496,34 @@ def nsec(mjd):
     difference TAI - UTC_iers starting from 1972 January 1
     '''
     idelt = 0
-    if (mjd >= 41317.0 and mjd < 41499.0): idelt = 10 # 1972 JAN 1
-    elif (mjd >= 41499.0 and mjd < 41683.0): idelt = 11 # 1972 JUL 1
-    elif (mjd >= 41683.0 and mjd < 42048.0): idelt = 12 # 1973 JAN 1
-    elif (mjd >= 42048.0 and mjd < 42413.0): idelt = 13 # 1974 JAN 1
-    elif (mjd >= 42413.0 and mjd < 42778.0): idelt = 14 # 1975 JAN 1
-    elif (mjd >= 42778.0 and mjd < 43144.0): idelt = 15 # 1976 JAN 1
-    elif (mjd >= 43144.0 and mjd < 43509.0): idelt = 16 # 1977 JAN 1
-    elif (mjd >= 43509.0 and mjd < 43874.0): idelt = 17 # 1978 JAN 1
-    elif (mjd >= 43874.0 and mjd < 44239.0): idelt = 18 # 1979 JAN 1
-    elif (mjd >= 44239.0 and mjd < 44786.0): idelt = 19 # 1980 JAN 1
-    elif (mjd >= 44786.0 and mjd < 45151.0): idelt = 20 # 1981 JUL 1
-    elif (mjd >= 45151.0 and mjd < 45516.0): idelt = 21 # 1982 JUL 1
-    elif (mjd >= 45516.0 and mjd < 46247.0): idelt = 22 # 1983 JUL 1
-    elif (mjd >= 46247.0 and mjd < 47161.0): idelt = 23 # 1985 JUL 1
-    elif (mjd >= 47161.0 and mjd < 47892.0): idelt = 24 # 1988 JAN 1
-    elif (mjd >= 47892.0 and mjd < 48257.0): idelt = 25 # 1990 JAN 1
-    elif (mjd >= 48257.0 and mjd < 48804.0): idelt = 26 # 1991 JAN 1
-    elif (mjd >= 48804.0 and mjd < 49169.0): idelt = 27 # 1992 JUL 1
-    elif (mjd >= 49169.0 and mjd < 49534.0): idelt = 28 # 1993 JUL 1
-    elif (mjd >= 49534.0 and mjd < 50083.0): idelt = 29 # 1994 JUL 1
-    elif (mjd >= 50083.0 and mjd < 50630.0): idelt = 30 # 1996 JAN 1
-    elif (mjd >= 50630.0 and mjd < 51179.0): idelt = 31 # 1997 JUL 1
-    elif (mjd >= 51179.0 and mjd < 53736.0): idelt = 32 # 1999 JAN 1
-    elif (mjd >= 53736.0 and mjd < 54832.0): idelt = 33 # 2006 JAN 1
-    elif (mjd >= 54832.0 and mjd < 56109.0): idelt = 34 # 2009 JAN 1
-    elif (mjd >= 56109.0 and mjd < 57204.0): idelt = 35 # 2012 JUL 1
-    elif (mjd >= 57204.0):                   idelt = 36 # 2015 JUL 1
+    if (mjd >= 41317.0 and mjd < 41499.0): idelt = 10  # 1972 JAN 1
+    elif (mjd >= 41499.0 and mjd < 41683.0): idelt = 11  # 1972 JUL 1
+    elif (mjd >= 41683.0 and mjd < 42048.0): idelt = 12  # 1973 JAN 1
+    elif (mjd >= 42048.0 and mjd < 42413.0): idelt = 13  # 1974 JAN 1
+    elif (mjd >= 42413.0 and mjd < 42778.0): idelt = 14  # 1975 JAN 1
+    elif (mjd >= 42778.0 and mjd < 43144.0): idelt = 15  # 1976 JAN 1
+    elif (mjd >= 43144.0 and mjd < 43509.0): idelt = 16  # 1977 JAN 1
+    elif (mjd >= 43509.0 and mjd < 43874.0): idelt = 17  # 1978 JAN 1
+    elif (mjd >= 43874.0 and mjd < 44239.0): idelt = 18  # 1979 JAN 1
+    elif (mjd >= 44239.0 and mjd < 44786.0): idelt = 19  # 1980 JAN 1
+    elif (mjd >= 44786.0 and mjd < 45151.0): idelt = 20  # 1981 JUL 1
+    elif (mjd >= 45151.0 and mjd < 45516.0): idelt = 21  # 1982 JUL 1
+    elif (mjd >= 45516.0 and mjd < 46247.0): idelt = 22  # 1983 JUL 1
+    elif (mjd >= 46247.0 and mjd < 47161.0): idelt = 23  # 1985 JUL 1
+    elif (mjd >= 47161.0 and mjd < 47892.0): idelt = 24  # 1988 JAN 1
+    elif (mjd >= 47892.0 and mjd < 48257.0): idelt = 25  # 1990 JAN 1
+    elif (mjd >= 48257.0 and mjd < 48804.0): idelt = 26  # 1991 JAN 1
+    elif (mjd >= 48804.0 and mjd < 49169.0): idelt = 27  # 1992 JUL 1
+    elif (mjd >= 49169.0 and mjd < 49534.0): idelt = 28  # 1993 JUL 1
+    elif (mjd >= 49534.0 and mjd < 50083.0): idelt = 29  # 1994 JUL 1
+    elif (mjd >= 50083.0 and mjd < 50630.0): idelt = 30  # 1996 JAN 1
+    elif (mjd >= 50630.0 and mjd < 51179.0): idelt = 31  # 1997 JUL 1
+    elif (mjd >= 51179.0 and mjd < 53736.0): idelt = 32  # 1999 JAN 1
+    elif (mjd >= 53736.0 and mjd < 54832.0): idelt = 33  # 2006 JAN 1
+    elif (mjd >= 54832.0 and mjd < 56109.0): idelt = 34  # 2009 JAN 1
+    elif (mjd >= 56109.0 and mjd < 57204.0): idelt = 35  # 2012 JUL 1
+    elif (mjd >= 57204.0 and mjd < 57754.0): idelt = 36  # 2015 JUL 1
+    elif (mjd >= 57754.0):                   idelt = 37  # 2017 JAN 1
 
     return float(idelt)
 
