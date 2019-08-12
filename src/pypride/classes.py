@@ -1121,7 +1121,9 @@ class site(object):
 
         # iterative process to solve for the Earth diameter at the site
         R_E_old = np.zeros(3) # initialise
-        while norm(R_E-R_E_old) > 1e-9:
+        ii = 0
+        i_max = 5
+        while (norm(R_E-R_E_old) > 1e-9) and (ii < i_max):
             R_E_old = np.copy(R_E) #for comparison
             # (21a), p.498
             r_s_shtrih = np.array([R[0]-R_E[0]*(e**2), R[1]-R_E[1]*(e**2), R[2]])
@@ -1135,6 +1137,8 @@ class site(object):
             # new XeYeZe, (33a), p.499
             R_E = np.array([theta*(R[0] - (e**2)*R_E[0])/(1-e**2),\
                             theta*(R[1] - (e**2)*R_E[1])/(1-e**2), theta*R[2]])
+
+            ii += 1
         self.eta = eta
         self.theta = theta
         self.R_E = R_E
